@@ -14,12 +14,17 @@ import (
 
 func main() {
 
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	hotelFilePath := flag.String("h", "./data/hotels.csv", "Path to the hotels CSV file")
+	debug := flag.Bool("debug", false, "sets log level to debug")
 	//offers := flag.String("o", "../offers/offer.csv", "Path to the offers CSV file")
 	flag.Parse()
+
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if *debug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
 
 	hotelFile, err := os.Open(*hotelFilePath)
 	if err != nil {
@@ -28,7 +33,7 @@ func main() {
 	defer func(hotelFile *os.File) {
 		err := hotelFile.Close()
 		if err != nil {
-			fmt.Println("Error closing hotelFilePath file:", err)
+			log.Error().Msgf("Error closing hotelFilePath file:", err)
 		} else {
 			fmt.Println("Hotels file closed successfully.")
 		}
