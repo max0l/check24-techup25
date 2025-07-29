@@ -28,14 +28,14 @@ func main() {
 
 	hotelFile, err := os.Open(*hotelFilePath)
 	if err != nil {
-		panic("Error opening hotelFilePath file: " + err.Error())
+		log.Panic().Err(err).Msg("Error opening hotelFilePath file")
 	}
 	defer func(hotelFile *os.File) {
 		err := hotelFile.Close()
 		if err != nil {
-			log.Error().Msgf("Error closing hotelFilePath file:", err)
+			log.Error().Err(err).Msg("Error closing hotelFilePath file")
 		} else {
-			fmt.Println("Hotels file closed successfully.")
+			log.Debug().Msg("Hotels file closed successfully.")
 		}
 	}(hotelFile)
 
@@ -54,13 +54,13 @@ func main() {
 			if err == io.EOF {
 				break
 			} else if err != io.EOF {
-				panic("Error reading hotelFilePath file: " + err.Error())
+				log.Panic().Err(err).Msg("Error reading hotelFilePath file")
 			}
 
 		}
 
 		if err := gocsv.UnmarshalBytes(buf, &hotels); err != nil {
-			panic("Error unmarshalling hotelFilePath file: " + err.Error())
+			log.Error().Err(err).Msg("Error unmarshalling hotelFilePath file")
 		}
 	}
 	for _, hotel := range hotels {
