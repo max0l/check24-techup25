@@ -1,1 +1,5 @@
-package readCSVs
+package main
+
+func readOffers(s string) {
+
+}
