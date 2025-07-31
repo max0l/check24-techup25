@@ -2,6 +2,7 @@ package main
 
 import (
 	"check24-techup25/data"
+	"fmt"
 	"github.com/rs/zerolog/log"
 )
 
@@ -38,5 +39,11 @@ func processOfferBatch(records [][]string, offerResultsChannel chan<- *data.Offe
 			Roomtype:                  record[14],
 		}
 		offerResultsChannel <- &offer
+	}
+}
+
+func consumeOffersResults(channel <-chan *data.Offer) {
+	for offer := range channel {
+		fmt.Print(offer.Hotelid)
 	}
 }

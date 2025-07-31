@@ -1,34 +1,13 @@
 package main
 
 import (
-	"check24-techup25/data"
-	"check24-techup25/logging"
 	"encoding/csv"
-	"flag"
 	"github.com/rs/zerolog/log"
 	"io"
 	"os"
 	"strconv"
 	"time"
 )
-
-func main() {
-
-	hotelFilePath := flag.String("h", "./data/hotels.csv", "Path to the hotels CSV file")
-	offersFilePath := flag.String("o", "../offers/offer.csv", "Path to the offers CSV file")
-	flag.Parse()
-
-	logging.SetLogger()
-
-	hotelsResultsChannel := make(chan<- *data.Hotel, 10000)
-
-	ReadHotelsCSVFile(*hotelFilePath, hotelsResultsChannel)
-
-	offerResultsChannel := make(chan<- *data.Offer, 10000)
-
-	ReadOffersCSVFile(*offersFilePath, offerResultsChannel)
-
-}
 
 func openFile(filePath string) (*os.File, error) {
 	csvFile, err := os.Open(filePath)
@@ -52,6 +31,7 @@ func closeFile(csvFile *os.File) {
 }
 
 func readCSVFile[T any](csvFile *os.File, batchFunc func([][]string, chan<- *T), csvComma rune, resultsChannel chan<- *T) {
+	defer close(resultsChannel)
 	csvReader := csv.NewReader(csvFile)
 	csvReader.Comma = csvComma
 
@@ -76,9 +56,15 @@ func readCSVFile[T any](csvFile *os.File, batchFunc func([][]string, chan<- *T),
 		records = append(records, record)
 
 		if len(records) >= batchSize {
-			batchFunc(records, resultsChannel)
+			batch := records
+			go batchFunc(batch, resultsChannel)
 			records = records[:0]
+			records = make([][]string, 0, batchSize)
 		}
+	}
+
+	if len(records) > 0 {
+		batchFunc(records, resultsChannel)
 	}
 }
 
