@@ -2,6 +2,7 @@ package main
 
 import (
 	"check24-techup25/data"
+	"check24-techup25/logging"
 	"encoding/csv"
 	"flag"
 	"github.com/rs/zerolog"
@@ -20,10 +21,7 @@ func main() {
 	//offers := flag.String("o", "../offers/offer.csv", "Path to the offers CSV file")
 	flag.Parse()
 
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	if *debug {
-		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
-	}
+	logging.SetLogger(*debug)
 
 	hotelFile, err := os.Open(*hotelFilePath)
 	if err != nil {
