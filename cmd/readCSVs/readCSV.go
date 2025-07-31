@@ -65,15 +65,6 @@ func openFile(filePath string) (*os.File, error) {
 	return hotelFile, nil
 }
 
-func readHeaders(csvReader *csv.Reader) {
-	headers, err := csvReader.Read()
-	if err != nil {
-		log.Panic().Err(err).Msg("Error reading header from hotelFilePath file")
-	}
-
-	log.Debug().Msgf("CSV Headers: %v", headers)
-}
-
 func readCSVFile[T any](csvFile *os.File, dest *[]T, batchFunc func([][]string, *[]T)) {
 	csvReader := csv.NewReader(csvFile)
 	csvReader.Comma = ';'
@@ -103,6 +94,15 @@ func readCSVFile[T any](csvFile *os.File, dest *[]T, batchFunc func([][]string, 
 			records = records[:0]
 		}
 	}
+}
+
+func readHeaders(csvReader *csv.Reader) {
+	headers, err := csvReader.Read()
+	if err != nil {
+		log.Panic().Err(err).Msg("Error reading header from hotelFilePath file")
+	}
+
+	log.Debug().Msgf("CSV Headers: %v", headers)
 }
 
 func parseInt(str string) int {
