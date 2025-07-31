@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"time"
 )
 
 func main() {
@@ -61,7 +62,7 @@ func main() {
 		records = append(records, record)
 
 		if len(records) >= batchSize {
-			processBatch(records, &hotels)
+			processHotelBatch(records, &hotels)
 			records = records[:0]
 		}
 	}
@@ -69,32 +70,6 @@ func main() {
 	for _, hotel := range hotels {
 		log.Debug().Msgf("Hotel ID: %d, Name: %s, Stars: %.1f\n", hotel.Hotelid, hotel.Hotelname, hotel.Hotelstars)
 	}
-}
-
-func processBatch(records [][]string, hotels *[]data.Hotel) {
-
-	for _, record := range records {
-
-		id, err := strconv.Atoi(record[0])
-		if err != nil {
-			log.Error().Err(err).Msg("Error converting id to integer")
-			continue
-		}
-
-		stars, err := strconv.ParseFloat(record[2], 32)
-		if err != nil {
-			log.Error().Err(err).Msg("Error converting stars to float")
-			continue
-		}
-
-		hotel := data.Hotel{
-			Hotelid:    id,
-			Hotelname:  record[1],
-			Hotelstars: float32(stars),
-		}
-		*hotels = append(*hotels, hotel)
-	}
-
 }
 
 func openFile(filePath string) (*os.File, error) {
@@ -113,4 +88,31 @@ func openFile(filePath string) (*os.File, error) {
 	}(hotelFile)
 
 	return hotelFile, nil
+}
+
+func parseInt(str string) int {
+	value, err := strconv.Atoi(str)
+	if err != nil {
+		log.Error().Err(err).Msgf("Error converting string to int: %s", str)
+		return 0
+	}
+	return value
+}
+
+func parseFloat(str string) float32 {
+	value, err := strconv.ParseFloat(str, 32)
+	if err != nil {
+		log.Error().Err(err).Msgf("Error converting string to float: %s", str)
+		return 0.0
+	}
+	return float32(value)
+}
+
+func parseTime(dateStr string) time.Time {
+	parsedTime, err := time.Parse(time.RFC3339, dateStr)
+	if err != nil {
+		log.Error().Err(err).Msgf("Error parsing date string: %s", dateStr)
+		return time.Time{}
+	}
+	return parsedTime
 }

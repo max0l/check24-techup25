@@ -1,5 +1,29 @@
 package main
 
-func readOffers(s string) {
+import (
+	"check24-techup25/data"
+)
 
+func processOfferBatch(records [][]string, offers *[]data.Offer) {
+	for _, record := range records {
+
+		offer := data.Offer{
+			Hotelid:                   parseInt(record[0]),
+			Outbounddeparturedatetime: parseTime(record[1]),
+			Inbounddeparturedatetime:  parseTime(record[2]),
+			Countadults:               parseInt(record[3]),
+			Countchildren:             parseInt(record[4]),
+			Price:                     parseFloat(record[5]),
+			Inbounddepartureairport:   record[6],
+			Inboundarrivalairport:     record[7],
+			Inboundarrivaldatetime:    parseTime(record[8]),
+			Outbounddepartureairport:  record[9],
+			Outboundarrivalairport:    record[10],
+			Outboundarrivaldatetime:   parseTime(record[11]),
+			Mealtype:                  record[12],
+			Oceanview:                 record[13] == "true",
+			Roomtype:                  record[14],
+		}
+		*offers = append(*offers, offer)
+	}
 }

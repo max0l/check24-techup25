@@ -3,19 +3,19 @@ package data
 import "time"
 
 type Offer struct {
-	hotelid                   int
-	outbounddeparturedatetime time.Time
-	inbounddeparturedatetime  time.Time
-	countadults               int
-	countchildren             int
-	price                     float32
-	inbounddepartureairport   string
-	inboundarrivalairport     string
-	inboundarrivaldatetime    time.Time
-	outbounddepartureairport  string
-	outboundarrivalairport    string
-	outboundarrivaldatetime   time.Time
-	mealtype                  string
-	oceanview                 bool
-	roomtype                  string
+	Hotelid                   int
+	Outbounddeparturedatetime time.Time
+	Inbounddeparturedatetime  time.Time
+	Countadults               int
+	Countchildren             int
+	Price                     float32
+	Inbounddepartureairport   string
+	Inboundarrivalairport     string
+	Inboundarrivaldatetime    time.Time
+	Outbounddepartureairport  string
+	Outboundarrivalairport    string
+	Outboundarrivaldatetime   time.Time
+	Mealtype                  string
+	Oceanview                 bool
+	Roomtype                  string
 }
