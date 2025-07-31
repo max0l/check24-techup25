@@ -2,7 +2,20 @@ package main
 
 import (
 	"check24-techup25/data"
+	"github.com/rs/zerolog/log"
 )
+
+func readOffersCSVFile(offersFilePath string, offers *[]data.Offer) {
+	offersFile, err := openFile(offersFilePath)
+	if err != nil {
+		log.Panic().Err(err).Msg("Error opening offers file")
+		return
+	}
+
+	readCSVFile(offersFile, offers, processOfferBatch)
+
+	closeFile(offersFile)
+}
 
 func processOfferBatch(records [][]string, offers *[]data.Offer) {
 	for _, record := range records {

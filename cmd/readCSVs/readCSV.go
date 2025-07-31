@@ -24,29 +24,12 @@ func main() {
 
 	logging.SetLogger(*debug)
 
-	hotelFile, err := openFile(*hotelFilePath)
-	if err != nil {
-		log.Panic().Err(err).Msg("Error opening hotelFilePath file")
-		return
-	}
-
 	var hotels []data.Hotel
-
-	readCSVFile(hotelFile, &hotels, processHotelBatch)
-
-	closeFile(hotelFile)
-
 	var offers []data.Offer
 
-	offersFile, err := openFile(*offersFilePath)
-	if err != nil {
-		log.Panic().Err(err).Msg("Error opening offers file")
-		return
-	}
+	readHotelsCSVFile(*hotelFilePath, &hotels)
 
-	readCSVFile(offersFile, &offers, processOfferBatch)
-
-	closeFile(offersFile)
+	readOffersCSVFile(*offersFilePath, &offers)
 
 	for _, hotel := range hotels {
 		log.Debug().Msgf("Hotel ID: %d, Name: %s, Stars: %.1f\n", hotel.Hotelid, hotel.Hotelname, hotel.Hotelstars)
