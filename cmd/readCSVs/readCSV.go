@@ -6,7 +6,13 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"sync"
 	"time"
+)
+
+const (
+	maxConcurrency = 10
+	batchSize      = 10000
 )
 
 func openFile(filePath string) (*os.File, error) {
@@ -30,17 +36,24 @@ func closeFile(csvFile *os.File) {
 	}(csvFile)
 }
 
-func readCSVFile[T any](csvFile *os.File, batchFunc func([][]string, chan<- *T), csvComma rune, resultsChannel chan<- *T) {
+func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan [][]string, chan<- *T, *sync.WaitGroup), csvComma rune, resultsChannel chan<- *T) {
 	defer close(resultsChannel)
+	defer log.Debug().Msg("CSV file reading completed.")
 	csvReader := csv.NewReader(csvFile)
 	csvReader.Comma = csvComma
 
 	readHeaders(csvReader)
 
-	const batchSize = 10000
+	processorChannel := make(chan [][]string, maxConcurrency)
 	var records [][]string
-
 	log.Info().Msg("Starting to read CSV records...")
+	var wg sync.WaitGroup
+
+	// starting 10 workers
+	for i := 0; i < maxConcurrency; i++ {
+		wg.Add(1)
+		go batchFunc(processorChannel, resultsChannel, &wg)
+	}
 
 	for {
 		record, err := csvReader.Read()
@@ -56,15 +69,20 @@ func readCSVFile[T any](csvFile *os.File, batchFunc func([][]string, chan<- *T),
 		records = append(records, record)
 
 		if len(records) >= batchSize {
-			batch := records
-			batchFunc(batch, resultsChannel)
+			batchCopy := make([][]string, len(records))
+			copy(batchCopy, records)
+			processorChannel <- batchCopy
 			records = records[:0]
 		}
 	}
 
 	if len(records) > 0 {
-		batchFunc(records, resultsChannel)
+		processorChannel <- records
 	}
+
+	log.Debug().Msg("Waiting for all Goriutines to finish")
+	close(processorChannel)
+	wg.Wait()
 }
 
 func readHeaders(csvReader *csv.Reader) {

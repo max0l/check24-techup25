@@ -3,6 +3,7 @@ package main
 import (
 	"check24-techup25/data"
 	"github.com/rs/zerolog/log"
+	"sync"
 )
 
 func ReadHotelsCSVFile(hotelFilePath string, hotelResultsChannel chan<- *data.Hotel) {
@@ -13,10 +14,19 @@ func ReadHotelsCSVFile(hotelFilePath string, hotelResultsChannel chan<- *data.Ho
 		return
 	}
 
-	readCSVFile(hotelFile, processHotelBatch, ';', hotelResultsChannel)
+	readCSVFile(hotelFile, hotelBatchWorker, ';', hotelResultsChannel)
 
 	closeFile(hotelFile)
+}
 
+func hotelBatchWorker(workerChan <-chan [][]string, hotelResultsChannel chan<- *data.Hotel, wg *sync.WaitGroup) {
+	defer wg.Done()
+	defer log.Debug().Msg("Stopped Hotel Batch Worker goroutine")
+	log.Debug().Msg("Started Hotel Batch Worker goroutine")
+
+	for records := range workerChan {
+		processHotelBatch(records, hotelResultsChannel)
+	}
 }
 
 func processHotelBatch(records [][]string, hotelResultsChannel chan<- *data.Hotel) {

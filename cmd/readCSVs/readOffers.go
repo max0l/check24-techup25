@@ -4,6 +4,7 @@ import (
 	"check24-techup25/data"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"sync"
 )
 
 func ReadOffersCSVFile(offersFilePath string, offerResultsChannel chan<- *data.Offer) {
@@ -13,9 +14,17 @@ func ReadOffersCSVFile(offersFilePath string, offerResultsChannel chan<- *data.O
 		return
 	}
 
-	readCSVFile(offersFile, processOfferBatch, ',', offerResultsChannel)
+	readCSVFile(offersFile, offerBatchWorker, ',', offerResultsChannel)
 
 	closeFile(offersFile)
+}
+
+func offerBatchWorker(workerChan <-chan [][]string, offerResultsChannel chan<- *data.Offer, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	for records := range workerChan {
+		processOfferBatch(records, offerResultsChannel)
+	}
 }
 
 func processOfferBatch(records [][]string, offerResultsChannel chan<- *data.Offer) {
