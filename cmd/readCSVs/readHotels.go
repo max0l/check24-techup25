@@ -5,7 +5,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func readHotelsCSVFile(hotelFilePath string, hotels *[]data.Hotel) {
+func ReadHotelsCSVFile(hotelFilePath string, hotels *[]data.Hotel) {
 
 	hotelFile, err := openFile(hotelFilePath)
 	if err != nil {

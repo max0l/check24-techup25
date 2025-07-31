@@ -5,7 +5,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func readOffersCSVFile(offersFilePath string, offers *[]data.Offer) {
+func ReadOffersCSVFile(offersFilePath string, offers *[]data.Offer) {
 	offersFile, err := openFile(offersFilePath)
 	if err != nil {
 		log.Panic().Err(err).Msg("Error opening offers file")

@@ -25,9 +25,9 @@ func main() {
 	var hotels []data.Hotel
 	var offers []data.Offer
 
-	readHotelsCSVFile(*hotelFilePath, &hotels)
+	ReadHotelsCSVFile(*hotelFilePath, &hotels)
 
-	readOffersCSVFile(*offersFilePath, &offers)
+	ReadOffersCSVFile(*offersFilePath, &offers)
 
 	for _, hotel := range hotels {
 		log.Info().Msgf("Hotel ID: %d, Name: %s, Stars: %.1f\n", hotel.Hotelid, hotel.Hotelname, hotel.Hotelstars)
