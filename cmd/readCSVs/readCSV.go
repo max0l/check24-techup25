@@ -30,11 +30,11 @@ func main() {
 	readOffersCSVFile(*offersFilePath, &offers)
 
 	for _, hotel := range hotels {
-		log.Debug().Msgf("Hotel ID: %d, Name: %s, Stars: %.1f\n", hotel.Hotelid, hotel.Hotelname, hotel.Hotelstars)
+		log.Info().Msgf("Hotel ID: %d, Name: %s, Stars: %.1f\n", hotel.Hotelid, hotel.Hotelname, hotel.Hotelstars)
 	}
 
 	for _, offer := range offers {
-		log.Debug().Msgf("Offer Hotel ID: %d, Outbound Departure: %s, Inbound Departure: %s, Price: %.2f\n",
+		log.Info().Msgf("Offer Hotel ID: %d, Outbound Departure: %s, Inbound Departure: %s, Price: %.2f\n",
 			offer.Hotelid, offer.Outbounddeparturedatetime.Format(time.RFC3339), offer.Inbounddeparturedatetime.Format(time.RFC3339), offer.Price)
 	}
 }
@@ -80,7 +80,7 @@ func readCSVFile[T any](csvFile *os.File, dest *[]T, batchFunc func([][]string, 
 			continue
 		}
 
-		log.Info().Msgf("Read record: %v", record)
+		log.Debug().Msgf("Read record: %v", record)
 
 		records = append(records, record)
 
