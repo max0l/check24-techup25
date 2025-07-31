@@ -20,11 +20,11 @@ func main() {
 
 	logging.SetLogger()
 
-	hotelsResultsChannel := make(chan *data.Hotel, 10000)
+	hotelsResultsChannel := make(chan<- *data.Hotel, 10000)
 
 	ReadHotelsCSVFile(*hotelFilePath, hotelsResultsChannel)
 
-	offerResultsChannel := make(chan *data.Offer, 10000)
+	offerResultsChannel := make(chan<- *data.Offer, 10000)
 
 	ReadOffersCSVFile(*offersFilePath, offerResultsChannel)
 
@@ -51,7 +51,7 @@ func closeFile(csvFile *os.File) {
 	}(csvFile)
 }
 
-func readCSVFile[T any](csvFile *os.File, batchFunc func([][]string, chan *T), csvComma rune, resultsChannel chan *T) {
+func readCSVFile[T any](csvFile *os.File, batchFunc func([][]string, chan<- *T), csvComma rune, resultsChannel chan<- *T) {
 	csvReader := csv.NewReader(csvFile)
 	csvReader.Comma = csvComma
 
