@@ -2,22 +2,23 @@ package main
 
 import (
 	"check24-techup25/data"
+	"fmt"
 	"github.com/rs/zerolog/log"
 )
 
-func ReadOffersCSVFile(offersFilePath string, offers *[]data.Offer) {
+func ReadOffersCSVFile(offersFilePath string, offers *[]data.Offer, offerResultsChannel chan *data.Offer) {
 	offersFile, err := openFile(offersFilePath)
 	if err != nil {
 		log.Panic().Err(err).Msg("Error opening offers file")
 		return
 	}
 
-	readCSVFile(offersFile, offers, processOfferBatch, ',')
+	readCSVFile(offersFile, offers, processOfferBatch, ',', offerResultsChannel)
 
 	closeFile(offersFile)
 }
 
-func processOfferBatch(records [][]string, offers *[]data.Offer) {
+func processOfferBatch(records [][]string, offers *[]data.Offer, offerResultsChannel chan *data.Offer) {
 	for _, record := range records {
 
 		offer := data.Offer{
@@ -37,6 +38,7 @@ func processOfferBatch(records [][]string, offers *[]data.Offer) {
 			Oceanview:                 record[13] == "true",
 			Roomtype:                  record[14],
 		}
-		*offers = append(*offers, offer)
+		//*offers = append(*offers, offer)
+		fmt.Print("Reading offer: ", offer.Hotelid)
 	}
 }

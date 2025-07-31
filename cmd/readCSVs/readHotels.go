@@ -5,7 +5,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func ReadHotelsCSVFile(hotelFilePath string, hotels *[]data.Hotel) {
+func ReadHotelsCSVFile(hotelFilePath string, hotels *[]data.Hotel, hotelResultsChannel chan *data.Hotel) {
 
 	hotelFile, err := openFile(hotelFilePath)
 	if err != nil {
@@ -13,13 +13,13 @@ func ReadHotelsCSVFile(hotelFilePath string, hotels *[]data.Hotel) {
 		return
 	}
 
-	readCSVFile(hotelFile, hotels, processHotelBatch, ';')
+	readCSVFile(hotelFile, hotels, processHotelBatch, ';', hotelResultsChannel)
 
 	closeFile(hotelFile)
 
 }
 
-func processHotelBatch(records [][]string, hotels *[]data.Hotel) {
+func processHotelBatch(records [][]string, hotels *[]data.Hotel, hotelResultsChannel chan *data.Hotel) {
 	for _, record := range records {
 
 		hotel := data.Hotel{

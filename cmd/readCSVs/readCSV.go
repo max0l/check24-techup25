@@ -25,9 +25,13 @@ func main() {
 	var hotels []data.Hotel
 	var offers []data.Offer
 
-	ReadHotelsCSVFile(*hotelFilePath, &hotels)
+	hotelsResultsChannel := make(chan *data.Hotel, 10000)
 
-	ReadOffersCSVFile(*offersFilePath, &offers)
+	ReadHotelsCSVFile(*hotelFilePath, &hotels, hotelsResultsChannel)
+
+	offerResultsChannel := make(chan *data.Offer, 10000)
+
+	ReadOffersCSVFile(*offersFilePath, &offers, offerResultsChannel)
 
 	for _, hotel := range hotels {
 		log.Info().Msgf("Hotel ID: %d, Name: %s, Stars: %.1f\n", hotel.Hotelid, hotel.Hotelname, hotel.Hotelstars)
@@ -60,18 +64,18 @@ func closeFile(csvFile *os.File) {
 	}(csvFile)
 }
 
-func readCSVFile[T any](csvFile *os.File, dest *[]T, batchFunc func([][]string, *[]T), csvComma rune) {
+func readCSVFile[T any](csvFile *os.File, dest *[]T, batchFunc func([][]string, *[]T, chan *T), csvComma rune, resultsChannel chan *T) {
 	csvReader := csv.NewReader(csvFile)
 	csvReader.Comma = csvComma
 
 	readHeaders(csvReader)
 
-	const batchSize = 1
+	const batchSize = 10000
 	var records [][]string
 
 	log.Info().Msg("Starting to read CSV records...")
 
-	for i := 0; i < 10; i++ {
+	for {
 		record, err := csvReader.Read()
 		if err == io.EOF {
 			break
@@ -85,7 +89,7 @@ func readCSVFile[T any](csvFile *os.File, dest *[]T, batchFunc func([][]string, 
 		records = append(records, record)
 
 		if len(records) >= batchSize {
-			batchFunc(records, dest)
+			batchFunc(records, dest, resultsChannel)
 			records = records[:0]
 		}
 	}
