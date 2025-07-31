@@ -2,10 +2,11 @@ package main
 
 import (
 	"check24-techup25/data"
+	"fmt"
 	"github.com/rs/zerolog/log"
 )
 
-func ReadHotelsCSVFile(hotelFilePath string, hotels *[]data.Hotel, hotelResultsChannel chan *data.Hotel) {
+func ReadHotelsCSVFile(hotelFilePath string, hotelResultsChannel chan *data.Hotel) {
 
 	hotelFile, err := openFile(hotelFilePath)
 	if err != nil {
@@ -13,13 +14,13 @@ func ReadHotelsCSVFile(hotelFilePath string, hotels *[]data.Hotel, hotelResultsC
 		return
 	}
 
-	readCSVFile(hotelFile, hotels, processHotelBatch, ';', hotelResultsChannel)
+	readCSVFile(hotelFile, processHotelBatch, ';', hotelResultsChannel)
 
 	closeFile(hotelFile)
 
 }
 
-func processHotelBatch(records [][]string, hotels *[]data.Hotel, hotelResultsChannel chan *data.Hotel) {
+func processHotelBatch(records [][]string, hotelResultsChannel chan *data.Hotel) {
 	for _, record := range records {
 
 		hotel := data.Hotel{
@@ -27,6 +28,6 @@ func processHotelBatch(records [][]string, hotels *[]data.Hotel, hotelResultsCha
 			Hotelname:  record[1],
 			Hotelstars: parseFloat(record[2]),
 		}
-		*hotels = append(*hotels, hotel)
+		fmt.Print("Reading hotel: ", hotel.Hotelid)
 	}
 }

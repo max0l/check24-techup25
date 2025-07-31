@@ -20,27 +20,14 @@ func main() {
 
 	logging.SetLogger()
 
-	log.Info().Msg("Starting...")
-
-	var hotels []data.Hotel
-	var offers []data.Offer
-
 	hotelsResultsChannel := make(chan *data.Hotel, 10000)
 
-	ReadHotelsCSVFile(*hotelFilePath, &hotels, hotelsResultsChannel)
+	ReadHotelsCSVFile(*hotelFilePath, hotelsResultsChannel)
 
 	offerResultsChannel := make(chan *data.Offer, 10000)
 
-	ReadOffersCSVFile(*offersFilePath, &offers, offerResultsChannel)
+	ReadOffersCSVFile(*offersFilePath, offerResultsChannel)
 
-	for _, hotel := range hotels {
-		log.Info().Msgf("Hotel ID: %d, Name: %s, Stars: %.1f\n", hotel.Hotelid, hotel.Hotelname, hotel.Hotelstars)
-	}
-
-	for _, offer := range offers {
-		log.Info().Msgf("Offer Hotel ID: %d, Outbound Departure: %s, Inbound Departure: %s, Price: %.2f\n",
-			offer.Hotelid, offer.Outbounddeparturedatetime.Format(time.RFC3339), offer.Inbounddeparturedatetime.Format(time.RFC3339), offer.Price)
-	}
 }
 
 func openFile(filePath string) (*os.File, error) {
@@ -64,7 +51,7 @@ func closeFile(csvFile *os.File) {
 	}(csvFile)
 }
 
-func readCSVFile[T any](csvFile *os.File, dest *[]T, batchFunc func([][]string, *[]T, chan *T), csvComma rune, resultsChannel chan *T) {
+func readCSVFile[T any](csvFile *os.File, batchFunc func([][]string, chan *T), csvComma rune, resultsChannel chan *T) {
 	csvReader := csv.NewReader(csvFile)
 	csvReader.Comma = csvComma
 
@@ -89,7 +76,7 @@ func readCSVFile[T any](csvFile *os.File, dest *[]T, batchFunc func([][]string, 
 		records = append(records, record)
 
 		if len(records) >= batchSize {
-			batchFunc(records, dest, resultsChannel)
+			batchFunc(records, resultsChannel)
 			records = records[:0]
 		}
 	}

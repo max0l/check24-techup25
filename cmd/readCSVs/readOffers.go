@@ -6,19 +6,19 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func ReadOffersCSVFile(offersFilePath string, offers *[]data.Offer, offerResultsChannel chan *data.Offer) {
+func ReadOffersCSVFile(offersFilePath string, offerResultsChannel chan *data.Offer) {
 	offersFile, err := openFile(offersFilePath)
 	if err != nil {
 		log.Panic().Err(err).Msg("Error opening offers file")
 		return
 	}
 
-	readCSVFile(offersFile, offers, processOfferBatch, ',', offerResultsChannel)
+	readCSVFile(offersFile, processOfferBatch, ',', offerResultsChannel)
 
 	closeFile(offersFile)
 }
 
-func processOfferBatch(records [][]string, offers *[]data.Offer, offerResultsChannel chan *data.Offer) {
+func processOfferBatch(records [][]string, offerResultsChannel chan *data.Offer) {
 	for _, record := range records {
 
 		offer := data.Offer{
