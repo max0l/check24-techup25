@@ -23,18 +23,11 @@ func main() {
 
 	logging.SetLogger(*debug)
 
-	hotelFile, err := os.Open(*hotelFilePath)
+	hotelFile, err := openFile(*hotelFilePath)
 	if err != nil {
 		log.Panic().Err(err).Msg("Error opening hotelFilePath file")
+		return
 	}
-	defer func(hotelFile *os.File) {
-		err := hotelFile.Close()
-		if err != nil {
-			log.Error().Err(err).Msg("Error closing hotelFilePath file")
-		} else {
-			log.Debug().Msg("Hotels file closed successfully.")
-		}
-	}(hotelFile)
 
 	var hotels []data.Hotel
 
@@ -102,4 +95,22 @@ func processBatch(records [][]string, hotels *[]data.Hotel) {
 		*hotels = append(*hotels, hotel)
 	}
 
+}
+
+func openFile(filePath string) (*os.File, error) {
+	hotelFile, err := os.Open(filePath)
+	if err != nil {
+		log.Panic().Err(err).Msg("Error opening hotelFilePath file")
+		return nil, err
+	}
+	defer func(hotelFile *os.File) {
+		err := hotelFile.Close()
+		if err != nil {
+			log.Error().Err(err).Msg("Error closing hotelFilePath file")
+		} else {
+			log.Debug().Msg("Hotels file closed successfully.")
+		}
+	}(hotelFile)
+
+	return hotelFile, nil
 }
