@@ -57,9 +57,8 @@ func readCSVFile[T any](csvFile *os.File, batchFunc func([][]string, chan<- *T),
 
 		if len(records) >= batchSize {
 			batch := records
-			go batchFunc(batch, resultsChannel)
+			batchFunc(batch, resultsChannel)
 			records = records[:0]
-			records = make([][]string, 0, batchSize)
 		}
 	}
 
