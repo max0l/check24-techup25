@@ -5,7 +5,6 @@ import (
 	"check24-techup25/logging"
 	"encoding/csv"
 	"flag"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"io"
 	"os"
@@ -15,14 +14,11 @@ import (
 
 func main() {
 
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-
 	hotelFilePath := flag.String("h", "./data/hotels.csv", "Path to the hotels CSV file")
-	debug := flag.Bool("debug", false, "enables debug logging")
 	offersFilePath := flag.String("o", "../offers/offer.csv", "Path to the offers CSV file")
 	flag.Parse()
 
-	logging.SetLogger(*debug)
+	logging.SetLogger()
 
 	log.Info().Msg("Starting...")
 
