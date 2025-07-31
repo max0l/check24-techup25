@@ -29,7 +29,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		consumeHotelsResults(hotelsResultsChannel)
+		printHotelsResults(hotelsResultsChannel)
 	}()
 
 	wg.Add(1)
@@ -41,7 +41,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		consumeOffersResults(offerResultsChannel)
+		printOffersResults(offerResultsChannel)
 	}()
 
 	wg.Wait()

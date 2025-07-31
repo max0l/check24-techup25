@@ -42,7 +42,7 @@ func processOfferBatch(records [][]string, offerResultsChannel chan<- *data.Offe
 	}
 }
 
-func consumeOffersResults(channel <-chan *data.Offer) {
+func printOffersResults(channel <-chan *data.Offer) {
 	for offer := range channel {
 		fmt.Print(offer.Hotelid)
 	}

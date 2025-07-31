@@ -31,7 +31,7 @@ func processHotelBatch(records [][]string, hotelResultsChannel chan<- *data.Hote
 	}
 }
 
-func consumeHotelsResults(channel <-chan *data.Hotel) {
+func printHotelsResults(channel <-chan *data.Hotel) {
 	for hotel := range channel {
 		log.Info().Msgf("%v", hotel.Hotelid)
 	}
