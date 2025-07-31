@@ -12,7 +12,7 @@ func readOffersCSVFile(offersFilePath string, offers *[]data.Offer) {
 		return
 	}
 
-	readCSVFile(offersFile, offers, processOfferBatch)
+	readCSVFile(offersFile, offers, processOfferBatch, ',')
 
 	closeFile(offersFile)
 }

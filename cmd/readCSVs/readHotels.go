@@ -13,7 +13,7 @@ func readHotelsCSVFile(hotelFilePath string, hotels *[]data.Hotel) {
 		return
 	}
 
-	readCSVFile(hotelFile, hotels, processHotelBatch)
+	readCSVFile(hotelFile, hotels, processHotelBatch, ';')
 
 	closeFile(hotelFile)
 

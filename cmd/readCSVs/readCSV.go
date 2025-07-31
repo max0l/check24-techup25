@@ -24,6 +24,8 @@ func main() {
 
 	logging.SetLogger(*debug)
 
+	log.Info().Msg("Starting...")
+
 	var hotels []data.Hotel
 	var offers []data.Offer
 
@@ -33,6 +35,11 @@ func main() {
 
 	for _, hotel := range hotels {
 		log.Debug().Msgf("Hotel ID: %d, Name: %s, Stars: %.1f\n", hotel.Hotelid, hotel.Hotelname, hotel.Hotelstars)
+	}
+
+	for _, offer := range offers {
+		log.Debug().Msgf("Offer Hotel ID: %d, Outbound Departure: %s, Inbound Departure: %s, Price: %.2f\n",
+			offer.Hotelid, offer.Outbounddeparturedatetime.Format(time.RFC3339), offer.Inbounddeparturedatetime.Format(time.RFC3339), offer.Price)
 	}
 }
 
@@ -57,18 +64,18 @@ func closeFile(csvFile *os.File) {
 	}(csvFile)
 }
 
-func readCSVFile[T any](csvFile *os.File, dest *[]T, batchFunc func([][]string, *[]T)) {
+func readCSVFile[T any](csvFile *os.File, dest *[]T, batchFunc func([][]string, *[]T), csvComma rune) {
 	csvReader := csv.NewReader(csvFile)
-	csvReader.Comma = ';'
+	csvReader.Comma = csvComma
 
 	readHeaders(csvReader)
 
-	const batchSize = 100
+	const batchSize = 1
 	var records [][]string
 
 	log.Info().Msg("Starting to read CSV records...")
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 10; i++ {
 		record, err := csvReader.Read()
 		if err == io.EOF {
 			break
