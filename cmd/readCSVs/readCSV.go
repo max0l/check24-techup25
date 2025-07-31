@@ -30,17 +30,23 @@ func main() {
 		return
 	}
 
+	var hotels []data.Hotel
+
+	readCSVFile(hotelFile, &hotels, processHotelBatch)
+
+	closeFile(hotelFile)
+
+	var offers []data.Offer
+
 	offersFile, err := openFile(*offersFilePath)
 	if err != nil {
 		log.Panic().Err(err).Msg("Error opening offers file")
 		return
 	}
 
-	var hotels []data.Hotel
-	var offers []data.Offer
-
-	readCSVFile(hotelFile, &hotels, processHotelBatch)
 	readCSVFile(offersFile, &offers, processOfferBatch)
+
+	closeFile(offersFile)
 
 	for _, hotel := range hotels {
 		log.Debug().Msgf("Hotel ID: %d, Name: %s, Stars: %.1f\n", hotel.Hotelid, hotel.Hotelname, hotel.Hotelstars)
@@ -48,21 +54,24 @@ func main() {
 }
 
 func openFile(filePath string) (*os.File, error) {
-	hotelFile, err := os.Open(filePath)
+	csvFile, err := os.Open(filePath)
 	if err != nil {
 		log.Panic().Err(err).Msg("Error opening hotelFilePath file")
 		return nil, err
 	}
-	defer func(hotelFile *os.File) {
-		err := hotelFile.Close()
+
+	return csvFile, nil
+}
+
+func closeFile(csvFile *os.File) {
+	defer func(csvFile *os.File) {
+		err := csvFile.Close()
 		if err != nil {
 			log.Error().Err(err).Msg("Error closing hotelFilePath file")
 		} else {
 			log.Debug().Msg("Hotels file closed successfully.")
 		}
-	}(hotelFile)
-
-	return hotelFile, nil
+	}(csvFile)
 }
 
 func readCSVFile[T any](csvFile *os.File, dest *[]T, batchFunc func([][]string, *[]T)) {
@@ -76,7 +85,7 @@ func readCSVFile[T any](csvFile *os.File, dest *[]T, batchFunc func([][]string, 
 
 	log.Info().Msg("Starting to read CSV records...")
 
-	for {
+	for i := 0; i < 1000; i++ {
 		record, err := csvReader.Read()
 		if err == io.EOF {
 			break
