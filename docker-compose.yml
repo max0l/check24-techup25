@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:17-alpine3.22
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-check24}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-user}", "-d", "${POSTGRES_DB:-check24}"]
+      interval: 5s
+      timeout: 4s
+      retries: 5
+
+volumes:
+  db_data:
