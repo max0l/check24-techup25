@@ -1,8 +1,8 @@
 package db
 
 import (
+	"check24-techup25/db/ent"
 	"context"
-	"entgo.io/ent"
 	_ "github.com/lib/pq"
 )
 
