@@ -1,6 +1,7 @@
 package main
 
 import (
+	"check24-techup25/data"
 	"encoding/csv"
 	"github.com/rs/zerolog/log"
 	"io"
@@ -14,6 +15,30 @@ const (
 	maxConcurrency = 10
 	batchSize      = 10000
 )
+
+func startReader(hotelFilePath *string, hotelsResultsChannel chan *data.Hotel, offersFilePath *string, offerResultsChannel chan *data.Offer) {
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer log.Debug().Msg("Printed all Hotels")
+		printHotelsResults(hotelsResultsChannel)
+	}()
+	ReadHotelsCSVFile(*hotelFilePath, hotelsResultsChannel)
+
+	wg.Wait()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		printOffersResults(offerResultsChannel)
+	}()
+	ReadOffersCSVFile(*offersFilePath, offerResultsChannel)
+
+	wg.Wait()
+}
 
 func openFile(filePath string) (*os.File, error) {
 	csvFile, err := os.Open(filePath)
