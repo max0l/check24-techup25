@@ -4,6 +4,8 @@ import (
 	"check24-techup25/data"
 	"check24-techup25/logging"
 	"flag"
+	"github.com/rs/zerolog/log"
+	"sync"
 )
 
 func main() {
@@ -16,5 +18,25 @@ func main() {
 
 	hotelsResultsChannel := make(chan *data.Hotel, data.BatchSize)
 	offerResultsChannel := make(chan *data.Offer, data.BatchSize)
-	data.StartReader(hotelFilePath, hotelsResultsChannel, offersFilePath, offerResultsChannel)
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer log.Debug().Msg("Printed all Hotels")
+		data.PrintHotelsResults(hotelsResultsChannel)
+	}()
+	data.ReadHotelsCSVFile(*hotelFilePath, hotelsResultsChannel)
+
+	wg.Wait()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		data.PrintOffersResults(offerResultsChannel)
+	}()
+	data.ReadOffersCSVFile(*offersFilePath, offerResultsChannel)
+
+	wg.Wait()
 }

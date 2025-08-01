@@ -40,7 +40,7 @@ func processHotelBatch(records [][]string, hotelResultsChannel chan<- *Hotel) {
 	}
 }
 
-func printHotelsResults(channel <-chan *Hotel) {
+func PrintHotelsResults(channel <-chan *Hotel) {
 	for hotel := range channel {
 		log.Debug().Msgf("%v", hotel.Hotelid)
 	}

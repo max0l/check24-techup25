@@ -49,7 +49,7 @@ func processOfferBatch(records [][]string, offerResultsChannel chan<- *Offer) {
 	}
 }
 
-func printOffersResults(channel <-chan *Offer) {
+func PrintOffersResults(channel <-chan *Offer) {
 	for offer := range channel {
 		log.Debug().Msgf("Offer: %v", offer.Hotelid)
 	}

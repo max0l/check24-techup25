@@ -15,30 +15,6 @@ const (
 	BatchSize      = 10000
 )
 
-func StartReader(hotelFilePath *string, hotelsResultsChannel chan *Hotel, offersFilePath *string, offerResultsChannel chan *Offer) {
-
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		defer log.Debug().Msg("Printed all Hotels")
-		printHotelsResults(hotelsResultsChannel)
-	}()
-	ReadHotelsCSVFile(*hotelFilePath, hotelsResultsChannel)
-
-	wg.Wait()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		printOffersResults(offerResultsChannel)
-	}()
-	ReadOffersCSVFile(*offersFilePath, offerResultsChannel)
-
-	wg.Wait()
-}
-
 func openFile(filePath string) (*os.File, error) {
 	csvFile, err := os.Open(filePath)
 	if err != nil {
