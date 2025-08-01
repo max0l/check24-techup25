@@ -1,12 +1,11 @@
-package main
+package data
 
 import (
-	"check24-techup25/data"
 	"github.com/rs/zerolog/log"
 	"sync"
 )
 
-func ReadHotelsCSVFile(hotelFilePath string, hotelResultsChannel chan<- *data.Hotel) {
+func ReadHotelsCSVFile(hotelFilePath string, hotelResultsChannel chan<- *Hotel) {
 
 	hotelFile, err := openFile(hotelFilePath)
 	if err != nil {
@@ -19,7 +18,7 @@ func ReadHotelsCSVFile(hotelFilePath string, hotelResultsChannel chan<- *data.Ho
 	closeFile(hotelFile)
 }
 
-func hotelBatchWorker(workerChan <-chan [][]string, hotelResultsChannel chan<- *data.Hotel, wg *sync.WaitGroup) {
+func hotelBatchWorker(workerChan <-chan [][]string, hotelResultsChannel chan<- *Hotel, wg *sync.WaitGroup) {
 	defer wg.Done()
 	defer log.Info().Msg("Stopped Hotel Batch Worker goroutine")
 	log.Info().Msg("Started Hotel Batch Worker goroutine")
@@ -29,10 +28,10 @@ func hotelBatchWorker(workerChan <-chan [][]string, hotelResultsChannel chan<- *
 	}
 }
 
-func processHotelBatch(records [][]string, hotelResultsChannel chan<- *data.Hotel) {
+func processHotelBatch(records [][]string, hotelResultsChannel chan<- *Hotel) {
 	for _, record := range records {
 
-		hotel := data.Hotel{
+		hotel := Hotel{
 			Hotelid:    parseInt(record[0]),
 			Hotelname:  record[1],
 			Hotelstars: parseFloat(record[2]),
@@ -41,7 +40,7 @@ func processHotelBatch(records [][]string, hotelResultsChannel chan<- *data.Hote
 	}
 }
 
-func printHotelsResults(channel <-chan *data.Hotel) {
+func printHotelsResults(channel <-chan *Hotel) {
 	for hotel := range channel {
 		log.Debug().Msgf("%v", hotel.Hotelid)
 	}

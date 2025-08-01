@@ -14,7 +14,7 @@ func main() {
 
 	logging.SetLogger()
 
-	hotelsResultsChannel := make(chan *data.Hotel, batchSize)
-	offerResultsChannel := make(chan *data.Offer, batchSize)
-	startReader(hotelFilePath, hotelsResultsChannel, offersFilePath, offerResultsChannel)
+	hotelsResultsChannel := make(chan *data.Hotel, data.BatchSize)
+	offerResultsChannel := make(chan *data.Offer, data.BatchSize)
+	data.StartReader(hotelFilePath, hotelsResultsChannel, offersFilePath, offerResultsChannel)
 }

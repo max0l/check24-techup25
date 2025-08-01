@@ -1,12 +1,11 @@
-package main
+package data
 
 import (
-	"check24-techup25/data"
 	"github.com/rs/zerolog/log"
 	"sync"
 )
 
-func ReadOffersCSVFile(offersFilePath string, offerResultsChannel chan<- *data.Offer) {
+func ReadOffersCSVFile(offersFilePath string, offerResultsChannel chan<- *Offer) {
 	offersFile, err := openFile(offersFilePath)
 	if err != nil {
 		log.Panic().Err(err).Msg("Error opening offers file")
@@ -18,7 +17,7 @@ func ReadOffersCSVFile(offersFilePath string, offerResultsChannel chan<- *data.O
 	closeFile(offersFile)
 }
 
-func offerBatchWorker(workerChan <-chan [][]string, offerResultsChannel chan<- *data.Offer, wg *sync.WaitGroup) {
+func offerBatchWorker(workerChan <-chan [][]string, offerResultsChannel chan<- *Offer, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for records := range workerChan {
@@ -26,10 +25,10 @@ func offerBatchWorker(workerChan <-chan [][]string, offerResultsChannel chan<- *
 	}
 }
 
-func processOfferBatch(records [][]string, offerResultsChannel chan<- *data.Offer) {
+func processOfferBatch(records [][]string, offerResultsChannel chan<- *Offer) {
 	for _, record := range records {
 
-		offer := data.Offer{
+		offer := Offer{
 			Hotelid:                   parseInt(record[0]),
 			Outbounddeparturedatetime: parseTime(record[1]),
 			Inbounddeparturedatetime:  parseTime(record[2]),
@@ -50,7 +49,7 @@ func processOfferBatch(records [][]string, offerResultsChannel chan<- *data.Offe
 	}
 }
 
-func printOffersResults(channel <-chan *data.Offer) {
+func printOffersResults(channel <-chan *Offer) {
 	for offer := range channel {
 		log.Debug().Msgf("Offer: %v", offer.Hotelid)
 	}

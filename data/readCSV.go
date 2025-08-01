@@ -1,7 +1,6 @@
-package main
+package data
 
 import (
-	"check24-techup25/data"
 	"encoding/csv"
 	"github.com/rs/zerolog/log"
 	"io"
@@ -13,10 +12,10 @@ import (
 
 const (
 	maxConcurrency = 10
-	batchSize      = 10000
+	BatchSize      = 10000
 )
 
-func startReader(hotelFilePath *string, hotelsResultsChannel chan *data.Hotel, offersFilePath *string, offerResultsChannel chan *data.Offer) {
+func StartReader(hotelFilePath *string, hotelsResultsChannel chan *Hotel, offersFilePath *string, offerResultsChannel chan *Offer) {
 
 	var wg sync.WaitGroup
 
@@ -93,7 +92,7 @@ func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan [][]string, chan
 
 		records = append(records, record)
 
-		if len(records) >= batchSize {
+		if len(records) >= BatchSize {
 			batchCopy := make([][]string, len(records))
 			copy(batchCopy, records)
 			processorChannel <- batchCopy
