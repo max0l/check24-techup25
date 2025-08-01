@@ -24,6 +24,7 @@ func MigrateHotels(ctx context.Context, client *ent.Client, hotels <-chan *data.
 func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Offer) {
 	for offer := range offers {
 		client.Offer.Create().
+			SetOfferid(offer.Offerid).
 			SetHotelid(offer.Hotelid).
 			SetOutbounddeparturedatetime(offer.Outbounddeparturedatetime).
 			SetInbounddeparturedatetime(offer.Inbounddeparturedatetime).
@@ -40,7 +41,7 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 			SetOceanview(offer.Oceanview).
 			SetRoomtype(offer.Roomtype).
 			OnConflict(
-				sql.ConflictColumns("hotelid", "outbounddeparturedatetime", "inbounddeparturedatetime", "roomtype"),
+				sql.ConflictColumns("offerid"),
 				sql.ResolveWithNewValues()).
 			UpdateNewValues().
 			ExecX(ctx)

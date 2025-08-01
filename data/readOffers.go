@@ -17,33 +17,36 @@ func ReadOffersCSVFile(offersFilePath string, offerResultsChannel chan<- *Offer)
 	closeFile(offersFile)
 }
 
-func offerBatchWorker(workerChan <-chan [][]string, offerResultsChannel chan<- *Offer, wg *sync.WaitGroup) {
+func offerBatchWorker(workerChan <-chan []dataRecord, offerResultsChannel chan<- *Offer, wg *sync.WaitGroup) {
 	defer wg.Done()
+	defer log.Info().Msg("Stopped Offer Batch Worker goroutine")
+	log.Info().Msg("Started Offer Batch Worker goroutine")
 
 	for records := range workerChan {
 		processOfferBatch(records, offerResultsChannel)
 	}
 }
 
-func processOfferBatch(records [][]string, offerResultsChannel chan<- *Offer) {
+func processOfferBatch(records []dataRecord, offerResultsChannel chan<- *Offer) {
 	for _, record := range records {
 
 		offer := Offer{
-			Hotelid:                   parseInt(record[0]),
-			Outbounddeparturedatetime: parseTime(record[1]),
-			Inbounddeparturedatetime:  parseTime(record[2]),
-			Countadults:               parseInt(record[3]),
-			Countchildren:             parseInt(record[4]),
-			Price:                     parseFloat(record[5]),
-			Inbounddepartureairport:   record[6],
-			Inboundarrivalairport:     record[7],
-			Inboundarrivaldatetime:    parseTime(record[8]),
-			Outbounddepartureairport:  record[9],
-			Outboundarrivalairport:    record[10],
-			Outboundarrivaldatetime:   parseTime(record[11]),
-			Mealtype:                  record[12],
-			Oceanview:                 record[13] == "true",
-			Roomtype:                  record[14],
+			Offerid:                   record.id,
+			Hotelid:                   parseInt(record.data[0]),
+			Outbounddeparturedatetime: parseTime(record.data[1]),
+			Inbounddeparturedatetime:  parseTime(record.data[2]),
+			Countadults:               parseInt(record.data[3]),
+			Countchildren:             parseInt(record.data[4]),
+			Price:                     parseFloat(record.data[5]),
+			Inbounddepartureairport:   record.data[6],
+			Inboundarrivalairport:     record.data[7],
+			Inboundarrivaldatetime:    parseTime(record.data[8]),
+			Outbounddepartureairport:  record.data[9],
+			Outboundarrivalairport:    record.data[10],
+			Outboundarrivaldatetime:   parseTime(record.data[11]),
+			Mealtype:                  record.data[12],
+			Oceanview:                 record.data[13] == "true",
+			Roomtype:                  record.data[14],
 		}
 		offerResultsChannel <- &offer
 	}

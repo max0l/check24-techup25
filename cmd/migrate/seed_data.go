@@ -23,7 +23,7 @@ func main() {
 
 	client, err := db.NewClient(*dbDSN)
 	if err != nil {
-		log.Error().Err(err).Msg("Could not connect to DB")
+		log.Fatal().Err(err).Msg("Could not connect to DB")
 	}
 
 	defer func() {
@@ -31,6 +31,10 @@ func main() {
 			log.Warn().Err(err).Msg("Could not close Connection to DB client")
 		}
 	}()
+
+	if err = db.Migrate(*client); err != nil {
+		log.Error().Err(err).Msg("Could Not migrate current schena")
+	}
 
 	ctx := context.Background()
 

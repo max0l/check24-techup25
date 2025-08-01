@@ -11,6 +11,7 @@ type Offer struct {
 
 func (Offer) Fields() []ent.Field {
 	return []ent.Field{
+		field.Int("offerid").Unique(),
 		field.Int("hotelid"),
 		field.Time("outbounddeparturedatetime"),
 		field.Time("inbounddeparturedatetime"),

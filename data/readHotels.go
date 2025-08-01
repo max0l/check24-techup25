@@ -18,7 +18,7 @@ func ReadHotelsCSVFile(hotelFilePath string, hotelResultsChannel chan<- *Hotel) 
 	closeFile(hotelFile)
 }
 
-func hotelBatchWorker(workerChan <-chan [][]string, hotelResultsChannel chan<- *Hotel, wg *sync.WaitGroup) {
+func hotelBatchWorker(workerChan <-chan []dataRecord, hotelResultsChannel chan<- *Hotel, wg *sync.WaitGroup) {
 	defer wg.Done()
 	defer log.Info().Msg("Stopped Hotel Batch Worker goroutine")
 	log.Info().Msg("Started Hotel Batch Worker goroutine")
@@ -28,13 +28,13 @@ func hotelBatchWorker(workerChan <-chan [][]string, hotelResultsChannel chan<- *
 	}
 }
 
-func processHotelBatch(records [][]string, hotelResultsChannel chan<- *Hotel) {
+func processHotelBatch(records []dataRecord, hotelResultsChannel chan<- *Hotel) {
 	for _, record := range records {
 
 		hotel := Hotel{
-			Hotelid:    parseInt(record[0]),
-			Hotelname:  record[1],
-			Hotelstars: parseFloat(record[2]),
+			Hotelid:    parseInt(record.data[0]),
+			Hotelname:  record.data[1],
+			Hotelstars: parseFloat(record.data[2]),
 		}
 		hotelResultsChannel <- &hotel
 	}

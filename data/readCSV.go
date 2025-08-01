@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+type dataRecord struct {
+	id   int
+	data []string
+}
+
 const (
 	maxConcurrency = 10
 	BatchSize      = 10000
@@ -36,7 +41,7 @@ func closeFile(csvFile *os.File) {
 	}(csvFile)
 }
 
-func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan [][]string, chan<- *T, *sync.WaitGroup), csvComma rune, resultsChannel chan<- *T) {
+func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan []dataRecord, chan<- *T, *sync.WaitGroup), csvComma rune, resultsChannel chan<- *T) {
 	defer close(resultsChannel)
 	defer log.Info().Msg("CSV file reading completed.")
 	csvReader := csv.NewReader(csvFile)
@@ -44,8 +49,8 @@ func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan [][]string, chan
 
 	readHeaders(csvReader)
 
-	processorChannel := make(chan [][]string, maxConcurrency)
-	var records [][]string
+	processorChannel := make(chan []dataRecord, maxConcurrency)
+	var records []dataRecord
 	log.Info().Msg("Starting to read CSV records...")
 	var wg sync.WaitGroup
 
@@ -54,9 +59,10 @@ func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan [][]string, chan
 		wg.Add(1)
 		go batchFunc(processorChannel, resultsChannel, &wg)
 	}
-
+	var i int
 	for {
-		record, err := csvReader.Read()
+
+		line, err := csvReader.Read()
 		if err == io.EOF {
 			break
 		} else if err != nil {
@@ -64,12 +70,19 @@ func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan [][]string, chan
 			continue
 		}
 
-		log.Debug().Msgf("Read record: %v", record)
+		log.Debug().Msgf("Read record: %v", line)
+
+		record := dataRecord{
+			i,
+			line,
+		}
+
+		i++
 
 		records = append(records, record)
 
 		if len(records) >= BatchSize {
-			batchCopy := make([][]string, len(records))
+			batchCopy := make([]dataRecord, len(records))
 			copy(batchCopy, records)
 			processorChannel <- batchCopy
 			records = records[:0]

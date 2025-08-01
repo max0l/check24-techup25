@@ -3,6 +3,7 @@ package data
 import "time"
 
 type Offer struct {
+	Offerid                   int
 	Hotelid                   int
 	Outbounddeparturedatetime time.Time
 	Inbounddeparturedatetime  time.Time
