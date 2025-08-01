@@ -27,3 +27,5 @@ go.work
 .idea/
 
 /db/ent/*
+
+readCSVs
