@@ -11,8 +11,8 @@ type Hotel struct {
 
 func (Hotel) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("hotelid"),
+		field.Int("hotelid").Unique(),
 		field.String("hotelname"),
-		field.Float("hotelstars"),
+		field.Float32("hotelstars"),
 	}
 }

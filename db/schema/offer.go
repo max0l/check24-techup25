@@ -16,7 +16,7 @@ func (Offer) Fields() []ent.Field {
 		field.Time("inbounddeparturedatetime"),
 		field.Int("countadults"),
 		field.Int("countchildren"),
-		field.Float("price"),
+		field.Float32("price"),
 		field.String("inbounddepartureairport"),
 		field.String("inboundarrivalairport"),
 		field.Time("inboundarrivaldatetime"),
