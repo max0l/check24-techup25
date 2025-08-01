@@ -5,10 +5,12 @@ import (
 	"check24-techup25/db/ent"
 	"context"
 	"entgo.io/ent/dialect/sql"
+	"github.com/rs/zerolog/log"
 )
 
 func MigrateHotels(ctx context.Context, client *ent.Client, hotels <-chan *data.Hotel) {
 	for hotel := range hotels {
+		log.Debug().Msg("Sending a hotel to the db")
 		client.Hotel.Create().
 			SetHotelname(hotel.Hotelname).
 			SetHotelid(hotel.Hotelid).
@@ -23,6 +25,7 @@ func MigrateHotels(ctx context.Context, client *ent.Client, hotels <-chan *data.
 
 func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Offer) {
 	for offer := range offers {
+		log.Debug().Msgf("Sending offer: %v", offer.Offerid)
 		client.Offer.Create().
 			SetOfferid(offer.Offerid).
 			SetHotelid(offer.Hotelid).
