@@ -19,3 +19,21 @@ SVs: Beendet
 
 perf stat -e  -r 5 --timeout 60000 ./readCSVs  261.40s user 242.10s system 167% cpu 5:00.37 total                                                                                                                                              /5m0.4s
 ```
+
+Stats of 4a194fd5ed95442ef4a8a2b9b78913ddff64afe5 (with 10 workes)
+```
+ Performance counter stats for './readCSVs' (5 runs):
+
+      284431718560      cycles:u                                                                ( +-  0.64% )  (83.33%)
+      611394345876      instructions:u                   #    2.15  insn per cycle              ( +-  0.59% )  (83.40%)
+       14006941250      cache-references:u                                                      ( +-  0.68% )  (83.30%)
+        1553121940      cache-misses:u                   #   11.09% of all cache refs           ( +-  0.93% )  (83.37%)
+      118071454171      branch-instructions:u                                                   ( +-  0.60% )  (83.29%)
+         946593376      branch-misses:u                  #    0.80% of all branches             ( +-  0.59% )  (83.31%)
+            380858      page-faults:u                                                           ( +- 15.97% )
+                 0      context-switches:u                                                    
+
+          60.07289 +- 0.00164 seconds time elapsed  ( +-  0.00% )
+
+perf stat -e  -r 5 --timeout 60000 ./readCSVs  361.49s user 275.17s system 211% cpu 5:00.39 total 
+```
