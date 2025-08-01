@@ -38,7 +38,7 @@ func closeFile(csvFile *os.File) {
 
 func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan [][]string, chan<- *T, *sync.WaitGroup), csvComma rune, resultsChannel chan<- *T) {
 	defer close(resultsChannel)
-	defer log.Debug().Msg("CSV file reading completed.")
+	defer log.Info().Msg("CSV file reading completed.")
 	csvReader := csv.NewReader(csvFile)
 	csvReader.Comma = csvComma
 

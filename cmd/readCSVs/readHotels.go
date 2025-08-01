@@ -21,8 +21,8 @@ func ReadHotelsCSVFile(hotelFilePath string, hotelResultsChannel chan<- *data.Ho
 
 func hotelBatchWorker(workerChan <-chan [][]string, hotelResultsChannel chan<- *data.Hotel, wg *sync.WaitGroup) {
 	defer wg.Done()
-	defer log.Debug().Msg("Stopped Hotel Batch Worker goroutine")
-	log.Debug().Msg("Started Hotel Batch Worker goroutine")
+	defer log.Info().Msg("Stopped Hotel Batch Worker goroutine")
+	log.Info().Msg("Started Hotel Batch Worker goroutine")
 
 	for records := range workerChan {
 		processHotelBatch(records, hotelResultsChannel)
@@ -43,6 +43,6 @@ func processHotelBatch(records [][]string, hotelResultsChannel chan<- *data.Hote
 
 func printHotelsResults(channel <-chan *data.Hotel) {
 	for hotel := range channel {
-		log.Info().Msgf("%v", hotel.Hotelid)
+		log.Debug().Msgf("%v", hotel.Hotelid)
 	}
 }
