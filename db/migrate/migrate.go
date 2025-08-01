@@ -23,10 +23,15 @@ func MigrateHotels(ctx context.Context, client *ent.Client, hotels <-chan *data.
 	}
 }
 
+const batchSize = 10000
+
 func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Offer) {
+	var (
+		offerBatch []*ent.OfferCreate
+		err        error
+	)
 	for offer := range offers {
-		log.Debug().Msgf("Sending offer: %v", offer.Offerid)
-		client.Offer.Create().
+		offerBatch = append(offerBatch, client.Offer.Create().
 			SetOfferid(offer.Offerid).
 			SetHotelid(offer.Hotelid).
 			SetOutbounddeparturedatetime(offer.Outbounddeparturedatetime).
@@ -42,11 +47,34 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 			SetOutboundarrivaldatetime(offer.Outboundarrivaldatetime).
 			SetMealtype(offer.Mealtype).
 			SetOceanview(offer.Oceanview).
-			SetRoomtype(offer.Roomtype).
+			SetRoomtype(offer.Roomtype))
+		if len(offerBatch) >= batchSize {
+			err = client.Offer.CreateBulk(offerBatch...).
+				OnConflict(
+					sql.ConflictColumns("offerid"),
+					sql.ResolveWithNewValues(),
+				).
+				UpdateNewValues().
+				Exec(ctx)
+			if err != nil {
+				log.Error().Err(err).Msg("Could not send offers")
+			} else {
+				log.Debug().Msg("Sent 500 offers to the DB")
+			}
+			offerBatch = offerBatch[:0]
+		}
+	}
+
+	if len(offerBatch) > 0 {
+		err = client.Offer.CreateBulk(offerBatch...).
 			OnConflict(
 				sql.ConflictColumns("offerid"),
-				sql.ResolveWithNewValues()).
+				sql.ResolveWithNewValues(),
+			).
 			UpdateNewValues().
-			ExecX(ctx)
+			Exec(ctx)
+		if err != nil {
+			log.Error().Err(err).Msg("Could not send last offers")
+		}
 	}
 }

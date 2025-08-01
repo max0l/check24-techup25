@@ -70,7 +70,7 @@ func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan []dataRecord, ch
 			continue
 		}
 
-		log.Debug().Msgf("Read record: %v", line)
+		//log.Debug().Msgf("Read record: %v", line)
 
 		record := dataRecord{
 			i,
