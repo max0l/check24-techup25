@@ -30,13 +30,19 @@ func hotelBatchWorker(workerChan <-chan []dataRecord, hotelResultsChannel chan<-
 
 func processHotelBatch(records []dataRecord, hotelResultsChannel chan<- *Hotel) {
 	for _, record := range records {
-
-		hotel := Hotel{
-			Hotelid:    parseInt(record.data[0]),
-			Hotelname:  record.data[1],
-			Hotelstars: parseFloat(record.data[2]),
-		}
-		hotelResultsChannel <- &hotel
+		func(record dataRecord) {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Error().Msgf("Recovered from panic for record %v: %v", record.id, r)
+				}
+			}()
+			hotel := Hotel{
+				Hotelid:    parseInt(record.data[0]),
+				Hotelname:  record.data[1],
+				Hotelstars: parseFloat(record.data[2]),
+			}
+			hotelResultsChannel <- &hotel
+		}(record)
 	}
 }
 
