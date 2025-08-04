@@ -51,7 +51,12 @@ func Start(port int) {
 //	@Summary		handles offer requests
 //	@Description	handles offer requests and returns a list of offers.
 //	@Router			/offers [get]
-//	@Param			offer	query	offerQuerry	true	"offer"
+//	@Param			departureAirports		query	[]string	true	"List of departure airports, e.g. FRA, MUC"
+//	@Param			earliestDepartureDate	query	string		true	"Earliest departure date in format YYYY-MM-DD"
+//	@Param			latestReturnDate		query	string		true	"Latest return date in format YYYY-MM-DD"
+//	@Param			countAdults				query	int			true	"Number of adults"
+//	@Param			countChildren			query	int			true	"Number of children"
+//	@Param			duration				query	int			true	"Duration of the trip in days"
 //	@Success		200
 //	@Failure		400
 func handleOfferRequest(c *gin.Context) {
