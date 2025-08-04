@@ -69,6 +69,8 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Conte
 			"\n\tduration: %v", request.DepartureAirports, request.EarliestDepartureDate,
 			request.LatestReturnDate, request.CountAdults, request.CountChildren, request.Duration)
 	}
+
+	//TODO: Introduce page size and page number for pagination
 	log.Debug().Msg("Querying DB for offers")
 	response := db.QueryOffers(request, client, ctx)
 	if len(response) == 0 {

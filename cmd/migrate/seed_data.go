@@ -70,5 +70,7 @@ func main() {
 
 	wg.Wait()
 
+	//TODO: Introduce edges
+
 	log.Info().Msg("Done")
 }
