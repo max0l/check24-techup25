@@ -35,6 +35,7 @@ func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Conte
 			offer.CountadultsEQ(request.CountAdults),
 			offer.CountchildrenEQ(request.CountChildren)).
 		Order(offer.ByPrice()).
+		Limit(50).
 		All(ctx)
 	//TODO: add Duration
 	log.Debug().Msgf("Querying DB for offers done, got %v results", len(results))
@@ -55,6 +56,7 @@ func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Conte
 
 		response := data.OfferResponse{
 			HotelName:                 queriedHotel.Hotelname,
+			HotelStars:                queriedHotel.Hotelstars,
 			Outbounddeparturedatetime: result.Outbounddeparturedatetime,
 			Inbounddeparturedatetime:  result.Inbounddeparturedatetime,
 			Countadults:               result.Countadults,
