@@ -30,21 +30,22 @@ func Migrate(client ent.Client) error {
 func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Context) []data.OfferResponse {
 	results, err := client.Offer.Query().
 		Where(offer.OutbounddepartureairportIn(request.DepartureAirports...),
-			offer.OutbounddeparturedatetimeGT(request.EarliestDepartureDate),
-			offer.Inboundarrivaldatetime(request.LatestReturnDate),
+			offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate),
+			offer.InboundarrivaldatetimeLTE(request.LatestReturnDate),
 			offer.CountadultsEQ(request.CountAdults),
-			offer.Countchildren(request.CountChildren)).
+			offer.CountchildrenEQ(request.CountChildren)).
 		Order(offer.ByPrice()).
 		All(ctx)
 	//TODO: add Duration
+	log.Debug().Msgf("Querying DB for offers done, got %v results", len(results))
 	if err != nil {
 		log.Warn().Err(err).Msg("Could not query DB")
 		return []data.OfferResponse{}
 	}
 
 	var responses []data.OfferResponse
-	for _, result := range results {
-
+	for i, result := range results {
+		log.Debug().Msgf("Processing offer: %v", i)
 		queriedHotel, err := client.Hotel.Query().
 			Where(hotel.HotelidEQ(result.Hotelid)).
 			First(ctx)
@@ -71,6 +72,6 @@ func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Conte
 		}
 		responses = append(responses, response)
 	}
-
+	log.Debug().Msg("Built response for offers")
 	return responses
 }

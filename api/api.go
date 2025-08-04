@@ -61,7 +61,7 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Conte
 		log.Error().Err(err).Msg("Could not bind query parameters")
 		return
 	} else {
-		log.Info().Msgf("Got request for:\n\tdepartureAirports: %v, "+
+		log.Debug().Msgf("Got request for:\n\tdepartureAirports: %v, "+
 			"\n\tearliestDepartureDate: %v, "+
 			"\n\tlatestReturnDate %v,"+
 			"\n\tcountAdults: %v, "+
@@ -69,6 +69,7 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Conte
 			"\n\tduration: %v", request.DepartureAirports, request.EarliestDepartureDate,
 			request.LatestReturnDate, request.CountAdults, request.CountChildren, request.Duration)
 	}
+	log.Debug().Msg("Querying DB for offers")
 	response := db.QueryOffers(request, client, ctx)
 	if len(response) == 0 {
 		log.Warn().Msg("No offers found for the given request")
