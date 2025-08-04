@@ -23,7 +23,7 @@ func MigrateHotels(ctx context.Context, client *ent.Client, hotels <-chan *data.
 	}
 }
 
-const batchSize = 10000
+const batchSize = 1000
 
 func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Offer) {
 	var (
@@ -59,7 +59,7 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 			if err != nil {
 				log.Error().Err(err).Msg("Could not send offers")
 			} else {
-				log.Debug().Msg("Sent 500 offers to the DB")
+				log.Debug().Msgf("Sent %v offers to the DB", len(offerBatch))
 			}
 			offerBatch = offerBatch[:0]
 		}
