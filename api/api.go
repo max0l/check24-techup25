@@ -66,11 +66,11 @@ func handleOfferRequest(c *gin.Context) {
 		return
 	} else {
 		log.Info().Msgf("Got request for:\n\tdepartureAirports: %v, "+
-			"\tearliestDepartureDate: %v, "+
-			"\tlatestReturnDate %v,"+
-			"\tcountAdults: %v, "+
-			"\tcountChildren: %v, "+
-			"\tduration: %v", request.DepartureAirports, request.EarliestDepartureDate,
+			"\n\tearliestDepartureDate: %v, "+
+			"\n\tlatestReturnDate %v,"+
+			"\n\tcountAdults: %v, "+
+			"\n\tcountChildren: %v, "+
+			"\n\tduration: %v", request.DepartureAirports, request.EarliestDepartureDate,
 			request.LatestReturnDate, request.CountAdults, request.CountChildren, request.Duration)
 	}
 }
