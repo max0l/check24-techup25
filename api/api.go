@@ -2,15 +2,17 @@ package api
 
 import (
 	_ "check24-techup25/api/docs"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"strconv"
-	"time"
 )
 
 //go:generate swag init -g api.go --parseInternal=true
+//go:generate swag fmt -g api.go
 
 type offerQuerry struct {
 	departureAirports     []string  `binding:"required"`
@@ -24,8 +26,8 @@ type offerQuerry struct {
 // Start starts the API
 // Swagger UI will be available at: http://localhost:8080/swagger/index.html
 //
-//	@title			Techup25
-//	@host			localhost:8080
+//	@title	Techup25
+//	@host	localhost:8080
 func Start(port int) {
 	router := gin.Default()
 	router.GET("/ping", func(c *gin.Context) {
@@ -49,7 +51,7 @@ func Start(port int) {
 //	@Summary		handles offer requests
 //	@Description	handles offer requests and returns a list of offers.
 //	@Router			/offers [get]
-//	@Param          offer query offerQuerry true "offer"
+//	@Param			offer	query	offerQuerry	true	"offer"
 //	@Success		200
 //	@Failure		400
 func handleOfferRequest(c *gin.Context) {
