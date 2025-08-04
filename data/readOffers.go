@@ -29,26 +29,32 @@ func offerBatchWorker(workerChan <-chan []dataRecord, offerResultsChannel chan<-
 
 func processOfferBatch(records []dataRecord, offerResultsChannel chan<- *Offer) {
 	for _, record := range records {
-
-		offer := Offer{
-			Offerid:                   record.id,
-			Hotelid:                   parseInt(record.data[0]),
-			Outbounddeparturedatetime: parseTime(record.data[1]),
-			Inbounddeparturedatetime:  parseTime(record.data[2]),
-			Countadults:               parseInt(record.data[3]),
-			Countchildren:             parseInt(record.data[4]),
-			Price:                     parseFloat(record.data[5]),
-			Inbounddepartureairport:   record.data[6],
-			Inboundarrivalairport:     record.data[7],
-			Inboundarrivaldatetime:    parseTime(record.data[8]),
-			Outbounddepartureairport:  record.data[9],
-			Outboundarrivalairport:    record.data[10],
-			Outboundarrivaldatetime:   parseTime(record.data[11]),
-			Mealtype:                  record.data[12],
-			Oceanview:                 record.data[13] == "true",
-			Roomtype:                  record.data[14],
-		}
-		offerResultsChannel <- &offer
+		func(record dataRecord) {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Error().Msgf("Recovered from panic for record %v: %v", record.id, r)
+				}
+			}()
+			offer := Offer{
+				Offerid:                   record.id,
+				Hotelid:                   parseInt(record.data[0]),
+				Outbounddeparturedatetime: parseTime(record.data[1]),
+				Inbounddeparturedatetime:  parseTime(record.data[2]),
+				Countadults:               parseInt(record.data[3]),
+				Countchildren:             parseInt(record.data[4]),
+				Price:                     parseFloat(record.data[5]),
+				Inbounddepartureairport:   record.data[6],
+				Inboundarrivalairport:     record.data[7],
+				Inboundarrivaldatetime:    parseTime(record.data[8]),
+				Outbounddepartureairport:  record.data[9],
+				Outboundarrivalairport:    record.data[10],
+				Outboundarrivaldatetime:   parseTime(record.data[11]),
+				Mealtype:                  record.data[12],
+				Oceanview:                 record.data[13] == "true",
+				Roomtype:                  record.data[14],
+			}
+			offerResultsChannel <- &offer
+		}(record)
 	}
 }
 
