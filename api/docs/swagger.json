@@ -10,6 +10,54 @@
             "get": {
                 "description": "handles offer requests and returns a list of offers.",
                 "summary": "handles offer requests",
+                "parameters": [
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "List of departure airports, e.g. FRA, MUC",
+                        "name": "departureAirports",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Earliest departure date in format RFC3339",
+                        "name": "earliestDepartureDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Latest return date in format RFC3339",
+                        "name": "latestReturnDate",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of adults",
+                        "name": "countAdults",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of children",
+                        "name": "countChildren",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Duration of the trip in days",
+                        "name": "duration",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK"

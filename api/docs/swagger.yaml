@@ -6,6 +6,40 @@ paths:
   /offers:
     get:
       description: handles offer requests and returns a list of offers.
+      parameters:
+      - collectionFormat: csv
+        description: List of departure airports, e.g. FRA, MUC
+        in: query
+        items:
+          type: string
+        name: departureAirports
+        required: true
+        type: array
+      - description: Earliest departure date in format RFC3339
+        in: query
+        name: earliestDepartureDate
+        required: true
+        type: string
+      - description: Latest return date in format RFC3339
+        in: query
+        name: latestReturnDate
+        required: true
+        type: string
+      - description: Number of adults
+        in: query
+        name: countAdults
+        required: true
+        type: integer
+      - description: Number of children
+        in: query
+        name: countChildren
+        required: true
+        type: integer
+      - description: Duration of the trip in days
+        in: query
+        name: duration
+        required: true
+        type: integer
       responses:
         "200":
           description: OK

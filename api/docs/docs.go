@@ -33,14 +33,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Earliest departure date in format YYYY-MM-DD",
+                        "description": "Earliest departure date in format RFC3339",
                         "name": "earliestDepartureDate",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Latest return date in format YYYY-MM-DD",
+                        "description": "Latest return date in format RFC3339",
                         "name": "latestReturnDate",
                         "in": "query",
                         "required": true
