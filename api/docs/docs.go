@@ -65,6 +65,13 @@ const docTemplate = `{
                         "name": "Duration",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Site, e.g. 1 or 2",
+                        "name": "Site",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {

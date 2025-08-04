@@ -40,6 +40,11 @@ paths:
         name: Duration
         required: true
         type: integer
+      - description: Site, e.g. 1 or 2
+        in: query
+        name: Site
+        required: true
+        type: integer
       responses:
         "200":
           description: OK

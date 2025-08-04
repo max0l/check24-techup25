@@ -28,6 +28,7 @@ type OfferQuerry struct {
 	CountAdults           int       `binding:"required"`
 	CountChildren         int
 	Duration              int `binding:"required"`
+	Site                  int `binding:"required"`
 }
 
 type OfferResponse struct {

@@ -10,6 +10,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const maxResults = 50
+
 // NewClient initializes and returns a new Ent client for a PostgreSQL database.
 // Example DSN: "host=localhost port=5432 user=postgres password=secret dbname=mydb sslmode=disable"
 func NewClient(dsn string) (*ent.Client, error) {
@@ -35,7 +37,8 @@ func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Conte
 			offer.CountadultsEQ(request.CountAdults),
 			offer.CountchildrenEQ(request.CountChildren)).
 		Order(offer.ByPrice()).
-		Limit(50).
+		Limit(maxResults).
+		Offset((request.Site - 1) * maxResults).
 		All(ctx)
 	//TODO: add Duration
 	log.Debug().Msgf("Querying DB for offers done, got %v results", len(results))
@@ -47,10 +50,12 @@ func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Conte
 	var responses []data.OfferResponse
 	for i, result := range results {
 		log.Debug().Msgf("Processing offer: %v", i)
+		//TODO: ask if the hotelname should be queried
 		queriedHotel, err := client.Hotel.Query().
 			Where(hotel.HotelidEQ(result.Hotelid)).
 			First(ctx)
 		if err != nil {
+			log.Warn().Msgf("Could not find hotel with ID %v for offer %v", result.Hotelid, result.Offerid)
 			continue
 		}
 

@@ -6,11 +6,12 @@ import (
 	"check24-techup25/db"
 	"check24-techup25/db/ent"
 	"context"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"strconv"
 )
 
 //go:generate swag init -g api.go --parseInternal=true
@@ -52,6 +53,7 @@ func Start(port int, client *ent.Client, ctx context.Context) {
 //	@Param			CountAdults				query	int			true	"Number of adults"
 //	@Param			CountChildren			query	int			true	"Number of children"
 //	@Param			Duration				query	int			true	"Duration of the trip in days"
+//	@Param			Site					query	int			true	"Site, e.g. 1 or 2"
 //	@Success		200
 //	@Failure		400
 func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Context) {
@@ -66,11 +68,13 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Conte
 			"\n\tlatestReturnDate %v,"+
 			"\n\tcountAdults: %v, "+
 			"\n\tcountChildren: %v, "+
-			"\n\tduration: %v", request.DepartureAirports, request.EarliestDepartureDate,
-			request.LatestReturnDate, request.CountAdults, request.CountChildren, request.Duration)
+			"\n\tduration: %v"+
+			"\n\tsite: %v", request.DepartureAirports, request.EarliestDepartureDate,
+			request.LatestReturnDate, request.CountAdults, request.CountChildren, request.Duration,
+			request.Site)
 	}
 
-	//TODO: Introduce page size and page number for pagination
+	//TODO: Introduce page size
 	log.Debug().Msg("Querying DB for offers")
 	response := db.QueryOffers(request, client, ctx)
 	if len(response) == 0 {
