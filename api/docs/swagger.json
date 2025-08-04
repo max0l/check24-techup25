@@ -1,0 +1,24 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Techup25",
+        "contact": {}
+    },
+    "host": "localhost:8080",
+    "paths": {
+        "/offers": {
+            "get": {
+                "description": "handles offer requests and returns a list of offers.",
+                "summary": "handles offer requests",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        }
+    }
+}

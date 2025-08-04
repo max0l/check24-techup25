@@ -1,0 +1,15 @@
+host: localhost:8080
+info:
+  contact: {}
+  title: Techup25
+paths:
+  /offers:
+    get:
+      description: handles offer requests and returns a list of offers.
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      summary: handles offer requests
+swagger: "2.0"
