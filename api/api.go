@@ -15,12 +15,12 @@ import (
 //go:generate swag fmt -g api.go
 
 type offerQuerry struct {
-	departureAirports     []string  `binding:"required"`
-	earliestDepartureDate time.Time `binding:"required"`
-	latestReturnDate      time.Time `binding:"required"`
-	countAdults           int       `binding:"required"`
-	countChildren         int       `binding:"required"`
-	duration              int       `binding:"required"`
+	DepartureAirports     []string  `binding:"required"`
+	EarliestDepartureDate time.Time `binding:"required"`
+	LatestReturnDate      time.Time `binding:"required"`
+	CountAdults           int       `binding:"required"`
+	CountChildren         int       `binding:"required"`
+	Duration              int       `binding:"required"`
 }
 
 // Start starts the API
@@ -51,12 +51,12 @@ func Start(port int) {
 //	@Summary		handles offer requests
 //	@Description	handles offer requests and returns a list of offers.
 //	@Router			/offers [get]
-//	@Param			departureAirports		query	[]string	true	"List of departure airports, e.g. FRA, MUC"
-//	@Param			earliestDepartureDate	query	string		true	"Earliest departure date in format RFC3339"
-//	@Param			latestReturnDate		query	string		true	"Latest return date in format RFC3339"
-//	@Param			countAdults				query	int			true	"Number of adults"
-//	@Param			countChildren			query	int			true	"Number of children"
-//	@Param			duration				query	int			true	"Duration of the trip in days"
+//	@Param			DepartureAirports		query	[]string	true	"List of departure airports, e.g. FRA, MUC"
+//	@Param			EarliestDepartureDate	query	string		true	"Earliest departure date in format RFC3339"
+//	@Param			LatestReturnDate		query	string		true	"Latest return date in format RFC3339"
+//	@Param			CountAdults				query	int			true	"Number of adults"
+//	@Param			CountChildren			query	int			true	"Number of children"
+//	@Param			Duration				query	int			true	"Duration of the trip in days"
 //	@Success		200
 //	@Failure		400
 func handleOfferRequest(c *gin.Context) {
@@ -70,7 +70,7 @@ func handleOfferRequest(c *gin.Context) {
 			"\tlatestReturnDate %v,"+
 			"\tcountAdults: %v, "+
 			"\tcountChildren: %v, "+
-			"\tduration: %v", request.departureAirports, request.earliestDepartureDate,
-			request.latestReturnDate, request.countAdults, request.countChildren, request.duration)
+			"\tduration: %v", request.DepartureAirports, request.EarliestDepartureDate,
+			request.LatestReturnDate, request.CountAdults, request.CountChildren, request.Duration)
 	}
 }

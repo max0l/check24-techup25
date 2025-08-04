@@ -18,42 +18,42 @@
                         },
                         "collectionFormat": "csv",
                         "description": "List of departure airports, e.g. FRA, MUC",
-                        "name": "departureAirports",
+                        "name": "DepartureAirports",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Earliest departure date in format RFC3339",
-                        "name": "earliestDepartureDate",
+                        "name": "EarliestDepartureDate",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Latest return date in format RFC3339",
-                        "name": "latestReturnDate",
+                        "name": "LatestReturnDate",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "integer",
                         "description": "Number of adults",
-                        "name": "countAdults",
+                        "name": "CountAdults",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "integer",
                         "description": "Number of children",
-                        "name": "countChildren",
+                        "name": "CountChildren",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "integer",
                         "description": "Duration of the trip in days",
-                        "name": "duration",
+                        "name": "Duration",
                         "in": "query",
                         "required": true
                     }

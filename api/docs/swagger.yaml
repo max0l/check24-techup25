@@ -12,32 +12,32 @@ paths:
         in: query
         items:
           type: string
-        name: departureAirports
+        name: DepartureAirports
         required: true
         type: array
       - description: Earliest departure date in format RFC3339
         in: query
-        name: earliestDepartureDate
+        name: EarliestDepartureDate
         required: true
         type: string
       - description: Latest return date in format RFC3339
         in: query
-        name: latestReturnDate
+        name: LatestReturnDate
         required: true
         type: string
       - description: Number of adults
         in: query
-        name: countAdults
+        name: CountAdults
         required: true
         type: integer
       - description: Number of children
         in: query
-        name: countChildren
+        name: CountChildren
         required: true
         type: integer
       - description: Duration of the trip in days
         in: query
-        name: duration
+        name: Duration
         required: true
         type: integer
       responses:
