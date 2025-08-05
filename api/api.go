@@ -65,9 +65,12 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, ctx context.Context)
 	log.Debug().Msgf("Received request for hotel with ID: %d", hotelID)
 	hotelResponse, err := db.QueryHotel(hotelID, client, ctx)
 	if err != nil {
-		log.Error().Err(err).Msgf("Could not query hotel with ID: %d", hotelID)
-		c.JSON(404, gin.H{"message": "Hotel not found"})
-		return
+		if ent.IsNotFound(err) {
+			c.JSON(404, gin.H{"message": "Hotel not found"})
+			return
+		}
+		log.Error().Err(err).Msg("Error querying hotel from DB")
+		c.JSON(500, gin.H{"message": "Internal server error"})
 	}
 	log.Debug().Msgf("Found hotel: %v", hotelResponse)
 	c.JSON(200, hotelResponse)

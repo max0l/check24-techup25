@@ -124,17 +124,20 @@ func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (data.Hote
 		Where(hotel.HotelidEQ(hotelID)).
 		First(ctx)
 	if err != nil {
-		log.Error().Err(err).Msgf("Could not find hotel with ID: %d", hotelID)
+		log.Error().Err(err).Msg("There was an error querring the DB")
 		return hotelResponse, err
 	}
 
 	hotelOffers, err := client.Offer.Query().
 		Where(offer.HotelidEQ(hotelID)).
+		Order(offer.ByPrice()).
 		All(ctx)
 	if err != nil {
-		log.Error().Err(err).Msgf("Could not find offers for hotel with ID: %d", hotelID)
+		log.Error().Err(err).Msg("There was an error querring the DB")
 		return hotelResponse, err
 	}
+
+	log.Info().Msgf("Found %d offers for hotel with ID: %d", len(hotelOffers), hotelID)
 
 	hotelResponse.Hotelid = h.Hotelid
 	hotelResponse.Hotelname = h.Hotelname
@@ -160,8 +163,8 @@ func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (data.Hote
 			Oceanview:                 singleOffer.Oceanview,
 			Roomtype:                  singleOffer.Roomtype,
 		}
-
-		hotelResponse.Offers[i] = o
+		log.Debug().Msgf("Processing offer %d for hotel %d: %+v", i+1, hotelID, o)
+		hotelResponse.Offers = append(hotelResponse.Offers, o)
 	}
 
 	return hotelResponse, nil
