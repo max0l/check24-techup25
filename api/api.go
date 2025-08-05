@@ -109,6 +109,12 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Conte
 			request.Site)
 	}
 
+	if request.EarliestDepartureDate.Before(request.LatestReturnDate) {
+		log.Error().Msg("Earliest departure date is after latest return date")
+		ginc.JSON(400, gin.H{"message": "Earliest departure date cannot be after latest return date"})
+		return
+	}
+
 	//TODO: Introduce page size
 	log.Debug().Msg("Querying DB for offers")
 	response := db.QueryOffers(request, client, ctx)
