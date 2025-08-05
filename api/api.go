@@ -47,15 +47,16 @@ func Start(port int, client *ent.Client, ctx context.Context) {
 //	@Summary		handles offer requests
 //	@Description	handles offer requests and returns a list of offers.
 //	@Router			/offers [get]
-//	@Param			DepartureAirports		query	[]string	true	"List of departure airports, e.g. FRA, MUC"
-//	@Param			EarliestDepartureDate	query	string		true	"Earliest departure date in format RFC3339"
-//	@Param			LatestReturnDate		query	string		true	"Latest return date in format RFC3339"
-//	@Param			CountAdults				query	int			true	"Number of adults"
-//	@Param			CountChildren			query	int			true	"Number of children"
-//	@Param			Duration				query	int			true	"Duration of the trip in days"
-//	@Param			Site					query	int			true	"Site, e.g. 1 or 2"
-//	@Success		200
-//	@Failure		400
+//	@Param			DepartureAirports		query	[]string				true	"List of departure airports, e.g. FRA, MUC"
+//	@Param			EarliestDepartureDate	query	string					true	"Earliest departure date in format RFC3339"
+//	@Param			LatestReturnDate		query	string					true	"Latest return date in format RFC3339"
+//	@Param			CountAdults				query	int						true	"Number of adults"
+//	@Param			CountChildren			query	int						true	"Number of children"
+//	@Param			Duration				query	int						true	"Duration of the trip in days"
+//	@Param			Site					query	int						true	"Site, e.g. 1 or 2"
+//	@Success		200						body	[]data.OfferResponse	"List of offers matching the request"
+//	@Failure		400						"Bad Request"
+//	@Failure		404						"No Offers Found"
 func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Context) {
 	var request data.OfferQuerry
 	err := ginc.BindQuery(&request)

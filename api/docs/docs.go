@@ -76,10 +76,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "List of offers matching the request",
+                        "schema": {
+                            "type": "body"
+                        }
                     },
                     "400": {
                         "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "No Offers Found"
                     }
                 }
             }
