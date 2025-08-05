@@ -7,7 +7,7 @@ CHUNKSIZE = 500000
 columns = [
     'hotelid', 'countadults', 'countchildren', 'inbounddepartureairport',
     'inboundarrivalairport', 'outbounddepartureairport', 'outboundarrivalairport',
-    'mealtype', 'oceanview', 'roomtype'
+    'mealtype', 'oceanview', 'roomtype', 'price'
 ]
 
 counters = {col: Counter() for col in columns}
