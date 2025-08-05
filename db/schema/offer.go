@@ -27,5 +27,6 @@ func (Offer) Fields() []ent.Field {
 		field.String("mealtype"),
 		field.Bool("oceanview"),
 		field.String("roomtype"),
+		field.Int("durationInDays"),
 	}
 }

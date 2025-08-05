@@ -47,7 +47,8 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 			SetOutboundarrivaldatetime(offer.Outboundarrivaldatetime).
 			SetMealtype(offer.Mealtype).
 			SetOceanview(offer.Oceanview).
-			SetRoomtype(offer.Roomtype))
+			SetRoomtype(offer.Roomtype).
+			SetDurationInDays(offer.DurationInDays))
 		if len(offerBatch) >= batchSize {
 			err = client.Offer.CreateBulk(offerBatch...).
 				OnConflict(

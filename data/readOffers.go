@@ -2,7 +2,9 @@ package data
 
 import (
 	"github.com/rs/zerolog/log"
+	"math"
 	"sync"
+	"time"
 )
 
 func ReadOffersCSVFile(offersFilePath string, offerResultsChannel chan<- *Offer) {
@@ -53,6 +55,8 @@ func processOfferBatch(records []dataRecord, offerResultsChannel chan<- *Offer) 
 				Oceanview:                 record.data[13] == "true",
 				Roomtype:                  record.data[14],
 			}
+			offer.DurationInDays = calculateDurationInDays(offer.Outbounddeparturedatetime,
+				offer.Inbounddeparturedatetime)
 			offerResultsChannel <- &offer
 		}(record)
 	}
@@ -62,4 +66,11 @@ func PrintOffersResults(channel <-chan *Offer) {
 	for offer := range channel {
 		log.Debug().Msgf("Offer: %v", offer.Hotelid)
 	}
+}
+
+func calculateDurationInDays(start, end time.Time) int {
+	duration := end.Sub(start)
+	days := int(math.Ceil(duration.Hours() / 24))
+	log.Debug().Msgf("Calculated duration: %d days from %s to %s", days, start.Format(time.RFC3339), end.Format(time.RFC3339))
+	return days
 }

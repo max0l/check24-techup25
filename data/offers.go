@@ -19,6 +19,7 @@ type Offer struct {
 	Mealtype                  string
 	Oceanview                 bool
 	Roomtype                  string
+	DurationInDays            int
 }
 
 type OfferQuerry struct {
