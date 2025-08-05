@@ -114,3 +114,55 @@ func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Conte
 	log.Debug().Msg("Built response for offers")
 	return responses
 }
+
+func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (data.HotelResponse, error) {
+
+	var hotelResponse data.HotelResponse
+
+	log.Debug().Msgf("Querying DB for hotel with ID: %d", hotelID)
+	h, err := client.Hotel.Query().
+		Where(hotel.HotelidEQ(hotelID)).
+		First(ctx)
+	if err != nil {
+		log.Error().Err(err).Msgf("Could not find hotel with ID: %d", hotelID)
+		return hotelResponse, err
+	}
+
+	hotelOffers, err := client.Offer.Query().
+		Where(offer.HotelidEQ(hotelID)).
+		All(ctx)
+	if err != nil {
+		log.Error().Err(err).Msgf("Could not find offers for hotel with ID: %d", hotelID)
+		return hotelResponse, err
+	}
+
+	hotelResponse.Hotelid = h.Hotelid
+	hotelResponse.Hotelname = h.Hotelname
+	hotelResponse.Hotelstars = h.Hotelstars
+	hotelResponse.Offers = make([]data.Offer, 0, len(hotelOffers))
+
+	for i, singleOffer := range hotelOffers {
+		o := data.Offer{
+			Offerid:                   singleOffer.Offerid,
+			Hotelid:                   singleOffer.Hotelid,
+			Outbounddeparturedatetime: singleOffer.Outbounddeparturedatetime,
+			Inbounddeparturedatetime:  singleOffer.Inbounddeparturedatetime,
+			Countadults:               singleOffer.Countadults,
+			Countchildren:             singleOffer.Countchildren,
+			Price:                     singleOffer.Price,
+			Inbounddepartureairport:   singleOffer.Inbounddepartureairport,
+			Inboundarrivalairport:     singleOffer.Inboundarrivalairport,
+			Inboundarrivaldatetime:    singleOffer.Inboundarrivaldatetime,
+			Outbounddepartureairport:  singleOffer.Outbounddepartureairport,
+			Outboundarrivalairport:    singleOffer.Outboundarrivalairport,
+			Outboundarrivaldatetime:   singleOffer.Outboundarrivaldatetime,
+			Mealtype:                  singleOffer.Mealtype,
+			Oceanview:                 singleOffer.Oceanview,
+			Roomtype:                  singleOffer.Roomtype,
+		}
+
+		hotelResponse.Offers[i] = o
+	}
+
+	return hotelResponse, nil
+}

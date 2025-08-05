@@ -34,12 +34,43 @@ func Start(port int, client *ent.Client, ctx context.Context) {
 		handleOfferRequest(c, client, ctx)
 	})
 
+	router.GET("/hotel/:hotelid", func(c *gin.Context) {
+		handleHotelRequest(c, client, ctx)
+	})
+
 	log.Info().Msgf("Starting Server on port %v", port)
 	err := router.Run(":" + strconv.Itoa(port))
 	if err != nil {
 		log.Error().Msgf("Could not start server on port %v", port)
 		return
 	}
+}
+
+// handleHotelRequest will receive a hotel ID and returns the hotel information
+//
+//	@Summary		handles hotel requests
+//	@Description	handles hotel requests and returns the hotel information.
+//	@Router			/hotel/{hotelid} [get]
+//	@Param			hotelid	path	int					true	"ID of the hotel"
+//	@Success		200		body	data.HotelResponse	"Hotel information"
+//	@Failure		400		"Bad Request"
+//	@Failure		404		"Hotel Not Found"
+func handleHotelRequest(c *gin.Context, client *ent.Client, ctx context.Context) {
+	hotelID, err := strconv.Atoi(c.Param("hotelid"))
+	if err != nil {
+		log.Error().Err(err).Msg("Could not parse hotel ID from request")
+		c.JSON(400, gin.H{"message": "Invalid hotel ID"})
+		return
+	}
+	log.Debug().Msgf("Received request for hotel with ID: %d", hotelID)
+	hotelResponse, err := db.QueryHotel(hotelID, client, ctx)
+	if err != nil {
+		log.Error().Err(err).Msgf("Could not query hotel with ID: %d", hotelID)
+		c.JSON(404, gin.H{"message": "Hotel not found"})
+		return
+	}
+	log.Debug().Msgf("Found hotel: %v", hotelResponse)
+	c.JSON(200, hotelResponse)
 }
 
 // handleOfferRequest will receive a query with different parameters and returns a list of offers

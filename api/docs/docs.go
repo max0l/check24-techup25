@@ -15,6 +15,35 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/hotel/{hotelid}": {
+            "get": {
+                "description": "handles hotel requests and returns the hotel information.",
+                "summary": "handles hotel requests",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID of the hotel",
+                        "name": "hotelid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hotel information",
+                        "schema": {
+                            "type": "body"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Hotel Not Found"
+                    }
+                }
+            }
+        },
         "/offers": {
             "get": {
                 "description": "handles offer requests and returns a list of offers.",
