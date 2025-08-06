@@ -12,15 +12,19 @@ columns = [
 
 counters = {col: Counter() for col in columns}
 total_rows = 0
+rows_without_real_hotel = 0
 
 # NEU: Zähler für die Zusatzanalyse
 double_total = 0
 double_children0 = 0
 
+
 for chunk in pd.read_csv(FILE_PATH, chunksize=CHUNKSIZE):
     total_rows += len(chunk)
     for col in columns:
         counters[col].update(chunk[col].astype(str))
+
+    rows_without_real_hotel += (chunk['hotelid'].astype(int) > 998).sum()
 
     # Zusatzanalyse
     mask_double = chunk['roomtype'].astype(str) == 'double'
@@ -40,3 +44,4 @@ print(f"\n---\nZusatzanalyse für roomtype 'double':")
 print(f"Anzahl Angebote mit roomtype 'double': {double_total}")
 print(f"Davon mit countchildren == 0: {double_children0} ({double_children0/double_total:.2%})")
 print(f"Davon mit countchildren > 0: {double_total - double_children0} ({(double_total-double_children0)/double_total:.2%})")
+print(f"Anzahl Zeilen ohne echten Hotel: {rows_without_real_hotel} ({rows_without_real_hotel/total_rows:.2%})")
