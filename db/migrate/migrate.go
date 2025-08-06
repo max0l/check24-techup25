@@ -16,7 +16,7 @@ func MigrateHotels(ctx context.Context, client *ent.Client, hotels <-chan *data.
 			SetID(hotel.Hotelid).
 			SetHotelstars(hotel.Hotelstars).
 			OnConflict(
-				sql.ConflictColumns("hotelid"),
+				sql.ConflictColumns("id"),
 				sql.ResolveWithNewValues()).
 			UpdateNewValues().
 			ExecX(ctx)
