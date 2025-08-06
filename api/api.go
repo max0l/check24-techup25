@@ -14,9 +14,6 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-//go:generate swag init -g api.go --parseInternal=true
-//go:generate swag fmt -g api.go
-
 // Start starts the API
 // Swagger UI will be available at: http://localhost:8080/swagger/index.html
 //
@@ -81,14 +78,14 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, ctx context.Context)
 //	@Summary		handles offer requests
 //	@Description	handles offer requests and returns a list of offers.
 //	@Router			/offers [get]
-//	@Param			DepartureAirports		query	[]string				true	"List of departure airports, e.g. FRA, MUC"
-//	@Param			EarliestDepartureDate	query	string					true	"Earliest departure date in format RFC3339"
-//	@Param			LatestReturnDate		query	string					true	"Latest return date in format RFC3339"
-//	@Param			CountAdults				query	int						true	"Number of adults"
-//	@Param			CountChildren			query	int						true	"Number of children"
-//	@Param			Duration				query	int						true	"Duration of the trip in days"
-//	@Param			Site					query	int						true	"Site, e.g. 1 or 2"
-//	@Success		200						body	[]data.OfferResponse	"List of offers matching the request"
+//	@Param			DepartureAirports		query		[]string				true	"List of departure airports, e.g. FRA, MUC"
+//	@Param			EarliestDepartureDate	query		string					true	"Earliest departure date in format RFC3339"
+//	@Param			LatestReturnDate		query		string					true	"Latest return date in format RFC3339"
+//	@Param			CountAdults				query		int						true	"Number of adults"
+//	@Param			CountChildren			query		int						true	"Number of children"
+//	@Param			Duration				query		int						true	"Duration of the trip in days"
+//	@Param			Site					query		int						true	"Site, e.g. 1 or 2"
+//	@Success		200						{object}	[]data.OfferResponse	"List of offers matching the request"
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"No Offers Found"
 func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Context) {

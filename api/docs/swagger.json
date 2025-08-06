@@ -98,7 +98,10 @@
                     "200": {
                         "description": "List of offers matching the request",
                         "schema": {
-                            "type": "body"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/data.OfferResponse"
+                            }
                         }
                     },
                     "400": {
@@ -107,6 +110,77 @@
                     "404": {
                         "description": "No Offers Found"
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "data.OfferResponse": {
+            "type": "object",
+            "properties": {
+                "Countadults": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "Countchildren": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "HotelName": {
+                    "type": "string",
+                    "example": "Hotel Sunshine"
+                },
+                "HotelStars": {
+                    "type": "number",
+                    "example": 4.5
+                },
+                "Inboundarrivalairport": {
+                    "type": "string",
+                    "example": "LAX"
+                },
+                "Inboundarrivaldatetime": {
+                    "type": "string",
+                    "example": "2023-10-01T15:00:00Z"
+                },
+                "Inbounddepartureairport": {
+                    "type": "string",
+                    "example": "FRA"
+                },
+                "Inbounddeparturedatetime": {
+                    "type": "string",
+                    "example": "2023-10-15T12:00:00Z"
+                },
+                "Mealtye": {
+                    "type": "string",
+                    "example": "All Inclusive"
+                },
+                "Ocenview": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "Outboundarrivalairport": {
+                    "type": "string",
+                    "example": "FRA"
+                },
+                "Outboundarrivaldatetime": {
+                    "type": "string",
+                    "example": "2023-10-15T09:00:00Z"
+                },
+                "Outbounddepartureairport": {
+                    "type": "string",
+                    "example": "LAX"
+                },
+                "Outbounddeparturedatetime": {
+                    "type": "string",
+                    "example": "2023-10-01T12:00:00Z"
+                },
+                "Price": {
+                    "type": "number",
+                    "example": 299.99
+                },
+                "Rommtype": {
+                    "type": "string",
+                    "example": "Deluxe Suite"
                 }
             }
         }

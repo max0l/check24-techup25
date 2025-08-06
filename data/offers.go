@@ -33,20 +33,20 @@ type OfferQuerry struct {
 }
 
 type OfferResponse struct {
-	HotelName                 string
-	HotelStars                float32
-	Outbounddeparturedatetime time.Time
-	Inbounddeparturedatetime  time.Time
-	Countadults               int
-	Countchildren             int
-	Price                     float32
-	Inbounddepartureairport   string
-	Inboundarrivalairport     string
-	Inboundarrivaldatetime    time.Time
-	Outbounddepartureairport  string
-	Outboundarrivalairport    string
-	Outboundarrivaldatetime   time.Time
-	Mealtye                   string
-	Ocenview                  bool
-	Rommtype                  string
+	HotelName                 string    `json:"HotelName" example:"Hotel Sunshine"`
+	HotelStars                float32   `json:"HotelStars" example:"4.5"`
+	Outbounddeparturedatetime time.Time `json:"Outbounddeparturedatetime" example:"2023-10-01T12:00:00Z"`
+	Inbounddeparturedatetime  time.Time `json:"Inbounddeparturedatetime" example:"2023-10-15T12:00:00Z"`
+	Countadults               int       `json:"Countadults" example:"2"`
+	Countchildren             int       `json:"Countchildren" example:"1"`
+	Price                     float32   `json:"Price" example:"299.99"`
+	Inbounddepartureairport   string    `json:"Inbounddepartureairport" example:"FRA"`
+	Inboundarrivalairport     string    `json:"Inboundarrivalairport" example:"LAX"`
+	Inboundarrivaldatetime    time.Time `json:"Inboundarrivaldatetime" example:"2023-10-01T15:00:00Z"`
+	Outbounddepartureairport  string    `json:"Outbounddepartureairport" example:"LAX"`
+	Outboundarrivalairport    string    `json:"Outboundarrivalairport" example:"FRA"`
+	Outboundarrivaldatetime   time.Time `json:"Outboundarrivaldatetime" example:"2023-10-15T09:00:00Z"`
+	Mealtye                   string    `json:"Mealtye" example:"All Inclusive"`
+	Ocenview                  bool      `json:"Ocenview" example:"true"`
+	Rommtype                  string    `json:"Rommtype" example:"Deluxe Suite"`
 }

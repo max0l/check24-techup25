@@ -2,12 +2,13 @@ package data
 
 import (
 	"encoding/csv"
-	"github.com/rs/zerolog/log"
 	"io"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 type dataRecord struct {

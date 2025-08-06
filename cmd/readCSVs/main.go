@@ -4,8 +4,9 @@ import (
 	"check24-techup25/data"
 	"check24-techup25/logging"
 	"flag"
-	"github.com/rs/zerolog/log"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
 func main() {

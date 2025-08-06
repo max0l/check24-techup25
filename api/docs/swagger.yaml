@@ -1,3 +1,55 @@
+definitions:
+  data.OfferResponse:
+    properties:
+      Countadults:
+        example: 2
+        type: integer
+      Countchildren:
+        example: 1
+        type: integer
+      HotelName:
+        example: Hotel Sunshine
+        type: string
+      HotelStars:
+        example: 4.5
+        type: number
+      Inboundarrivalairport:
+        example: LAX
+        type: string
+      Inboundarrivaldatetime:
+        example: "2023-10-01T15:00:00Z"
+        type: string
+      Inbounddepartureairport:
+        example: FRA
+        type: string
+      Inbounddeparturedatetime:
+        example: "2023-10-15T12:00:00Z"
+        type: string
+      Mealtye:
+        example: All Inclusive
+        type: string
+      Ocenview:
+        example: true
+        type: boolean
+      Outboundarrivalairport:
+        example: FRA
+        type: string
+      Outboundarrivaldatetime:
+        example: "2023-10-15T09:00:00Z"
+        type: string
+      Outbounddepartureairport:
+        example: LAX
+        type: string
+      Outbounddeparturedatetime:
+        example: "2023-10-01T12:00:00Z"
+        type: string
+      Price:
+        example: 299.99
+        type: number
+      Rommtype:
+        example: Deluxe Suite
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -68,7 +120,9 @@ paths:
         "200":
           description: List of offers matching the request
           schema:
-            type: body
+            items:
+              $ref: '#/definitions/data.OfferResponse'
+            type: array
         "400":
           description: Bad Request
         "404":
