@@ -13,7 +13,7 @@ func MigrateHotels(ctx context.Context, client *ent.Client, hotels <-chan *data.
 		log.Debug().Msg("Sending a hotel to the db")
 		client.Hotel.Create().
 			SetHotelname(hotel.Hotelname).
-			SetHotelid(hotel.Hotelid).
+			SetID(hotel.Hotelid).
 			SetHotelstars(hotel.Hotelstars).
 			OnConflict(
 				sql.ConflictColumns("hotelid"),

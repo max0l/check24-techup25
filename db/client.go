@@ -80,7 +80,7 @@ func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Conte
 		log.Debug().Msgf("Processing offer: %v", i)
 		//TODO: ask if the hotelname should be queried
 		queriedHotel, err := client.Hotel.Query().
-			Where(hotel.HotelidEQ(result.Hotelid)).
+			Where(hotel.IDEQ(result.Hotelid)).
 			First(ctx)
 		if err != nil {
 			log.Warn().Msgf("Could not find hotel with ID %v for offer %v. "+
@@ -121,7 +121,7 @@ func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (data.Hote
 
 	log.Debug().Msgf("Querying DB for hotel with ID: %d", hotelID)
 	h, err := client.Hotel.Query().
-		Where(hotel.HotelidEQ(hotelID)).
+		Where(hotel.IDEQ(hotelID)).
 		First(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("There was an error querring the DB")
@@ -139,7 +139,7 @@ func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (data.Hote
 
 	log.Info().Msgf("Found %d offers for hotel with ID: %d", len(hotelOffers), hotelID)
 
-	hotelResponse.Hotelid = h.Hotelid
+	hotelResponse.Hotelid = h.ID
 	hotelResponse.Hotelname = h.Hotelname
 	hotelResponse.Hotelstars = h.Hotelstars
 	hotelResponse.Offers = make([]data.Offer, 0, len(hotelOffers))
