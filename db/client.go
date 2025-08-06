@@ -6,9 +6,10 @@ import (
 	"check24-techup25/db/ent/hotel"
 	"check24-techup25/db/ent/offer"
 	"context"
+	"strconv"
+
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
-	"strconv"
 )
 
 const responseSize = 50
@@ -36,7 +37,8 @@ func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Conte
 			offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate),
 			offer.InboundarrivaldatetimeLTE(request.LatestReturnDate),
 			offer.CountadultsEQ(request.CountAdults),
-			offer.CountchildrenEQ(request.CountChildren)).
+			offer.CountchildrenEQ(request.CountChildren),
+			offer.DurationInDaysEQ(request.Duration)).
 		Order(offer.ByPrice()).
 		All(ctx)
 	//TODO: add Duration
