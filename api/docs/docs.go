@@ -85,8 +85,7 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Number of children",
                         "name": "CountChildren",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "integer",

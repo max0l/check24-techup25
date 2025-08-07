@@ -104,7 +104,6 @@ paths:
       - description: Number of children
         in: query
         name: CountChildren
-        required: true
         type: integer
       - description: Duration of the trip in days
         in: query

@@ -84,7 +84,7 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, ctx context.Context)
 //	@Param			EarliestDepartureDate	query		string					true	"Earliest departure date in format RFC3339"
 //	@Param			LatestReturnDate		query		string					true	"Latest return date in format RFC3339"
 //	@Param			CountAdults				query		int						true	"Number of adults"
-//	@Param			CountChildren			query		int						true	"Number of children"
+//	@Param			CountChildren			query		int						false	"Number of children"
 //	@Param			Duration				query		int						true	"Duration of the trip in days"
 //	@Param			Site					query		int						true	"Site, e.g. 1 or 2"
 //	@Success		200						{object}	[]data.OfferResponse	"List of offers matching the request"
