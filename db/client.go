@@ -131,10 +131,7 @@ func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (data.Hote
 		return hotelResponse, err
 	}
 
-	hotelOffers, err := client.Offer.Query().
-		Where(offer.HotelidEQ(hotelID)).
-		Order(offer.ByPrice()).
-		All(ctx)
+	hotelOffers, err := client.Hotel.QueryOffers(h).All(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("There was an error querring the DB")
 		return hotelResponse, err
@@ -150,7 +147,7 @@ func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (data.Hote
 	for i, singleOffer := range hotelOffers {
 		o := data.Offer{
 			Offerid:                   singleOffer.Offerid,
-			Hotelid:                   singleOffer.Hotelid,
+			Hotelid:                   singleOffer.ID,
 			Outbounddeparturedatetime: singleOffer.Outbounddeparturedatetime,
 			Inbounddeparturedatetime:  singleOffer.Inbounddeparturedatetime,
 			Countadults:               singleOffer.Countadults,
