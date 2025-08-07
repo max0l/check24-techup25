@@ -112,6 +112,12 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Conte
 		return
 	}
 
+	if request.Duration < 1 {
+		log.Warn().Msg("Duration cant be less than a 1 day")
+		ginc.JSON(400, gin.H{"message": "Duration must be at least 1 day"})
+		return
+	}
+
 	//TODO: Introduce page size
 	log.Debug().Msg("Querying DB for offers")
 	response := db.QueryOffers(request, client, ctx)
