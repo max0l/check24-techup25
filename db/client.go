@@ -6,11 +6,15 @@ import (
 	"check24-techup25/db/ent/hotel"
 	"check24-techup25/db/ent/offer"
 	"context"
-	"strconv"
 
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
+
+type OfferWithHotel struct {
+	Offer *ent.Offer
+	Hotel *ent.Hotel
+}
 
 const responseSize = 50
 
@@ -48,14 +52,21 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 		return []data.OfferResponse{}
 	}
 
-	uniqueOffers := make([]*ent.Offer, 0, len(results))
+	uniqueOffers := make([]OfferWithHotel, 0, len(results))
 	seenHotels := make(map[int]bool)
 
 	for _, result := range results {
-		hotelID := result.Hotelid
-		if !seenHotels[hotelID] {
-			uniqueOffers = append(uniqueOffers, result)
-			seenHotels[hotelID] = true
+		offerHotel, err := result.QueryHotelid().Only(ctx)
+		if err != nil {
+			log.Warn().Err(err).Msgf("Could not query hotel for offer with ID %d", result.ID)
+			continue
+		}
+		if !seenHotels[offerHotel.ID] {
+			uniqueOffers = append(uniqueOffers, OfferWithHotel{
+				Offer: result,
+				Hotel: offerHotel,
+			})
+			seenHotels[offerHotel.ID] = true
 		}
 	}
 
@@ -77,39 +88,29 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 		}
 		processedResults++
 
-		result := uniqueOffers[i]
+		offerResult := uniqueOffers[i].Offer
+		hotelResult := uniqueOffers[i].Hotel
 
 		log.Debug().Msgf("Processing offer: %v", i)
-		//TODO: ask if the hotelname should be queried
-		queriedHotel, err := client.Hotel.Query().
-			Where(hotel.IDEQ(result.Hotelid)).
-			First(ctx)
-		if err != nil {
-			log.Warn().Msgf("Could not find hotel with ID %v for offer %v. "+
-				"Falling back to ID's", result.Hotelid, result.Offerid)
-			queriedHotel = &ent.Hotel{
-				Hotelname:  strconv.Itoa(result.Hotelid),
-				Hotelstars: 0,
-			}
-		}
+		//TODO: ask if the hotelname should be queried -> yes, but just in case-> Fallback function with env
 
 		response := data.OfferResponse{
-			HotelName:                 queriedHotel.Hotelname,
-			HotelStars:                queriedHotel.Hotelstars,
-			Outbounddeparturedatetime: result.Outbounddeparturedatetime,
-			Inbounddeparturedatetime:  result.Inbounddeparturedatetime,
-			Countadults:               result.Countadults,
-			Countchildren:             result.Countchildren,
-			Price:                     result.Price,
-			Inbounddepartureairport:   result.Inbounddepartureairport,
-			Inboundarrivalairport:     result.Inboundarrivalairport,
-			Inboundarrivaldatetime:    result.Inboundarrivaldatetime,
-			Outbounddepartureairport:  result.Outbounddepartureairport,
-			Outboundarrivalairport:    result.Outboundarrivalairport,
-			Outboundarrivaldatetime:   result.Outboundarrivaldatetime,
-			Mealtye:                   result.Mealtype,
-			Ocenview:                  result.Oceanview,
-			Rommtype:                  result.Roomtype,
+			HotelName:                 hotelResult.Hotelname,
+			HotelStars:                hotelResult.Hotelstars,
+			Outbounddeparturedatetime: offerResult.Outbounddeparturedatetime,
+			Inbounddeparturedatetime:  offerResult.Inbounddeparturedatetime,
+			Countadults:               offerResult.Countadults,
+			Countchildren:             offerResult.Countchildren,
+			Price:                     offerResult.Price,
+			Inbounddepartureairport:   offerResult.Inbounddepartureairport,
+			Inboundarrivalairport:     offerResult.Inboundarrivalairport,
+			Inboundarrivaldatetime:    offerResult.Inboundarrivaldatetime,
+			Outbounddepartureairport:  offerResult.Outbounddepartureairport,
+			Outboundarrivalairport:    offerResult.Outboundarrivalairport,
+			Outboundarrivaldatetime:   offerResult.Outboundarrivaldatetime,
+			Mealtye:                   offerResult.Mealtype,
+			Ocenview:                  offerResult.Oceanview,
+			Rommtype:                  offerResult.Roomtype,
 		}
 		responses = append(responses, response)
 	}
