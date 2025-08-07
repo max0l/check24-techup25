@@ -6,12 +6,14 @@ import (
 	"check24-techup25/db"
 	"check24-techup25/db/ent"
 	"context"
-	"strconv"
-
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 // Start starts the API
@@ -118,9 +120,16 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Conte
 		return
 	}
 
+	airports, err := parseAirportsToArray(request.DepartureAirports)
+	if err != nil {
+		log.Error().Err(err).Msg("Could not parse airports from request")
+		ginc.JSON(400, gin.H{"message": "Invalid Airport(s)"})
+		return
+	}
+
 	//TODO: Introduce page size
 	log.Debug().Msg("Querying DB for offers")
-	response := db.QueryOffers(request, client, ctx)
+	response := db.QueryOffers(request, airports, client, ctx)
 	if len(response) == 0 {
 		log.Warn().Msg("No offers found for the given request")
 		ginc.JSON(404, gin.H{"message": "No offers found"})
@@ -131,4 +140,27 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Conte
 	ginc.JSON(200, response)
 	log.Debug().Msgf("Response: %v", response)
 	log.Info().Msg("Request handled successfully")
+}
+
+func parseAirportsToArray(airports []string) ([]string, error) {
+	chunks := strings.Split(airports[0], ",")
+	if len(chunks) == 0 {
+		log.Warn().Msg("Could not split airports into chunks, returning empty array")
+		return []string{}, fmt.Errorf("invalid Airport(s)")
+	}
+	var apList []string
+	for i, chunk := range chunks {
+		log.Debug().Msgf("Evaluating chunk %d: '%s'", i, chunk)
+		if fitsAirPortNamingCon(chunk) && chunk != "" {
+			log.Debug().Msgf("Chunk '%d' is a valid airport code: '%s'", i, chunk)
+			apList = append(apList, chunk)
+		}
+	}
+	log.Debug().Msgf("Parsed airports from %v (len %v) to %v (len: %v)", airports, len(airports), apList, len(apList))
+	return apList, nil
+}
+
+func fitsAirPortNamingCon(s string) bool {
+	re := regexp.MustCompile("(?i)[A-Z][A-Z][A-Z]")
+	return re.MatchString(s)
 }

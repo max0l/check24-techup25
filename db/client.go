@@ -31,9 +31,9 @@ func Migrate(client ent.Client) error {
 	return nil
 }
 
-func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Context) []data.OfferResponse {
+func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client, ctx context.Context) []data.OfferResponse {
 	results, err := client.Offer.Query().
-		Where(offer.OutbounddepartureairportIn(request.DepartureAirports...),
+		Where(offer.OutbounddepartureairportIn(airports...),
 			offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate),
 			offer.InboundarrivaldatetimeLTE(request.LatestReturnDate),
 			offer.CountadultsEQ(request.CountAdults),
