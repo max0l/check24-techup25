@@ -33,6 +33,7 @@ func main() {
 
 	if err := client.Ping(ctx); err != nil {
 		log.Fatal().Err(err).Msg("Could not ping DB")
+		panic(err)
 	} else {
 		log.Info().Msg("Ping to DB successful")
 	}
