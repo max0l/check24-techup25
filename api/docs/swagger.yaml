@@ -14,31 +14,31 @@ definitions:
         example: 4.5
         type: number
       Inboundarrivalairport:
-        example: LAX
+        example: PMI
         type: string
       Inboundarrivaldatetime:
-        example: "2023-10-01T15:00:00Z"
+        example: "2025-12-31T00:00:00+02:00"
         type: string
       Inbounddepartureairport:
-        example: FRA
+        example: BER
         type: string
       Inbounddeparturedatetime:
         example: "2025-12-31T00:00:00+02:00"
         type: string
       Mealtye:
-        example: All Inclusive
+        example: allinclusive
         type: string
       Ocenview:
         example: true
         type: boolean
       Outboundarrivalairport:
-        example: FRA
+        example: BER
         type: string
       Outboundarrivaldatetime:
-        example: "2023-10-15T09:00:00Z"
+        example: "2025-01-01T00:00:00+02:00"
         type: string
       Outbounddepartureairport:
-        example: LAX
+        example: PMI
         type: string
       Outbounddeparturedatetime:
         example: "2025-01-01T00:00:00+02:00"
@@ -47,7 +47,7 @@ definitions:
         example: 299.99
         type: number
       Rommtype:
-        example: Deluxe Suite
+        example: double
         type: string
     type: object
 host: localhost:8080

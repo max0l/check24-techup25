@@ -40,13 +40,13 @@ type OfferResponse struct {
 	Countadults               int       `json:"Countadults" example:"2"`
 	Countchildren             int       `json:"Countchildren" example:"1"`
 	Price                     float32   `json:"Price" example:"299.99"`
-	Inbounddepartureairport   string    `json:"Inbounddepartureairport" example:"FRA"`
-	Inboundarrivalairport     string    `json:"Inboundarrivalairport" example:"LAX"`
-	Inboundarrivaldatetime    time.Time `json:"Inboundarrivaldatetime" example:"2023-10-01T15:00:00Z"`
-	Outbounddepartureairport  string    `json:"Outbounddepartureairport" example:"LAX"`
-	Outboundarrivalairport    string    `json:"Outboundarrivalairport" example:"FRA"`
-	Outboundarrivaldatetime   time.Time `json:"Outboundarrivaldatetime" example:"2023-10-15T09:00:00Z"`
-	Mealtye                   string    `json:"Mealtye" example:"All Inclusive"`
+	Inbounddepartureairport   string    `json:"Inbounddepartureairport" example:"BER"`
+	Inboundarrivalairport     string    `json:"Inboundarrivalairport" example:"PMI"`
+	Inboundarrivaldatetime    time.Time `json:"Inboundarrivaldatetime" example:"2025-12-31T00:00:00+02:00"`
+	Outbounddepartureairport  string    `json:"Outbounddepartureairport" example:"PMI"`
+	Outboundarrivalairport    string    `json:"Outboundarrivalairport" example:"BER"`
+	Outboundarrivaldatetime   time.Time `json:"Outboundarrivaldatetime" example:"2025-01-01T00:00:00+02:00"`
+	Mealtye                   string    `json:"Mealtye" example:"allinclusive"`
 	Ocenview                  bool      `json:"Ocenview" example:"true"`
-	Rommtype                  string    `json:"Rommtype" example:"Deluxe Suite"`
+	Rommtype                  string    `json:"Rommtype" example:"double"`
 }

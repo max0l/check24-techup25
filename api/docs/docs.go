@@ -144,15 +144,15 @@ const docTemplate = `{
                 },
                 "Inboundarrivalairport": {
                     "type": "string",
-                    "example": "LAX"
+                    "example": "PMI"
                 },
                 "Inboundarrivaldatetime": {
                     "type": "string",
-                    "example": "2023-10-01T15:00:00Z"
+                    "example": "2025-12-31T00:00:00+02:00"
                 },
                 "Inbounddepartureairport": {
                     "type": "string",
-                    "example": "FRA"
+                    "example": "BER"
                 },
                 "Inbounddeparturedatetime": {
                     "type": "string",
@@ -160,7 +160,7 @@ const docTemplate = `{
                 },
                 "Mealtye": {
                     "type": "string",
-                    "example": "All Inclusive"
+                    "example": "allinclusive"
                 },
                 "Ocenview": {
                     "type": "boolean",
@@ -168,15 +168,15 @@ const docTemplate = `{
                 },
                 "Outboundarrivalairport": {
                     "type": "string",
-                    "example": "FRA"
+                    "example": "BER"
                 },
                 "Outboundarrivaldatetime": {
                     "type": "string",
-                    "example": "2023-10-15T09:00:00Z"
+                    "example": "2025-01-01T00:00:00+02:00"
                 },
                 "Outbounddepartureairport": {
                     "type": "string",
-                    "example": "LAX"
+                    "example": "PMI"
                 },
                 "Outbounddeparturedatetime": {
                     "type": "string",
@@ -188,7 +188,7 @@ const docTemplate = `{
                 },
                 "Rommtype": {
                     "type": "string",
-                    "example": "Deluxe Suite"
+                    "example": "double"
                 }
             }
         }
