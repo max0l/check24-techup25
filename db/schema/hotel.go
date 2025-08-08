@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 type Hotel struct {
@@ -21,5 +22,11 @@ func (Hotel) Fields() []ent.Field {
 func (Hotel) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("offers", Offer.Type).StorageKey(edge.Column("hotelid")),
+	}
+}
+
+func (Hotel) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("id").Unique(),
 	}
 }

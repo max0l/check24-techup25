@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 type Offer struct {
@@ -36,5 +37,12 @@ func (Offer) Edges() []ent.Edge {
 		edge.From("hotelid", Hotel.Type).
 			Ref("offers").
 			Unique(),
+	}
+}
+
+func (Offer) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("id").Unique(),
+		index.Fields("price", "outbounddepartureairport", "durationInDays", "countadults", "countchildren"),
 	}
 }
