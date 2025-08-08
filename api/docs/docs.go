@@ -22,6 +22,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "description": "Site, e.g. 1 or 2",
+                        "name": "site",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
                         "description": "ID of the hotel",
                         "name": "hotelid",
                         "in": "path",

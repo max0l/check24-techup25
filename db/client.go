@@ -112,7 +112,7 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 	return responses
 }
 
-func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (data.HotelResponse, error) {
+func QueryHotel(hotelID int, site int, client *ent.Client, ctx context.Context) (data.HotelResponse, error) {
 
 	var hotelResponse data.HotelResponse
 
@@ -125,7 +125,9 @@ func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (data.Hote
 		return hotelResponse, err
 	}
 
-	hotelOffers, err := client.Hotel.QueryOffers(h).All(ctx)
+	hotelsByPrice := client.Debug().Hotel.QueryOffers(h).Order(offer.ByPrice())
+	hotelOffers, err := hotelsByPrice.Offset((site - 1) * responseSize).Limit(responseSize).All(ctx)
+
 	if err != nil {
 		log.Error().Err(err).Msg("There was an error querring the DB")
 		return hotelResponse, err

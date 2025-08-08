@@ -59,6 +59,11 @@ paths:
     get:
       description: handles hotel requests and returns the hotel information.
       parameters:
+      - description: Site, e.g. 1 or 2
+        in: query
+        name: site
+        required: true
+        type: integer
       - description: ID of the hotel
         in: path
         name: hotelid

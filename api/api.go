@@ -7,13 +7,14 @@ import (
 	"check24-techup25/db/ent"
 	"context"
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 // Start starts the API
@@ -50,8 +51,9 @@ func Start(port int, client *ent.Client, ctx context.Context) {
 //	@Summary		handles hotel requests
 //	@Description	handles hotel requests and returns the hotel information.
 //	@Router			/hotel/{hotelid} [get]
-//	@Param			hotelid	path	int					true	"ID of the hotel"
-//	@Success		200		body	data.HotelResponse	"Hotel information"
+//	@Param			site	query	int			true				"Site, e.g. 1 or 2"
+//	@Param			hotelid	path	int			true				"ID of the hotel"
+//	@Success		200		body	{object}	data.HotelResponse	"Hotel information"
 //	@Failure		400		"Bad Request"
 //	@Failure		404		"Hotel Not Found"
 func handleHotelRequest(c *gin.Context, client *ent.Client, ctx context.Context) {
@@ -61,8 +63,21 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, ctx context.Context)
 		c.JSON(400, gin.H{"message": "Invalid hotel ID"})
 		return
 	}
-	log.Debug().Msgf("Received request for hotel with ID: %d", hotelID)
-	hotelResponse, err := db.QueryHotel(hotelID, client, ctx)
+	siteQuery, exists := c.GetQuery("site")
+	if !exists {
+		siteQuery = "1"
+		log.Warn().Msgf("Could not find site query from request")
+	}
+
+	site, err := strconv.Atoi(siteQuery)
+	if err != nil {
+		log.Error().Err(err).Msg("Could not parse site from request")
+		c.JSON(400, gin.H{"message": "Invalid site"})
+		return
+	}
+
+	log.Debug().Msgf("Received request for hotel with ID: %d and site %v", hotelID, site)
+	hotelResponse, err := db.QueryHotel(hotelID, site, client, ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			c.JSON(404, gin.H{"message": "Hotel not found"})

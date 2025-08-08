@@ -6,6 +6,7 @@ import (
 	"check24-techup25/logging"
 	"context"
 	"flag"
+
 	"github.com/rs/zerolog/log"
 )
 

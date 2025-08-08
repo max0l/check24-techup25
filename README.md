@@ -11,7 +11,7 @@ swag init -g api/api.go --parseInternal=true -o api/docs/
 
 And run this command to reformat the comments:
 ```
- swag fmt -g api/api.go
+swag fmt -g api/api.go
 ```
 
 ## Decisions I've Made
