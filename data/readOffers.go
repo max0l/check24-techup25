@@ -1,10 +1,11 @@
 package data
 
 import (
-	"github.com/rs/zerolog/log"
 	"math"
 	"sync"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 func ReadOffersCSVFile(offersFilePath string, offerResultsChannel chan<- *Offer) {

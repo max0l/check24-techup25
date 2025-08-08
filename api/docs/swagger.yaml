@@ -1,3 +1,55 @@
+definitions:
+  data.OfferResponse:
+    properties:
+      Countadults:
+        example: 2
+        type: integer
+      Countchildren:
+        example: 1
+        type: integer
+      HotelName:
+        example: Hotel Sunshine
+        type: string
+      HotelStars:
+        example: 4.5
+        type: number
+      Inboundarrivalairport:
+        example: PMI
+        type: string
+      Inboundarrivaldatetime:
+        example: "2025-12-31T00:00:00+02:00"
+        type: string
+      Inbounddepartureairport:
+        example: BER
+        type: string
+      Inbounddeparturedatetime:
+        example: "2025-12-31T00:00:00+02:00"
+        type: string
+      Mealtye:
+        example: allinclusive
+        type: string
+      Ocenview:
+        example: true
+        type: boolean
+      Outboundarrivalairport:
+        example: BER
+        type: string
+      Outboundarrivaldatetime:
+        example: "2025-01-01T00:00:00+02:00"
+        type: string
+      Outbounddepartureairport:
+        example: PMI
+        type: string
+      Outbounddeparturedatetime:
+        example: "2025-01-01T00:00:00+02:00"
+        type: string
+      Price:
+        example: 299.99
+        type: number
+      Rommtype:
+        example: double
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -52,7 +104,6 @@ paths:
       - description: Number of children
         in: query
         name: CountChildren
-        required: true
         type: integer
       - description: Duration of the trip in days
         in: query
@@ -68,7 +119,9 @@ paths:
         "200":
           description: List of offers matching the request
           schema:
-            type: body
+            items:
+              $ref: '#/definitions/data.OfferResponse'
+            type: array
         "400":
           description: Bad Request
         "404":

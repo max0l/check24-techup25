@@ -29,3 +29,5 @@ go.work
 /db/ent/*
 
 readCSVs
+
+!db/ent/client_healthcheck.go

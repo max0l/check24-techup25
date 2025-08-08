@@ -2,7 +2,9 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 )
 
 type Offer struct {
@@ -11,8 +13,7 @@ type Offer struct {
 
 func (Offer) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("offerid").Unique(),
-		field.Int("hotelid"),
+		field.Int("id").Unique(),
 		field.Time("outbounddeparturedatetime"),
 		field.Time("inbounddeparturedatetime"),
 		field.Int("countadults"),
@@ -28,5 +29,20 @@ func (Offer) Fields() []ent.Field {
 		field.Bool("oceanview"),
 		field.String("roomtype"),
 		field.Int("durationInDays"),
+	}
+}
+
+func (Offer) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("hotel", Hotel.Type).
+			Ref("offers").
+			Unique(),
+	}
+}
+
+func (Offer) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("price", "outbounddepartureairport", "durationInDays", "countadults", "countchildren"),
+		index.Fields("id").Edges("hotel").Unique(),
 	}
 }

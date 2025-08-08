@@ -85,8 +85,7 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Number of children",
                         "name": "CountChildren",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "integer",
@@ -107,7 +106,10 @@ const docTemplate = `{
                     "200": {
                         "description": "List of offers matching the request",
                         "schema": {
-                            "type": "body"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/data.OfferResponse"
+                            }
                         }
                     },
                     "400": {
@@ -116,6 +118,77 @@ const docTemplate = `{
                     "404": {
                         "description": "No Offers Found"
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "data.OfferResponse": {
+            "type": "object",
+            "properties": {
+                "Countadults": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "Countchildren": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "HotelName": {
+                    "type": "string",
+                    "example": "Hotel Sunshine"
+                },
+                "HotelStars": {
+                    "type": "number",
+                    "example": 4.5
+                },
+                "Inboundarrivalairport": {
+                    "type": "string",
+                    "example": "PMI"
+                },
+                "Inboundarrivaldatetime": {
+                    "type": "string",
+                    "example": "2025-12-31T00:00:00+02:00"
+                },
+                "Inbounddepartureairport": {
+                    "type": "string",
+                    "example": "BER"
+                },
+                "Inbounddeparturedatetime": {
+                    "type": "string",
+                    "example": "2025-12-31T00:00:00+02:00"
+                },
+                "Mealtye": {
+                    "type": "string",
+                    "example": "allinclusive"
+                },
+                "Ocenview": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "Outboundarrivalairport": {
+                    "type": "string",
+                    "example": "BER"
+                },
+                "Outboundarrivaldatetime": {
+                    "type": "string",
+                    "example": "2025-01-01T00:00:00+02:00"
+                },
+                "Outbounddepartureairport": {
+                    "type": "string",
+                    "example": "PMI"
+                },
+                "Outbounddeparturedatetime": {
+                    "type": "string",
+                    "example": "2025-01-01T00:00:00+02:00"
+                },
+                "Price": {
+                    "type": "number",
+                    "example": 299.99
+                },
+                "Rommtype": {
+                    "type": "string",
+                    "example": "double"
                 }
             }
         }

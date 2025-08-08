@@ -7,8 +7,9 @@ import (
 	"check24-techup25/logging"
 	"context"
 	"flag"
-	"github.com/rs/zerolog/log"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
@@ -37,12 +38,19 @@ func main() {
 
 	log.Info().Msg("Running Migration...")
 	if err = db.Migrate(*client); err != nil {
-		log.Error().Err(err).Msg("Could Not migrate current schena")
+		log.Error().Err(err).Msg("Could Not migrate current schema")
 	} else {
 		log.Info().Msg("Migration Done")
 	}
 
 	ctx := context.Background()
+
+	if err := client.Ping(ctx); err != nil {
+		log.Fatal().Err(err).Msg("Could not ping DB")
+		panic(err)
+	} else {
+		log.Info().Msg("Ping to DB successful")
+	}
 
 	hotelsResultsChannel := make(chan *data.Hotel, data.BatchSize)
 	offerResultsChannel := make(chan *data.Offer, data.BatchSize)

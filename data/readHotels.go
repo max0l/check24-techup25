@@ -1,8 +1,9 @@
 package data
 
 import (
-	"github.com/rs/zerolog/log"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
 func ReadHotelsCSVFile(hotelFilePath string, hotelResultsChannel chan<- *Hotel) {

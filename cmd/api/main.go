@@ -19,9 +19,9 @@ func main() {
 	log.Info().Msg("Connecting to DB...")
 	client, err := db.NewClient(*dbDSN)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Could not connect to DB")
+		log.Fatal().Err(err).Msg("DSN is not valid")
 	} else {
-		log.Info().Msg("Connected to DB")
+		log.Info().Msg("Valid DSN")
 	}
 
 	defer func() {
@@ -30,6 +30,13 @@ func main() {
 		}
 	}()
 	ctx := context.Background()
+
+	if err := client.Ping(ctx); err != nil {
+		log.Fatal().Err(err).Msg("Could not ping DB")
+		panic(err)
+	} else {
+		log.Info().Msg("Ping to DB successful")
+	}
 
 	api.Start(*port, client, ctx)
 }

@@ -1,5 +1,19 @@
 # Check24 Techup25
 
+## Development
+
+### Swag code gen
+
+Run this command to (re-)generate the swag docs:
+```
+swag init -g api/api.go --parseInternal=true -o api/docs/
+```
+
+And run this command to reformat the comments:
+```
+ swag fmt -g api/api.go
+```
+
 ## Decisions I've Made
 
 ### CSV to DB Migration

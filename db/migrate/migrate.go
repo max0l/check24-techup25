@@ -4,6 +4,7 @@ import (
 	"check24-techup25/data"
 	"check24-techup25/db/ent"
 	"context"
+
 	"entgo.io/ent/dialect/sql"
 	"github.com/rs/zerolog/log"
 )
@@ -13,10 +14,10 @@ func MigrateHotels(ctx context.Context, client *ent.Client, hotels <-chan *data.
 		log.Debug().Msg("Sending a hotel to the db")
 		client.Hotel.Create().
 			SetHotelname(hotel.Hotelname).
-			SetHotelid(hotel.Hotelid).
+			SetID(hotel.Hotelid).
 			SetHotelstars(hotel.Hotelstars).
 			OnConflict(
-				sql.ConflictColumns("hotelid"),
+				sql.ConflictColumns("id"),
 				sql.ResolveWithNewValues()).
 			UpdateNewValues().
 			ExecX(ctx)
@@ -31,9 +32,21 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 		err        error
 	)
 	for offer := range offers {
-		offerBatch = append(offerBatch, client.Offer.Create().
-			SetOfferid(offer.Offerid).
-			SetHotelid(offer.Hotelid).
+
+		// This will make the insertion a little bit faster
+		if offer.Hotelid > 998 {
+			log.Info().Err(err).Msgf("Skipping hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
+			continue
+		}
+		hotel, err := client.Hotel.Get(ctx, offer.Hotelid)
+		if err != nil {
+			log.Warn().Err(err).Msgf("Could not find hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
+			continue
+		}
+
+		offerDb := client.Offer.Create().
+			SetID(offer.Offerid).
+			SetHotel(hotel).
 			SetOutbounddeparturedatetime(offer.Outbounddeparturedatetime).
 			SetInbounddeparturedatetime(offer.Inbounddeparturedatetime).
 			SetCountadults(offer.Countadults).
@@ -48,11 +61,13 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 			SetMealtype(offer.Mealtype).
 			SetOceanview(offer.Oceanview).
 			SetRoomtype(offer.Roomtype).
-			SetDurationInDays(offer.DurationInDays))
+			SetDurationInDays(offer.DurationInDays)
+
+		offerBatch = append(offerBatch, offerDb)
 		if len(offerBatch) >= batchSize {
 			err = client.Offer.CreateBulk(offerBatch...).
 				OnConflict(
-					sql.ConflictColumns("offerid"),
+					sql.ConflictColumns("id"),
 					sql.ResolveWithNewValues(),
 				).
 				UpdateNewValues().
@@ -69,7 +84,7 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 	if len(offerBatch) > 0 {
 		err = client.Offer.CreateBulk(offerBatch...).
 			OnConflict(
-				sql.ConflictColumns("offerid"),
+				sql.ConflictColumns("id"),
 				sql.ResolveWithNewValues(),
 			).
 			UpdateNewValues().

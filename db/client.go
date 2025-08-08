@@ -6,10 +6,15 @@ import (
 	"check24-techup25/db/ent/hotel"
 	"check24-techup25/db/ent/offer"
 	"context"
+
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
-	"strconv"
 )
+
+type OfferWithHotel struct {
+	Offer *ent.Offer
+	Hotel *ent.Hotel
+}
 
 const responseSize = 50
 
@@ -30,14 +35,16 @@ func Migrate(client ent.Client) error {
 	return nil
 }
 
-func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Context) []data.OfferResponse {
-	results, err := client.Offer.Query().
-		Where(offer.OutbounddepartureairportIn(request.DepartureAirports...),
+// TODO: change edge name 'hotelid' of offer
+func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client, ctx context.Context) []data.OfferResponse {
+	results, err := client.Debug().Offer.Query().
+		Where(offer.OutbounddepartureairportIn(airports...),
 			offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate),
 			offer.InboundarrivaldatetimeLTE(request.LatestReturnDate),
 			offer.CountadultsEQ(request.CountAdults),
-			offer.CountchildrenEQ(request.CountChildren)).
-		Order(offer.ByPrice()).
+			offer.CountchildrenEQ(request.CountChildren),
+			offer.DurationInDaysEQ(request.Duration)).
+		Order(offer.ByPrice()).WithHotel().
 		All(ctx)
 	//TODO: add Duration
 	log.Debug().Msgf("Querying DB for offers done, got %v results", len(results))
@@ -50,10 +57,10 @@ func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Conte
 	seenHotels := make(map[int]bool)
 
 	for _, result := range results {
-		hotelID := result.Hotelid
-		if !seenHotels[hotelID] {
+		offerHotelId := result.Edges.Hotel.ID
+		if !seenHotels[offerHotelId] {
 			uniqueOffers = append(uniqueOffers, result)
-			seenHotels[hotelID] = true
+			seenHotels[offerHotelId] = true
 		}
 	}
 
@@ -75,39 +82,29 @@ func QueryOffers(request data.OfferQuerry, client *ent.Client, ctx context.Conte
 		}
 		processedResults++
 
-		result := uniqueOffers[i]
+		offerResult := uniqueOffers[i]
+		hotelResult := uniqueOffers[i].Edges.Hotel
 
 		log.Debug().Msgf("Processing offer: %v", i)
-		//TODO: ask if the hotelname should be queried
-		queriedHotel, err := client.Hotel.Query().
-			Where(hotel.HotelidEQ(result.Hotelid)).
-			First(ctx)
-		if err != nil {
-			log.Warn().Msgf("Could not find hotel with ID %v for offer %v. "+
-				"Falling back to ID's", result.Hotelid, result.Offerid)
-			queriedHotel = &ent.Hotel{
-				Hotelname:  strconv.Itoa(result.Hotelid),
-				Hotelstars: 0,
-			}
-		}
+		//TODO: ask if the hotelname should be queried -> yes, but just in case-> Fallback function with env
 
 		response := data.OfferResponse{
-			HotelName:                 queriedHotel.Hotelname,
-			HotelStars:                queriedHotel.Hotelstars,
-			Outbounddeparturedatetime: result.Outbounddeparturedatetime,
-			Inbounddeparturedatetime:  result.Inbounddeparturedatetime,
-			Countadults:               result.Countadults,
-			Countchildren:             result.Countchildren,
-			Price:                     result.Price,
-			Inbounddepartureairport:   result.Inbounddepartureairport,
-			Inboundarrivalairport:     result.Inboundarrivalairport,
-			Inboundarrivaldatetime:    result.Inboundarrivaldatetime,
-			Outbounddepartureairport:  result.Outbounddepartureairport,
-			Outboundarrivalairport:    result.Outboundarrivalairport,
-			Outboundarrivaldatetime:   result.Outboundarrivaldatetime,
-			Mealtye:                   result.Mealtype,
-			Ocenview:                  result.Oceanview,
-			Rommtype:                  result.Roomtype,
+			HotelName:                 hotelResult.Hotelname,
+			HotelStars:                hotelResult.Hotelstars,
+			Outbounddeparturedatetime: offerResult.Outbounddeparturedatetime,
+			Inbounddeparturedatetime:  offerResult.Inbounddeparturedatetime,
+			Countadults:               offerResult.Countadults,
+			Countchildren:             offerResult.Countchildren,
+			Price:                     offerResult.Price,
+			Inbounddepartureairport:   offerResult.Inbounddepartureairport,
+			Inboundarrivalairport:     offerResult.Inboundarrivalairport,
+			Inboundarrivaldatetime:    offerResult.Inboundarrivaldatetime,
+			Outbounddepartureairport:  offerResult.Outbounddepartureairport,
+			Outboundarrivalairport:    offerResult.Outboundarrivalairport,
+			Outboundarrivaldatetime:   offerResult.Outboundarrivaldatetime,
+			Mealtye:                   offerResult.Mealtype,
+			Ocenview:                  offerResult.Oceanview,
+			Rommtype:                  offerResult.Roomtype,
 		}
 		responses = append(responses, response)
 	}
@@ -121,17 +118,14 @@ func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (data.Hote
 
 	log.Debug().Msgf("Querying DB for hotel with ID: %d", hotelID)
 	h, err := client.Hotel.Query().
-		Where(hotel.HotelidEQ(hotelID)).
+		Where(hotel.IDEQ(hotelID)).
 		First(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("There was an error querring the DB")
 		return hotelResponse, err
 	}
 
-	hotelOffers, err := client.Offer.Query().
-		Where(offer.HotelidEQ(hotelID)).
-		Order(offer.ByPrice()).
-		All(ctx)
+	hotelOffers, err := client.Hotel.QueryOffers(h).All(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("There was an error querring the DB")
 		return hotelResponse, err
@@ -139,15 +133,15 @@ func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (data.Hote
 
 	log.Info().Msgf("Found %d offers for hotel with ID: %d", len(hotelOffers), hotelID)
 
-	hotelResponse.Hotelid = h.Hotelid
+	hotelResponse.Hotelid = h.ID
 	hotelResponse.Hotelname = h.Hotelname
 	hotelResponse.Hotelstars = h.Hotelstars
 	hotelResponse.Offers = make([]data.Offer, 0, len(hotelOffers))
 
 	for i, singleOffer := range hotelOffers {
 		o := data.Offer{
-			Offerid:                   singleOffer.Offerid,
-			Hotelid:                   singleOffer.Hotelid,
+			Offerid:                   singleOffer.ID,
+			Hotelid:                   h.ID,
 			Outbounddeparturedatetime: singleOffer.Outbounddeparturedatetime,
 			Inbounddeparturedatetime:  singleOffer.Inbounddeparturedatetime,
 			Countadults:               singleOffer.Countadults,
