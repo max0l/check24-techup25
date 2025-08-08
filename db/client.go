@@ -35,15 +35,16 @@ func Migrate(client ent.Client) error {
 	return nil
 }
 
+// TODO: change edge name 'hotelid' of offer
 func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client, ctx context.Context) []data.OfferResponse {
-	results, err := client.Offer.Query().
+	results, err := client.Debug().Offer.Query().
 		Where(offer.OutbounddepartureairportIn(airports...),
 			offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate),
 			offer.InboundarrivaldatetimeLTE(request.LatestReturnDate),
 			offer.CountadultsEQ(request.CountAdults),
 			offer.CountchildrenEQ(request.CountChildren),
 			offer.DurationInDaysEQ(request.Duration)).
-		Order(offer.ByPrice()).
+		Order(offer.ByPrice()).WithHotelid().
 		All(ctx)
 	//TODO: add Duration
 	log.Debug().Msgf("Querying DB for offers done, got %v results", len(results))
@@ -52,21 +53,14 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 		return []data.OfferResponse{}
 	}
 
-	uniqueOffers := make([]OfferWithHotel, 0, len(results))
+	uniqueOffers := make([]*ent.Offer, 0, len(results))
 	seenHotels := make(map[int]bool)
 
 	for _, result := range results {
-		offerHotel, err := result.QueryHotelid().Only(ctx)
-		if err != nil {
-			log.Warn().Err(err).Msgf("Could not query hotel for offer with ID %d", result.ID)
-			continue
-		}
-		if !seenHotels[offerHotel.ID] {
-			uniqueOffers = append(uniqueOffers, OfferWithHotel{
-				Offer: result,
-				Hotel: offerHotel,
-			})
-			seenHotels[offerHotel.ID] = true
+		offerHotelId := result.Edges.Hotelid.ID
+		if !seenHotels[offerHotelId] {
+			uniqueOffers = append(uniqueOffers, result)
+			seenHotels[offerHotelId] = true
 		}
 	}
 
@@ -88,8 +82,8 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 		}
 		processedResults++
 
-		offerResult := uniqueOffers[i].Offer
-		hotelResult := uniqueOffers[i].Hotel
+		offerResult := uniqueOffers[i]
+		hotelResult := uniqueOffers[i].Edges.Hotelid
 
 		log.Debug().Msgf("Processing offer: %v", i)
 		//TODO: ask if the hotelname should be queried -> yes, but just in case-> Fallback function with env
