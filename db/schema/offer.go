@@ -42,7 +42,7 @@ func (Offer) Edges() []ent.Edge {
 
 func (Offer) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("id").Unique(),
 		index.Fields("price", "outbounddepartureairport", "durationInDays", "countadults", "countchildren"),
+		index.Fields("id").Edges("hotel").Unique(),
 	}
 }
