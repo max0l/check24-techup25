@@ -35,8 +35,8 @@ type OfferQuerry struct {
 type OfferResponse struct {
 	HotelName                 string    `json:"HotelName" example:"Hotel Sunshine"`
 	HotelStars                float32   `json:"HotelStars" example:"4.5"`
-	Outbounddeparturedatetime time.Time `json:"Outbounddeparturedatetime" example:"2023-10-01T12:00:00Z"`
-	Inbounddeparturedatetime  time.Time `json:"Inbounddeparturedatetime" example:"2023-10-15T12:00:00Z"`
+	Outbounddeparturedatetime time.Time `json:"Outbounddeparturedatetime" example:"2025-01-01T00:00:00+02:00"`
+	Inbounddeparturedatetime  time.Time `json:"Inbounddeparturedatetime" example:"2025-12-31T00:00:00+02:00"`
 	Countadults               int       `json:"Countadults" example:"2"`
 	Countchildren             int       `json:"Countchildren" example:"1"`
 	Price                     float32   `json:"Price" example:"299.99"`

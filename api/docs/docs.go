@@ -156,7 +156,7 @@ const docTemplate = `{
                 },
                 "Inbounddeparturedatetime": {
                     "type": "string",
-                    "example": "2023-10-15T12:00:00Z"
+                    "example": "2025-12-31T00:00:00+02:00"
                 },
                 "Mealtye": {
                     "type": "string",
@@ -180,7 +180,7 @@ const docTemplate = `{
                 },
                 "Outbounddeparturedatetime": {
                     "type": "string",
-                    "example": "2023-10-01T12:00:00Z"
+                    "example": "2025-01-01T00:00:00+02:00"
                 },
                 "Price": {
                     "type": "number",
