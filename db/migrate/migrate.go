@@ -32,11 +32,18 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 		err        error
 	)
 	for offer := range offers {
+
+		// This will make the insertion a little bit faster
+		if offer.Hotelid > 998 {
+			log.Info().Err(err).Msgf("Skipping hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
+			continue
+		}
 		hotel, err := client.Hotel.Get(ctx, offer.Hotelid)
 		if err != nil {
 			log.Warn().Err(err).Msgf("Could not find hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
 			continue
 		}
+
 		offerDb := client.Offer.Create().
 			SetID(offer.Offerid).
 			SetHotel(hotel).
