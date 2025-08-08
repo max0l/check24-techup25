@@ -34,7 +34,7 @@ func (Offer) Fields() []ent.Field {
 
 func (Offer) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("hotelid", Hotel.Type).
+		edge.From("hotel", Hotel.Type).
 			Ref("offers").
 			Unique(),
 	}

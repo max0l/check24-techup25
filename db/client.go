@@ -44,7 +44,7 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 			offer.CountadultsEQ(request.CountAdults),
 			offer.CountchildrenEQ(request.CountChildren),
 			offer.DurationInDaysEQ(request.Duration)).
-		Order(offer.ByPrice()).WithHotelid().
+		Order(offer.ByPrice()).WithHotel().
 		All(ctx)
 	//TODO: add Duration
 	log.Debug().Msgf("Querying DB for offers done, got %v results", len(results))
@@ -57,7 +57,7 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 	seenHotels := make(map[int]bool)
 
 	for _, result := range results {
-		offerHotelId := result.Edges.Hotelid.ID
+		offerHotelId := result.Edges.Hotel.ID
 		if !seenHotels[offerHotelId] {
 			uniqueOffers = append(uniqueOffers, result)
 			seenHotels[offerHotelId] = true
@@ -83,7 +83,7 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 		processedResults++
 
 		offerResult := uniqueOffers[i]
-		hotelResult := uniqueOffers[i].Edges.Hotelid
+		hotelResult := uniqueOffers[i].Edges.Hotel
 
 		log.Debug().Msgf("Processing offer: %v", i)
 		//TODO: ask if the hotelname should be queried -> yes, but just in case-> Fallback function with env
