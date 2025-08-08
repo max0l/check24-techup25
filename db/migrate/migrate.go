@@ -38,7 +38,7 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 			continue
 		}
 		offerDb := client.Offer.Create().
-			SetOfferid(offer.Offerid).
+			SetID(offer.Offerid).
 			SetHotelid(hotel).
 			SetOutbounddeparturedatetime(offer.Outbounddeparturedatetime).
 			SetInbounddeparturedatetime(offer.Inbounddeparturedatetime).

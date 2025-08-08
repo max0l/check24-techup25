@@ -146,8 +146,8 @@ func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (data.Hote
 
 	for i, singleOffer := range hotelOffers {
 		o := data.Offer{
-			Offerid:                   singleOffer.Offerid,
-			Hotelid:                   singleOffer.ID,
+			Offerid:                   singleOffer.ID,
+			Hotelid:                   h.ID,
 			Outbounddeparturedatetime: singleOffer.Outbounddeparturedatetime,
 			Inbounddeparturedatetime:  singleOffer.Inbounddeparturedatetime,
 			Countadults:               singleOffer.Countadults,
