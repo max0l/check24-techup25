@@ -67,7 +67,7 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 		if len(offerBatch) >= batchSize {
 			err = client.Offer.CreateBulk(offerBatch...).
 				OnConflict(
-					sql.ConflictColumns("offerid"),
+					sql.ConflictColumns("id"),
 					sql.ResolveWithNewValues(),
 				).
 				UpdateNewValues().
@@ -84,7 +84,7 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 	if len(offerBatch) > 0 {
 		err = client.Offer.CreateBulk(offerBatch...).
 			OnConflict(
-				sql.ConflictColumns("offerid"),
+				sql.ConflictColumns("id"),
 				sql.ResolveWithNewValues(),
 			).
 			UpdateNewValues().
