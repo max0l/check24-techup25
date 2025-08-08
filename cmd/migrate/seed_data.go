@@ -38,7 +38,7 @@ func main() {
 
 	log.Info().Msg("Running Migration...")
 	if err = db.Migrate(*client); err != nil {
-		log.Error().Err(err).Msg("Could Not migrate current schena")
+		log.Error().Err(err).Msg("Could Not migrate current schema")
 	} else {
 		log.Info().Msg("Migration Done")
 	}
