@@ -1,9 +1,13 @@
 package api
 
 import (
+	"check24-techup25/data"
+	"check24-techup25/db/ent"
 	"context"
+	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
@@ -50,4 +54,31 @@ func CloseRedisClient(client *redis.Client) {
 	} else {
 		log.Info().Msg("redis client closed successfully")
 	}
+}
+
+func storeOfferRequestInRedis(redisClient *redis.Client, request data.OfferQuerry, uniqueOffers []*ent.Offer, ctx context.Context) {
+	var modifiedRequest = request
+	if request.Site != 1 {
+		modifiedRequest.Site = 1
+	}
+	for {
+		responseStore := make([]data.OfferResponse, 0, 50)
+		parseOfferDbResponse(uniqueOffers, &responseStore, modifiedRequest)
+		if len(responseStore) == 0 {
+			return
+		}
+		redisKey := CreateRedisCacheKeyOffers(modifiedRequest, modifiedRequest.Site)
+		err := redisClient.Set(ctx, redisKey, responseStore, 20).Err()
+		if err != nil {
+			return
+		}
+		modifiedRequest.Site++
+	}
+
+}
+
+func CreateRedisCacheKeyOffers(request data.OfferQuerry, site int) string {
+	return fmt.Sprintf("offers:%s:%s:%s:%d:%d:%d:%d",
+		strings.Join(request.DepartureAirports, ","), request.EarliestDepartureDate.String(), request.EarliestDepartureDate.String(),
+		request.CountAdults, request.CountChildren, request.Duration, site)
 }

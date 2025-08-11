@@ -16,7 +16,7 @@ type OfferWithHotel struct {
 	Hotel *ent.Hotel
 }
 
-const responseSize = 50
+const ResponseSize = 50
 
 // NewClient initializes and returns a new Ent client for a PostgreSQL database.
 // Example DSN: "host=localhost port=5432 user=postgres password=secret dbname=mydb sslmode=disable"
@@ -36,7 +36,7 @@ func Migrate(client ent.Client) error {
 }
 
 // TODO: change edge name 'hotelid' of offer
-func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client, ctx context.Context) []data.OfferResponse {
+func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client, ctx context.Context) []*ent.Offer {
 	results, err := client.Debug().Offer.Query().
 		Where(offer.OutbounddepartureairportIn(airports...),
 			offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate),
@@ -50,7 +50,7 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 	log.Debug().Msgf("Querying DB for offers done, got %v results", len(results))
 	if err != nil {
 		log.Warn().Err(err).Msg("Could not query DB")
-		return []data.OfferResponse{}
+		return []*ent.Offer{}
 	}
 
 	uniqueOffers := make([]*ent.Offer, 0, len(results))
@@ -66,50 +66,13 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 
 	log.Debug().Msgf("Found %v unique offers", len(uniqueOffers))
 
-	processedResults := 0
-	var responses []data.OfferResponse
-
-	if responseSize*(request.Site-1) >= len(uniqueOffers) {
+	if ResponseSize*(request.Site-1) >= len(uniqueOffers) {
 		log.Warn().Msg("Response size limit is larger than available offers")
-		return []data.OfferResponse{}
+		return []*ent.Offer{}
 	}
 
-	for i := responseSize * (request.Site - 1); i < len(uniqueOffers); i++ {
-
-		if processedResults >= responseSize {
-			log.Debug().Msg("Reached response size limit, stopping processing offers")
-			break
-		}
-		processedResults++
-
-		offerResult := uniqueOffers[i]
-		hotelResult := uniqueOffers[i].Edges.Hotel
-
-		log.Debug().Msgf("Processing offer: %v", i)
-		//TODO: ask if the hotelname should be queried -> yes, but just in case-> Fallback function with env
-
-		response := data.OfferResponse{
-			HotelName:                 hotelResult.Hotelname,
-			HotelStars:                hotelResult.Hotelstars,
-			Outbounddeparturedatetime: offerResult.Outbounddeparturedatetime,
-			Inbounddeparturedatetime:  offerResult.Inbounddeparturedatetime,
-			Countadults:               offerResult.Countadults,
-			Countchildren:             offerResult.Countchildren,
-			Price:                     offerResult.Price,
-			Inbounddepartureairport:   offerResult.Inbounddepartureairport,
-			Inboundarrivalairport:     offerResult.Inboundarrivalairport,
-			Inboundarrivaldatetime:    offerResult.Inboundarrivaldatetime,
-			Outbounddepartureairport:  offerResult.Outbounddepartureairport,
-			Outboundarrivalairport:    offerResult.Outboundarrivalairport,
-			Outboundarrivaldatetime:   offerResult.Outboundarrivaldatetime,
-			Mealtye:                   offerResult.Mealtype,
-			Ocenview:                  offerResult.Oceanview,
-			Rommtype:                  offerResult.Roomtype,
-		}
-		responses = append(responses, response)
-	}
-	log.Debug().Msg("Built response for offers")
-	return responses
+	log.Debug().Msg("Queried offers")
+	return uniqueOffers
 }
 
 func QueryHotel(hotelID int, site int, client *ent.Client, ctx context.Context) (data.HotelResponse, error) {
@@ -126,7 +89,7 @@ func QueryHotel(hotelID int, site int, client *ent.Client, ctx context.Context) 
 	}
 
 	hotelsByPrice := client.Debug().Hotel.QueryOffers(h).Order(offer.ByPrice())
-	hotelOffers, err := hotelsByPrice.Offset((site - 1) * responseSize).Limit(responseSize).All(ctx)
+	hotelOffers, err := hotelsByPrice.Offset((site - 1) * ResponseSize).Limit(ResponseSize).All(ctx)
 
 	if err != nil {
 		log.Error().Err(err).Msg("There was an error querring the DB")

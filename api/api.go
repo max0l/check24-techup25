@@ -32,7 +32,7 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 	})
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	router.GET("/offers", func(c *gin.Context) {
-		handleOfferRequest(c, client, ctx)
+		handleOfferRequest(c, client, redisClient, ctx)
 	})
 
 	router.GET("/hotel/:hotelid", func(c *gin.Context) {
@@ -106,7 +106,7 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, ctx context.Context)
 //	@Success		200						{object}	[]data.OfferResponse	"List of offers matching the request"
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"No Offers Found"
-func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Context) {
+func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
 	var request data.OfferQuerry
 	err := ginc.BindQuery(&request)
 	if err != nil {
@@ -153,9 +153,54 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, ctx context.Conte
 	} else {
 		log.Info().Msgf("Found %v offers for the given request", len(response))
 	}
-	ginc.JSON(200, response)
-	log.Debug().Msgf("Response: %v", response)
+
+	offerResponse := make([]data.OfferResponse, 0, 50)
+
+	parseOfferDbResponse(response, &offerResponse, request)
+
+	go storeOfferRequestInRedis(redisClient, request, response, ctx)
+
+	ginc.JSON(200, offerResponse)
+	log.Debug().Msgf("Response: %v", offerResponse)
 	log.Info().Msg("Request handled successfully")
+}
+
+func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *[]data.OfferResponse, request data.OfferQuerry) {
+
+	processedResults := 0
+	for i := db.ResponseSize * (request.Site - 1); i < len(uniqueOffers); i++ {
+
+		if processedResults >= db.ResponseSize {
+			log.Debug().Msg("Reached response size limit, stopping processing offers")
+			break
+		}
+		processedResults++
+
+		offerResult := uniqueOffers[i]
+		hotelResult := uniqueOffers[i].Edges.Hotel
+
+		log.Debug().Msgf("Processing offer: %v", i)
+
+		response := data.OfferResponse{
+			HotelName:                 hotelResult.Hotelname,
+			HotelStars:                hotelResult.Hotelstars,
+			Outbounddeparturedatetime: offerResult.Outbounddeparturedatetime,
+			Inbounddeparturedatetime:  offerResult.Inbounddeparturedatetime,
+			Countadults:               offerResult.Countadults,
+			Countchildren:             offerResult.Countchildren,
+			Price:                     offerResult.Price,
+			Inbounddepartureairport:   offerResult.Inbounddepartureairport,
+			Inboundarrivalairport:     offerResult.Inboundarrivalairport,
+			Inboundarrivaldatetime:    offerResult.Inboundarrivaldatetime,
+			Outbounddepartureairport:  offerResult.Outbounddepartureairport,
+			Outboundarrivalairport:    offerResult.Outboundarrivalairport,
+			Outboundarrivaldatetime:   offerResult.Outboundarrivaldatetime,
+			Mealtye:                   offerResult.Mealtype,
+			Ocenview:                  offerResult.Oceanview,
+			Rommtype:                  offerResult.Roomtype,
+		}
+		*responsesStore = append(*responsesStore, response)
+	}
 }
 
 func parseAirportsToArray(airports []string) ([]string, error) {
