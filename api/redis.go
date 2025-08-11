@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
@@ -43,7 +44,7 @@ func GetRedisEnvs() (string, string, int) {
 	if db := os.Getenv("REDIS_DB"); db != "" {
 		redisDB, _ = strconv.Atoi(db)
 	}
-
+	log.Debug().Msgf("REDIS_URL: %s, REDIS_PASSWORD: %s, REDIS_DB: %d", redisUrl, redisPassword, redisDB)
 	return redisUrl, redisPassword, redisDB
 }
 
@@ -68,11 +69,13 @@ func storeOfferRequestInRedis(redisClient *redis.Client, request data.OfferQuerr
 			return
 		}
 		redisKey := CreateRedisCacheKeyOffers(modifiedRequest, modifiedRequest.Site)
-		err := redisClient.Set(ctx, redisKey, responseStore, 20).Err()
-		if err != nil {
-			return
-		}
 		modifiedRequest.Site++
+		err := redisClient.Set(ctx, redisKey, responseStore, time.Minute*20).Err()
+		if err != nil {
+			log.Warn().Err(err).Msg("redis store offer error")
+			continue
+		}
+		log.Debug().Msgf("store offer %s successfully", redisKey)
 	}
 
 }
