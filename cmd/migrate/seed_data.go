@@ -17,8 +17,8 @@ func main() {
 
 	logging.SetLogger()
 
-	hotelFilePath := flag.String("h", "./data/hotels.csv", "Path to the hotels CSV file")
-	offersFilePath := flag.String("o", "../offers/offer.csv", "Path to the offers CSV file")
+	hotelFilePath := flag.String("hotel", "./data/hotels.csv", "Path to the hotels CSV file")
+	offersFilePath := flag.String("offer", "../offers/offer.csv", "Path to the offers CSV file")
 	flag.Parse()
 
 	dbDSN := os.Getenv("DATABASE_DSN")
