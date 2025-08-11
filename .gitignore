@@ -31,3 +31,5 @@ go.work
 readCSVs
 
 !db/ent/client_healthcheck.go
+
+.env
