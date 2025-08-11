@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -22,7 +23,7 @@ import (
 //
 //	@title	Techup25
 //	@host	localhost:8080
-func Start(port int, client *ent.Client, ctx context.Context) {
+func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
 	router := gin.Default()
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

@@ -36,6 +36,12 @@ func main() {
 	}()
 	ctx := context.Background()
 
+	redisClient, err := api.GetRedisClient(ctx)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Could not connect to Redis")
+	}
+	defer api.CloseRedisClient(redisClient)
+
 	if err := client.Ping(ctx); err != nil {
 		log.Fatal().Err(err).Msg("Could not ping DB")
 		panic(err)
@@ -43,5 +49,5 @@ func main() {
 		log.Info().Msg("Ping to DB successful")
 	}
 
-	api.Start(*port, client, ctx)
+	api.Start(*port, client, redisClient, ctx)
 }
