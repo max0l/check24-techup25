@@ -24,7 +24,7 @@ const (
 func openFile(filePath string) (*os.File, error) {
 	csvFile, err := os.Open(filePath)
 	if err != nil {
-		log.Panic().Err(err).Msg("Error opening hotelFilePath file")
+		log.Fatal().Err(err).Msg("Error opening hotelFilePath file")
 		return nil, err
 	}
 
@@ -102,7 +102,7 @@ func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan []dataRecord, ch
 func readHeaders(csvReader *csv.Reader) {
 	headers, err := csvReader.Read()
 	if err != nil {
-		log.Panic().Err(err).Msg("Error reading header from hotelFilePath file")
+		log.Fatal().Err(err).Msg("Error reading header from hotelFilePath file")
 	}
 
 	log.Debug().Msgf("CSV Headers: %v", headers)

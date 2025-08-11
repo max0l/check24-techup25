@@ -10,7 +10,7 @@ func ReadHotelsCSVFile(hotelFilePath string, hotelResultsChannel chan<- *Hotel) 
 
 	hotelFile, err := openFile(hotelFilePath)
 	if err != nil {
-		log.Panic().Err(err).Msg("Error opening hotelFilePath file")
+		log.Fatal().Err(err).Msg("Error opening hotelFilePath file")
 		return
 	}
 

@@ -51,7 +51,6 @@ func main() {
 
 	if err := client.Ping(ctx); err != nil {
 		log.Fatal().Err(err).Msg("Could not ping DB")
-		panic(err)
 	} else {
 		log.Info().Msg("Ping to DB successful")
 	}
@@ -66,7 +65,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		defer log.Debug().Msg("Printed all Hotels")
+		defer log.Debug().Msg("Processed all Hotels")
 		migrate.MigrateHotels(ctx, client, hotelsResultsChannel)
 	}()
 	data.ReadHotelsCSVFile(*hotelFilePath, hotelsResultsChannel)

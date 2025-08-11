@@ -25,7 +25,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		defer log.Debug().Msg("Printed all Hotels")
+		defer log.Debug().Msg("Processed all Hotels")
 		data.PrintHotelsResults(hotelsResultsChannel)
 	}()
 	data.ReadHotelsCSVFile(*hotelFilePath, hotelsResultsChannel)

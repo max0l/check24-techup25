@@ -11,7 +11,7 @@ import (
 func ReadOffersCSVFile(offersFilePath string, offerResultsChannel chan<- *Offer) {
 	offersFile, err := openFile(offersFilePath)
 	if err != nil {
-		log.Panic().Err(err).Msg("Error opening offers file")
+		log.Fatal().Err(err).Msg("Error opening offers file")
 		return
 	}
 
