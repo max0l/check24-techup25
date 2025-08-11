@@ -24,10 +24,11 @@ services:
         condition: service_healthy
     environment:
       DATABASE_DSN: host=${POSTGRES_HOST:-db} port=5432 user=${POSTGRES_USER:-user} dbname=${POSTGRES_DB:-check24} password=${POSTGRES_PASSWORD:-password} sslmode=disable
-    command: ["-hotel /offer.csv", "-hotel /hotels.csv"]
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+    command: ["-hotel", "/hotels.csv", "-offer", "/offers.csv"]
     restart: "no"
     volumes:
-      - ./testCSVs/small/offer.csv:/offer.csv
+      - ./testCSVs/small/offer.csv:/offers.csv
       - ./data/hotels.csv:/hotels.csv
   api:
     build:
