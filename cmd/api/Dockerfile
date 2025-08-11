@@ -9,7 +9,7 @@ RUN go mod download
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 RUN go install entgo.io/ent/cmd/ent@v0.14.5
 
-COPY . .
+COPY ../../api .
 
 RUN swag init -g api/api.go --parseInternal=true -o api/docs/
 RUN go run -mod=mod entgo.io/ent/cmd/ent --target=./db/ent --feature sql/upsert generate ./db/schema
