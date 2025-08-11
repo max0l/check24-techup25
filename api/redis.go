@@ -4,6 +4,7 @@ import (
 	"check24-techup25/data"
 	"check24-techup25/db/ent"
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -70,7 +71,12 @@ func storeOfferRequestInRedis(redisClient *redis.Client, request data.OfferQuerr
 		}
 		redisKey := CreateRedisCacheKeyOffers(modifiedRequest, modifiedRequest.Site)
 		modifiedRequest.Site++
-		err := redisClient.Set(ctx, redisKey, responseStore, time.Minute*20).Err()
+		jsonOffer, err := json.Marshal(responseStore)
+		if err != nil {
+			log.Error().Err(err).Msg("Could not marshal offers to JSON")
+			continue
+		}
+		err = redisClient.Set(ctx, redisKey, jsonOffer, time.Minute*20).Err()
 		if err != nil {
 			log.Warn().Err(err).Msg("redis store offer error")
 			continue
