@@ -13,6 +13,6 @@ RUN go run -mod=mod entgo.io/ent/cmd/ent --target=./db/ent --feature sql/upsert 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bin/migrate ./cmd/migrate
 
 FROM scratch
-COPY --from=build /bin/migrate /migrate
+COPY --from=BUILDER /bin/migrate /migrate
 
 ENTRYPOINT ["/migrate"]
