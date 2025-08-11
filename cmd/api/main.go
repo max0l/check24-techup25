@@ -6,6 +6,7 @@ import (
 	"check24-techup25/logging"
 	"context"
 	"flag"
+	"os"
 
 	"github.com/rs/zerolog/log"
 )
@@ -13,12 +14,15 @@ import (
 func main() {
 	logging.SetLogger()
 	port := flag.Int("port", 8080, "Set the port of the API")
-	dbDSN := flag.String("dsn", "host=localhost port=5432 user=user dbname=check24 password=password sslmode=disable",
-		"Infos to connect to the DB")
 	flag.Parse()
 
+	dbDSN := os.Getenv("DATABASE_DSN")
+	if dbDSN == "" {
+		dbDSN = "host=localhost port=5432 user=user dbname=check24 password=password sslmode=disable"
+	}
+
 	log.Info().Msg("Connecting to DB...")
-	client, err := db.NewClient(*dbDSN)
+	client, err := db.NewClient(dbDSN)
 	if err != nil {
 		log.Fatal().Err(err).Msg("DSN is not valid")
 	} else {

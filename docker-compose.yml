@@ -24,7 +24,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_DSN: host=${POSTGRES_HOST:-db} port=5432 user=${POSTGRES_USER:-user} dbname=${POSTGRES_DB:-check24} password=${POSTGRES_PASSWORD:-password} sslmode=disable
-      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      LOG_LEVEL: ${LOG_LEVEL:-warn}
     command: ["-hotel", "/hotels.csv", "-offer", "/offers.csv"]
     restart: "no"
     volumes:
@@ -39,6 +39,9 @@ services:
         condition: service_healthy
       seed_data:
         condition: service_completed_successfully
+    environment:
+      DATABASE_DSN: host=${POSTGRES_HOST:-db} port=5432 user=${POSTGRES_USER:-user} dbname=${POSTGRES_DB:-check24} password=${POSTGRES_PASSWORD:-password} sslmode=disable
+      LOG_LEVEL: ${LOG_LEVEL:-warn}
     ports:
       - "8080:8080"
     restart: always
