@@ -6,6 +6,7 @@ import (
 	"check24-techup25/db"
 	"check24-techup25/db/ent"
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -140,6 +141,24 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 	if err != nil {
 		log.Error().Err(err).Msg("Could not parse airports from request")
 		ginc.JSON(400, gin.H{"message": "Invalid Airport(s)"})
+		return
+	}
+
+	cacheKey := CreateRedisCacheKeyOffers(request, request.Site)
+	log.Debug().Msgf("Checking Redis cache for key: %s", cacheKey)
+	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Debug().Msgf("Found cached response for key: %s", cacheKey)
+		var cachedOffers []data.OfferResponse
+		err = json.Unmarshal(cachedResponse, &cachedOffers)
+		if err != nil {
+			log.Error().Err(err).Msg("Could not unmarshal cached offers")
+			ginc.JSON(500, gin.H{"message": "Internal server error"})
+			return
+		}
+		log.Debug().Msgf("Returning cached offers: %v", cachedOffers)
+		ginc.JSON(200, cachedOffers)
+		log.Info().Msg("Request handled successfully with cached response")
 		return
 	}
 
