@@ -7,6 +7,7 @@ import (
 	"check24-techup25/logging"
 	"context"
 	"flag"
+	"os"
 	"sync"
 
 	"github.com/rs/zerolog/log"
@@ -18,12 +19,15 @@ func main() {
 
 	hotelFilePath := flag.String("h", "./data/hotels.csv", "Path to the hotels CSV file")
 	offersFilePath := flag.String("o", "../offers/offer.csv", "Path to the offers CSV file")
-	dbDSN := flag.String("dsn", "host=localhost port=5432 user=user dbname=check24 password=password sslmode=disable",
-		"Infos to connect to the DB")
 	flag.Parse()
 
+	dbDSN := os.Getenv("DATABASE_DSN")
+	if dbDSN == "" {
+		dbDSN = "host=localhost port=5432 user=user dbname=check24 password=password sslmode=disable"
+	}
+
 	log.Info().Msg("Connecting to DB...")
-	client, err := db.NewClient(*dbDSN)
+	client, err := db.NewClient(dbDSN)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Could not connect to DB")
 	} else {
