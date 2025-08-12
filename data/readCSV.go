@@ -17,8 +17,8 @@ type dataRecord struct {
 }
 
 const (
-	maxConcurrency = 5
-	BatchSize      = 10000
+	maxConcurrency = 10
+	BatchSize      = 1000000
 )
 
 func openFile(filePath string) (*os.File, error) {

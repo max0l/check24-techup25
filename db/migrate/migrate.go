@@ -24,7 +24,7 @@ func MigrateHotels(ctx context.Context, client *ent.Client, hotels <-chan *data.
 	}
 }
 
-const batchSize = 1000
+const batchSize = 100000
 
 func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Offer) {
 	var (
@@ -35,7 +35,7 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 
 		// This will make the insertion a little bit faster
 		if offer.Hotelid > 998 {
-			log.Debug().Err(err).Msgf("Skipping hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
+			log.Trace().Err(err).Msgf("Skipping hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
 			continue
 		}
 		hotel, err := client.Hotel.Get(ctx, offer.Hotelid)

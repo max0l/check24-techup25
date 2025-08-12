@@ -21,6 +21,12 @@ func main() {
 	offersFilePath := flag.String("offer", "../offers/offer.csv", "Path to the offers CSV file")
 	flag.Parse()
 
+	shouldSeed := os.Getenv("SEED_DATA")
+	if shouldSeed == "false" {
+		log.Info().Msg("SEED_DATA is set to false, skipping data migration")
+		return
+	}
+
 	dbDSN := os.Getenv("DATABASE_DSN")
 	if dbDSN == "" {
 		dbDSN = "host=localhost port=5432 user=user dbname=check24 password=password sslmode=disable"
