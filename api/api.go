@@ -106,6 +106,7 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 
 	log.Debug().Msgf("Found hotel: %v", hotelResponse)
 	c.JSON(200, hotelResponse)
+	return
 }
 
 // handleOfferRequest will receive a query with different parameters and returns a list of offers
@@ -195,6 +196,7 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 	ginc.JSON(200, offerResponse)
 	log.Debug().Msgf("Response: %v", offerResponse)
 	log.Info().Msg("Request handled successfully")
+	return
 }
 
 func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *[]data.OfferResponse, request data.OfferQuerry) {
