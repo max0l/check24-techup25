@@ -70,12 +70,25 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 		siteQuery = "1"
 		log.Warn().Msgf("Could not find site query from request")
 	}
-
 	site, err := strconv.Atoi(siteQuery)
 	if err != nil {
 		log.Error().Err(err).Msg("Could not parse site from request")
 		c.JSON(400, gin.H{"message": "Invalid site"})
 		return
+	}
+
+	cacheKey := CreateRedisCacheKeyHotel(hotelID, site)
+	log.Debug().Msgf("Checking Redis cache for key: %s", cacheKey)
+	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Debug().Msgf("Found cached response for key: %s", cacheKey)
+		var cachedHotel data.HotelResponse
+		err = json.Unmarshal(cachedResponse, &cachedHotel)
+		if err == nil {
+			log.Debug().Msgf("Returning cached hotel: %v", cachedHotel)
+			c.JSON(200, cachedHotel)
+			return
+		}
 	}
 
 	log.Debug().Msgf("Received request for hotel with ID: %d and site %v", hotelID, site)
@@ -154,15 +167,12 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 		log.Debug().Msgf("Found cached response for key: %s", cacheKey)
 		var cachedOffers []data.OfferResponse
 		err = json.Unmarshal(cachedResponse, &cachedOffers)
-		if err != nil {
-			log.Error().Err(err).Msg("Could not unmarshal cached offers")
-			ginc.JSON(500, gin.H{"message": "Internal server error"})
+		if err == nil {
+			log.Debug().Msgf("Returning cached offers: %v", cachedOffers)
+			ginc.JSON(200, cachedOffers)
+			log.Info().Msg("Request handled successfully with cached response")
 			return
 		}
-		log.Debug().Msgf("Returning cached offers: %v", cachedOffers)
-		ginc.JSON(200, cachedOffers)
-		log.Info().Msg("Request handled successfully with cached response")
-		return
 	}
 
 	//TODO: Introduce page size
