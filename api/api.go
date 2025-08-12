@@ -53,9 +53,9 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 //	@Summary		handles hotel requests
 //	@Description	handles hotel requests and returns the hotel information.
 //	@Router			/hotel/{hotelid} [get]
-//	@Param			site	query	int			true				"Site, e.g. 1 or 2"
-//	@Param			hotelid	path	int			true				"ID of the hotel"
-//	@Success		200		body	{object}	data.HotelResponse	"Hotel information"
+//	@Param			site	query		int					true	"Site, e.g. 1 or 2"
+//	@Param			hotelid	path		int					true	"ID of the hotel"
+//	@Success		200		{object}	data.HotelResponse	"Hotel information"
 //	@Failure		400		"Bad Request"
 //	@Failure		404		"Hotel Not Found"
 func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context) {

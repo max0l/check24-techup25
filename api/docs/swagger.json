@@ -30,7 +30,7 @@
                     "200": {
                         "description": "Hotel information",
                         "schema": {
-                            "type": "body"
+                            "$ref": "#/definitions/data.HotelResponse"
                         }
                     },
                     "400": {
@@ -121,6 +121,84 @@
         }
     },
     "definitions": {
+        "data.HotelResponse": {
+            "type": "object",
+            "properties": {
+                "hotelid": {
+                    "type": "integer"
+                },
+                "hotelname": {
+                    "type": "string"
+                },
+                "hotelstars": {
+                    "type": "number",
+                    "format": "float32"
+                },
+                "offers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.Offer"
+                    }
+                }
+            }
+        },
+        "data.Offer": {
+            "type": "object",
+            "properties": {
+                "countadults": {
+                    "type": "integer"
+                },
+                "countchildren": {
+                    "type": "integer"
+                },
+                "durationInDays": {
+                    "type": "integer"
+                },
+                "hotelid": {
+                    "type": "integer"
+                },
+                "inboundarrivalairport": {
+                    "type": "string"
+                },
+                "inboundarrivaldatetime": {
+                    "type": "string"
+                },
+                "inbounddepartureairport": {
+                    "type": "string"
+                },
+                "inbounddeparturedatetime": {
+                    "type": "string"
+                },
+                "mealtype": {
+                    "type": "string"
+                },
+                "oceanview": {
+                    "type": "boolean"
+                },
+                "offerid": {
+                    "type": "integer"
+                },
+                "outboundarrivalairport": {
+                    "type": "string"
+                },
+                "outboundarrivaldatetime": {
+                    "type": "string"
+                },
+                "outbounddepartureairport": {
+                    "type": "string"
+                },
+                "outbounddeparturedatetime": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number",
+                    "format": "float32"
+                },
+                "roomtype": {
+                    "type": "string"
+                }
+            }
+        },
         "data.OfferResponse": {
             "type": "object",
             "properties": {
