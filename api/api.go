@@ -37,7 +37,7 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 	})
 
 	router.GET("/hotel/:hotelid", func(c *gin.Context) {
-		handleHotelRequest(c, client, ctx)
+		handleHotelRequest(c, client, redisClient, ctx)
 	})
 
 	log.Info().Msgf("Starting Server on port %v", port)
@@ -58,7 +58,7 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 //	@Success		200		body	{object}	data.HotelResponse	"Hotel information"
 //	@Failure		400		"Bad Request"
 //	@Failure		404		"Hotel Not Found"
-func handleHotelRequest(c *gin.Context, client *ent.Client, ctx context.Context) {
+func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
 	hotelID, err := strconv.Atoi(c.Param("hotelid"))
 	if err != nil {
 		log.Error().Err(err).Msg("Could not parse hotel ID from request")
@@ -88,6 +88,9 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, ctx context.Context)
 		log.Error().Err(err).Msg("Error querying hotel from DB")
 		c.JSON(500, gin.H{"message": "Internal server error"})
 	}
+
+	go storeHotelRequestInRedis(redisClient, hotelID, site, client, ctx)
+
 	log.Debug().Msgf("Found hotel: %v", hotelResponse)
 	c.JSON(200, hotelResponse)
 }

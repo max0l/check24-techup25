@@ -2,6 +2,7 @@ package api
 
 import (
 	"check24-techup25/data"
+	"check24-techup25/db"
 	"check24-techup25/db/ent"
 	"context"
 	"encoding/json"
@@ -58,6 +59,45 @@ func CloseRedisClient(client *redis.Client) {
 	}
 }
 
+func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, requestSite int, entClient *ent.Client, ctx context.Context) {
+	site := requestSite
+	if site < 1 {
+		site = 1
+	}
+
+	for {
+		redisKey := CreateRedisCacheKeyHotel(hotelId, site)
+		if redisKeyExists(redisClient, redisKey, ctx) {
+			site++
+			continue
+		}
+
+		hotelResponse, err := db.QueryHotel(hotelId, site, entClient, ctx)
+		if err != nil {
+			if ent.IsNotFound(err) {
+				log.Warn().Msgf("Hotel with ID %d not found", hotelId)
+				return
+			}
+			log.Error().Err(err).Msg("Error querying hotel from DB")
+			return
+		}
+
+		jsonHotel, err := json.Marshal(hotelResponse)
+		if err != nil {
+			log.Error().Err(err).Msg("Could not marshal hotel response to JSON")
+			site++
+			continue
+		}
+		err = redisClient.Set(ctx, redisKey, jsonHotel, time.Minute*20).Err()
+		if err != nil {
+			log.Warn().Err(err).Msg("redis store hotel error")
+			site++
+			continue
+		}
+		log.Debug().Msgf("Stored hotel %d for site %d successfully in Redis with key: %s", hotelId, site, redisKey)
+	}
+}
+
 func storeOfferRequestInRedis(redisClient *redis.Client, request data.OfferQuerry, uniqueOffers []*ent.Offer, ctx context.Context) {
 	var modifiedRequest = request
 	if request.Site != 1 {
@@ -68,6 +108,7 @@ func storeOfferRequestInRedis(redisClient *redis.Client, request data.OfferQuerr
 		log.Debug().Msgf("Checking Redis cache for key: %s", redisKey)
 
 		if redisKeyExists(redisClient, redisKey, ctx) {
+			modifiedRequest.Site++
 			continue
 		}
 
@@ -116,4 +157,8 @@ func CreateRedisCacheKeyOffers(request data.OfferQuerry, site int) string {
 	return fmt.Sprintf("offers:%s:%s:%s:%d:%d:%d:%d",
 		strings.Join(request.DepartureAirports, ","), request.EarliestDepartureDate.String(), request.EarliestDepartureDate.String(),
 		request.CountAdults, request.CountChildren, request.Duration, site)
+}
+
+func CreateRedisCacheKeyHotel(hotelId int, site int) string {
+	return fmt.Sprintf("hotel:%d:%d", hotelId, site)
 }
