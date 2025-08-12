@@ -72,6 +72,6 @@ func PrintOffersResults(channel <-chan *Offer) {
 func calculateDurationInDays(start, end time.Time) int {
 	duration := end.Sub(start)
 	days := int(math.Ceil(duration.Hours() / 24))
-	log.Debug().Msgf("Calculated duration: %d days from %s to %s", days, start.Format(time.RFC3339), end.Format(time.RFC3339))
+	log.Trace().Msgf("Calculated duration: %d days from %s to %s", days, start.Format(time.RFC3339), end.Format(time.RFC3339))
 	return days
 }
