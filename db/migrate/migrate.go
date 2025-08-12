@@ -24,7 +24,7 @@ func MigrateHotels(ctx context.Context, client *ent.Client, hotels <-chan *data.
 	}
 }
 
-const batchSize = 100000
+const batchSize = 3800
 
 func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Offer) {
 	var (
@@ -64,7 +64,8 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 			SetDurationInDays(offer.DurationInDays)
 
 		offerBatch = append(offerBatch, offerDb)
-		if len(offerBatch) >= batchSize {
+		if len(offerBatch) == batchSize {
+			log.Trace().Msgf("Sending %v offers to the DB", len(offerBatch))
 			err = client.Offer.CreateBulk(offerBatch...).
 				OnConflict(
 					sql.ConflictColumns("id"),
@@ -81,7 +82,8 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 		}
 	}
 
-	if len(offerBatch) > 0 {
+	if len(offerBatch) > 0 && len(offerBatch) < batchSize {
+		log.Trace().Msgf("Sending last %v offers to the DB", len(offerBatch))
 		err = client.Offer.CreateBulk(offerBatch...).
 			OnConflict(
 				sql.ConflictColumns("id"),
