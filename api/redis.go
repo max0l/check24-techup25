@@ -43,8 +43,8 @@ func GetRedisEnvs() (string, string, int) {
 	if password := os.Getenv("REDIS_PASSWORD"); password != "" {
 		redisPassword = password
 	}
-	if db := os.Getenv("REDIS_DB"); db != "" {
-		redisDB, _ = strconv.Atoi(db)
+	if rdb := os.Getenv("REDIS_DB"); rdb != "" {
+		redisDB, _ = strconv.Atoi(rdb)
 	}
 	log.Debug().Msgf("REDIS_URL: %s, REDIS_PASSWORD: %s, REDIS_DB: %d", redisUrl, redisPassword, redisDB)
 	return redisUrl, redisPassword, redisDB
