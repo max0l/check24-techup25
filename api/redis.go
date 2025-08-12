@@ -68,13 +68,19 @@ func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, requestSit
 	for {
 		redisKey := CreateRedisCacheKeyHotel(hotelId, site)
 
-		hotelResponse, err := db.QueryHotel(hotelId, site, entClient, ctx)
+		hotelDb, err := db.QueryHotel(hotelId, entClient, ctx)
 		if err != nil {
 			if ent.IsNotFound(err) {
-				log.Warn().Msgf("Hotel with ID %d not found", hotelId)
+				log.Debug().Msgf("Hotel with ID %d not found in DB", hotelId)
 				return
 			}
 			log.Error().Err(err).Msg("Error querying hotel from DB")
+			return
+		}
+
+		hotelResponse, err := db.QueryHotelOffers(hotelDb, site, entClient, ctx)
+		if err != nil {
+			log.Error().Err(err).Msg("Error querying hotel offers from DB")
 			return
 		}
 

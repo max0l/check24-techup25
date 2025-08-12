@@ -92,13 +92,19 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 	}
 
 	log.Debug().Msgf("Received request for hotel with ID: %d and site %v", hotelID, site)
-	hotelResponse, err := db.QueryHotel(hotelID, site, client, ctx)
+	hotelDb, err := db.QueryHotel(hotelID, client, ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			c.JSON(404, gin.H{"message": "Hotel not found"})
 			return
 		}
 		log.Error().Err(err).Msg("Error querying hotel from DB")
+		c.JSON(500, gin.H{"message": "Internal server error"})
+	}
+
+	hotelResponse, err := db.QueryHotelOffers(hotelDb, site, client, ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Error querying hotel offers from DB")
 		c.JSON(500, gin.H{"message": "Internal server error"})
 	}
 

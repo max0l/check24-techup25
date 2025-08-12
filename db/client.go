@@ -37,7 +37,7 @@ func Migrate(client ent.Client) error {
 
 // TODO: change edge name 'hotelid' of offer
 func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client, ctx context.Context) []*ent.Offer {
-	results, err := client.Debug().Offer.Query().
+	results, err := client.Offer.Query().
 		Where(offer.OutbounddepartureairportIn(airports...),
 			offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate),
 			offer.InboundarrivaldatetimeLTE(request.LatestReturnDate),
@@ -75,20 +75,11 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 	return uniqueOffers
 }
 
-func QueryHotel(hotelID int, site int, client *ent.Client, ctx context.Context) (data.HotelResponse, error) {
+func QueryHotelOffers(h *ent.Hotel, site int, client *ent.Client, ctx context.Context) (data.HotelResponse, error) {
 
 	var hotelResponse data.HotelResponse
 
-	log.Debug().Msgf("Querying DB for hotel with ID: %d", hotelID)
-	h, err := client.Hotel.Query().
-		Where(hotel.IDEQ(hotelID)).
-		First(ctx)
-	if err != nil {
-		log.Error().Err(err).Msg("There was an error querring the DB")
-		return hotelResponse, err
-	}
-
-	hotelsByPrice := client.Debug().Hotel.QueryOffers(h).Order(offer.ByPrice())
+	hotelsByPrice := client.Hotel.QueryOffers(h).Order(offer.ByPrice())
 	hotelOffers, err := hotelsByPrice.Offset((site - 1) * ResponseSize).Limit(ResponseSize).All(ctx)
 
 	if err != nil {
@@ -96,7 +87,7 @@ func QueryHotel(hotelID int, site int, client *ent.Client, ctx context.Context) 
 		return hotelResponse, err
 	}
 
-	log.Info().Msgf("Found %d offers for hotel with ID: %d", len(hotelOffers), hotelID)
+	log.Info().Msgf("Found %d offers for hotel with ID: %d", len(hotelOffers), h.ID)
 
 	hotelResponse.Hotelid = h.ID
 	hotelResponse.Hotelname = h.Hotelname
@@ -122,9 +113,21 @@ func QueryHotel(hotelID int, site int, client *ent.Client, ctx context.Context) 
 			Oceanview:                 singleOffer.Oceanview,
 			Roomtype:                  singleOffer.Roomtype,
 		}
-		log.Debug().Msgf("Processing offer %d for hotel %d: %+v", i+1, hotelID, o)
+		log.Debug().Msgf("Processing offer %d for hotel %d: %+v", i+1, h.ID, o)
 		hotelResponse.Offers = append(hotelResponse.Offers, o)
 	}
 
 	return hotelResponse, nil
+}
+
+func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (*ent.Hotel, error) {
+	log.Debug().Msgf("Querying DB for hotel with ID: %d", hotelID)
+	h, err := client.Hotel.Query().
+		Where(hotel.IDEQ(hotelID)).
+		First(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("There was an error querring the DB")
+		return nil, err
+	}
+	return h, err
 }
