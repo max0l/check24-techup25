@@ -67,10 +67,6 @@ func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, requestSit
 
 	for {
 		redisKey := CreateRedisCacheKeyHotel(hotelId, site)
-		if redisKeyExists(redisClient, redisKey, ctx) {
-			site++
-			continue
-		}
 
 		hotelResponse, err := db.QueryHotel(hotelId, site, entClient, ctx)
 		if err != nil {
@@ -109,12 +105,6 @@ func storeOfferRequestInRedis(redisClient *redis.Client, request data.OfferQuerr
 	}
 	for {
 		redisKey := CreateRedisCacheKeyOffers(modifiedRequest, modifiedRequest.Site)
-		log.Debug().Msgf("Checking Redis cache for key: %s", redisKey)
-
-		if redisKeyExists(redisClient, redisKey, ctx) {
-			modifiedRequest.Site++
-			continue
-		}
 
 		responseStore := make([]data.OfferResponse, 0, 50)
 		parseOfferDbResponse(uniqueOffers, &responseStore, modifiedRequest)
@@ -135,25 +125,6 @@ func storeOfferRequestInRedis(redisClient *redis.Client, request data.OfferQuerr
 		}
 		log.Debug().Msgf("store offer %s successfully", redisKey)
 	}
-
-}
-
-func redisKeyExists(redisClient *redis.Client, redisKey string, ctx context.Context) bool {
-	exists, err := redisClient.Exists(ctx, redisKey).Result()
-	if err == nil && exists > 0 {
-		log.Debug().Msgf("Found cached response for key: %s", redisKey)
-		ok, err := redisClient.Expire(ctx, redisKey, time.Minute*20).Result()
-		if err != nil {
-			log.Error().Err(err).Msg("Could not extend Redis cache expiration")
-		}
-		if !ok {
-			log.Warn().Msgf("Could not extend expiration for key: %s", redisKey)
-		} else {
-			log.Debug().Msgf("Extended expiration for key: %s", redisKey)
-		}
-		return true
-	}
-	return false
 
 }
 
