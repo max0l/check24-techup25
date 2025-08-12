@@ -94,6 +94,7 @@ func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, requestSit
 			site++
 			continue
 		}
+		site++
 		log.Debug().Msgf("Stored hotel %d for site %d successfully in Redis with key: %s", hotelId, site, redisKey)
 	}
 }
