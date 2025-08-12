@@ -82,6 +82,10 @@ func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, requestSit
 			return
 		}
 
+		if len(hotelResponse.Offers) == 0 {
+			return
+		}
+
 		jsonHotel, err := json.Marshal(hotelResponse)
 		if err != nil {
 			log.Error().Err(err).Msg("Could not marshal hotel response to JSON")
