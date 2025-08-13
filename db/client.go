@@ -6,6 +6,7 @@ import (
 	"check24-techup25/db/ent/hotel"
 	"check24-techup25/db/ent/offer"
 	"context"
+	"errors"
 
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
@@ -93,19 +94,24 @@ func QueryHotelOffers(h *ent.Hotel, site int, client *ent.Client, ctx context.Co
 
 	hotelsOfferQuerry := client.Hotel.QueryOffers(h)
 
-	amount, err := hotelsOfferQuerry.Count(ctx)
+	amount, err := getOfferAmountOfOneHotel(h, hotelsOfferQuerry, ctx)
 	if err != nil {
-		log.Error().Err(err).Msg("There was an error querring the DB")
+		log.Error().Err(err).Msg("There was an error querring the DB for offers")
 		return hotelResponse, err
-	}
-	log.Debug().Msgf("Found %d offers for hotel with ID: %d", amount, h.ID)
-	if amount == 0 {
-		log.Warn().Msgf("No offers found for hotel with ID: %d", h.ID)
-		return hotelResponse, nil
 	}
 
 	hotelResponse.CountAvailableOffers = amount
 
+	response, err := querryAllHotelOffersFromDb(h, site, hotelsOfferQuerry, ctx, hotelResponse)
+	if err != nil {
+		return response, err
+	}
+
+	return hotelResponse, nil
+}
+
+func querryAllHotelOffersFromDb(h *ent.Hotel, site int, hotelsOfferQuerry *ent.OfferQuery, ctx context.Context,
+	hotelResponse data.HotelResponse) (data.HotelResponse, error) {
 	hotelOffers, err := hotelsOfferQuerry.Order(offer.ByPrice()).Offset((site - 1) * ResponseSize).Limit(ResponseSize).All(ctx)
 
 	if err != nil {
@@ -118,29 +124,47 @@ func QueryHotelOffers(h *ent.Hotel, site int, client *ent.Client, ctx context.Co
 	hotelResponse.Offers = make([]data.Offer, 0, len(hotelOffers))
 
 	for i, singleOffer := range hotelOffers {
-		o := data.Offer{
-			Offerid:                   singleOffer.ID,
-			Hotelid:                   h.ID,
-			Outbounddeparturedatetime: singleOffer.Outbounddeparturedatetime,
-			Inbounddeparturedatetime:  singleOffer.Inbounddeparturedatetime,
-			Countadults:               singleOffer.Countadults,
-			Countchildren:             singleOffer.Countchildren,
-			Price:                     singleOffer.Price,
-			Inbounddepartureairport:   singleOffer.Inbounddepartureairport,
-			Inboundarrivalairport:     singleOffer.Inboundarrivalairport,
-			Inboundarrivaldatetime:    singleOffer.Inboundarrivaldatetime,
-			Outbounddepartureairport:  singleOffer.Outbounddepartureairport,
-			Outboundarrivalairport:    singleOffer.Outboundarrivalairport,
-			Outboundarrivaldatetime:   singleOffer.Outboundarrivaldatetime,
-			Mealtype:                  singleOffer.Mealtype,
-			Oceanview:                 singleOffer.Oceanview,
-			Roomtype:                  singleOffer.Roomtype,
-		}
+		o := createOfferFromDb(h, singleOffer)
 		log.Debug().Msgf("Processing offer %d for hotel %d: %+v", i+1, h.ID, o)
 		hotelResponse.Offers = append(hotelResponse.Offers, o)
 	}
+	return data.HotelResponse{}, nil
+}
 
-	return hotelResponse, nil
+func createOfferFromDb(h *ent.Hotel, singleOffer *ent.Offer) data.Offer {
+	o := data.Offer{
+		Offerid:                   singleOffer.ID,
+		Hotelid:                   h.ID,
+		Outbounddeparturedatetime: singleOffer.Outbounddeparturedatetime,
+		Inbounddeparturedatetime:  singleOffer.Inbounddeparturedatetime,
+		Countadults:               singleOffer.Countadults,
+		Countchildren:             singleOffer.Countchildren,
+		Price:                     singleOffer.Price,
+		Inbounddepartureairport:   singleOffer.Inbounddepartureairport,
+		Inboundarrivalairport:     singleOffer.Inboundarrivalairport,
+		Inboundarrivaldatetime:    singleOffer.Inboundarrivaldatetime,
+		Outbounddepartureairport:  singleOffer.Outbounddepartureairport,
+		Outboundarrivalairport:    singleOffer.Outboundarrivalairport,
+		Outboundarrivaldatetime:   singleOffer.Outboundarrivaldatetime,
+		Mealtype:                  singleOffer.Mealtype,
+		Oceanview:                 singleOffer.Oceanview,
+		Roomtype:                  singleOffer.Roomtype,
+	}
+	return o
+}
+
+func getOfferAmountOfOneHotel(h *ent.Hotel, hotelsOfferQuerry *ent.OfferQuery, ctx context.Context) (int, error) {
+	amount, err := hotelsOfferQuerry.Count(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("There was an error querring the DB")
+		return 0, err
+	}
+	log.Debug().Msgf("Found %d offers for hotel with ID: %d", amount, h.ID)
+	if amount == 0 {
+		log.Warn().Msgf("No offers found for hotel with ID: %d", h.ID)
+		return 0, errors.New("no offers found for hotel")
+	}
+	return amount, nil
 }
 
 func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (*ent.Hotel, error) {
