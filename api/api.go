@@ -174,7 +174,7 @@ func parseHotelIDAndSite(c *gin.Context) (int, int, error) {
 //	@Failure		404						"No Offers Found"
 func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
 	var request data.OfferQuerry
-	err := bindOfferRequest(ginc, request)
+	err := bindOfferRequest(ginc, &request)
 	if err != nil {
 		return
 	}
@@ -250,14 +250,14 @@ func checkIfDateDurationIsRight(ginc *gin.Context, request data.OfferQuerry) boo
 	}
 
 	if request.Duration < 1 {
-		log.Warn().Msg("Duration cant be less than a 1 day")
+		log.Warn().Msgf("Duration cant be less than a 1 day, but it was %v", request.Duration)
 		ginc.JSON(400, gin.H{"message": "Duration must be at least 1 day"})
 		return true
 	}
 	return false
 }
 
-func bindOfferRequest(ginc *gin.Context, request data.OfferQuerry) error {
+func bindOfferRequest(ginc *gin.Context, request *data.OfferQuerry) error {
 	err := ginc.BindQuery(&request)
 	if err != nil {
 		log.Error().Err(err).Msg("Could not bind query parameters")
