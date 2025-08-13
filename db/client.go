@@ -84,7 +84,7 @@ func queryOffersFromDb(request data.OfferQuerry, airports []string, client *ent.
 	return results, nil
 }
 
-func QueryHotelOffers(h *ent.Hotel, site int, client *ent.Client, ctx context.Context) (data.HotelResponse, error) {
+func QueryOffersOfAHotel(h *ent.Hotel, site int, client *ent.Client, ctx context.Context) (data.HotelResponse, error) {
 
 	var hotelResponse data.HotelResponse
 
@@ -101,8 +101,9 @@ func QueryHotelOffers(h *ent.Hotel, site int, client *ent.Client, ctx context.Co
 	}
 
 	hotelResponse.CountAvailableOffers = amount
+	hotelResponse.Offers = make([]data.Offer, 0, ResponseSize)
 
-	response, err := querryAllHotelOffersFromDb(h, site, hotelsOfferQuerry, ctx, hotelResponse)
+	response, err := querryAllHotelOffersFromDb(h, site, hotelsOfferQuerry, ctx, &hotelResponse)
 	if err != nil {
 		return response, err
 	}
@@ -111,24 +112,22 @@ func QueryHotelOffers(h *ent.Hotel, site int, client *ent.Client, ctx context.Co
 }
 
 func querryAllHotelOffersFromDb(h *ent.Hotel, site int, hotelsOfferQuerry *ent.OfferQuery, ctx context.Context,
-	hotelResponse data.HotelResponse) (data.HotelResponse, error) {
+	hotelResponse *data.HotelResponse) (data.HotelResponse, error) {
 	hotelOffers, err := hotelsOfferQuerry.Order(offer.ByPrice()).Offset((site - 1) * ResponseSize).Limit(ResponseSize).All(ctx)
 
 	if err != nil {
 		log.Error().Err(err).Msg("There was an error querring the DB")
-		return hotelResponse, err
+		return *hotelResponse, err
 	}
 
 	log.Info().Msgf("Found %d offers for hotel with ID: %d", len(hotelOffers), h.ID)
-
-	hotelResponse.Offers = make([]data.Offer, 0, len(hotelOffers))
 
 	for i, singleOffer := range hotelOffers {
 		o := createOfferFromDb(h, singleOffer)
 		log.Debug().Msgf("Processing offer %d for hotel %d: %+v", i+1, h.ID, o)
 		hotelResponse.Offers = append(hotelResponse.Offers, o)
 	}
-	return data.HotelResponse{}, nil
+	return *hotelResponse, nil
 }
 
 func createOfferFromDb(h *ent.Hotel, singleOffer *ent.Offer) data.Offer {

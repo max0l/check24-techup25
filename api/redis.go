@@ -78,7 +78,7 @@ func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, requestSit
 			return
 		}
 
-		hotelResponse, err := db.QueryHotelOffers(hotelDb, site, entClient, ctx)
+		hotelResponse, err := db.QueryOffersOfAHotel(hotelDb, site, entClient, ctx)
 		if err != nil {
 			log.Error().Err(err).Msg("Error querying hotel offers from DB")
 			return
