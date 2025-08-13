@@ -65,18 +65,8 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 		return
 	}
 
-	cacheKey := CreateRedisCacheKeyHotel(hotelID, site)
-	log.Debug().Msgf("Checking Redis cache for key: %s", cacheKey)
-	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
-	if err == nil {
-		log.Debug().Msgf("Found cached response for key: %s", cacheKey)
-		var cachedHotel data.HotelResponse
-		err = json.Unmarshal(cachedResponse, &cachedHotel)
-		if err == nil {
-			log.Debug().Msgf("Returning cached hotel: %v", cachedHotel)
-			c.JSON(200, cachedHotel)
-			return
-		}
+	if hit := cacheHitCheckHotel(c, hotelID, site, err, redisClient, ctx); hit {
+		return
 	}
 
 	log.Debug().Msgf("Received request for hotel with ID: %d and site %v", hotelID, site)
@@ -88,12 +78,14 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 		}
 		log.Error().Err(err).Msg("Error querying hotel from DB")
 		c.JSON(500, gin.H{"message": "Internal server error"})
+		return
 	}
 
 	hotelResponse, err := db.QueryHotelOffers(hotelDb, site, client, ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Error querying hotel offers from DB")
 		c.JSON(500, gin.H{"message": "Internal server error"})
+		return
 	}
 
 	go storeHotelRequestInRedis(redisClient, hotelID, site, client, ctx)
@@ -101,6 +93,29 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 	log.Debug().Msgf("Found hotel: %v", hotelResponse)
 	c.JSON(200, hotelResponse)
 	return
+}
+
+func cacheHitCheckHotel(c *gin.Context, hotelID int, site int, err error, redisClient *redis.Client, ctx context.Context) bool {
+	cacheKey := CreateRedisCacheKeyHotel(hotelID, site)
+	log.Debug().Msgf("Checking Redis cache for key: %s", cacheKey)
+	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Debug().Msgf("Found cached response for key: %s", cacheKey)
+		var cachedHotel data.HotelResponse
+		err = json.Unmarshal(cachedResponse, &cachedHotel)
+		if err == nil {
+			log.Debug().Msgf("Returning cached hotel: %v", cachedHotel)
+			c.JSON(200, cachedHotel)
+			return true
+		} else {
+			log.Error().Err(err).Msg("Could not unmarshal cached hotel response")
+			c.JSON(500, gin.H{"message": "Internal server error"})
+			return false
+		}
+	} else {
+		log.Debug().Msgf("Error getting cached response for key: %s", cacheKey)
+	}
+	return false
 }
 
 // parseHotelIDAndSite extracts and validates hotel ID and site from the request context
