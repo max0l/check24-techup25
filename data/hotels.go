@@ -7,8 +7,9 @@ type Hotel struct {
 }
 
 type HotelResponse struct {
-	Hotelid    int
-	Hotelname  string
-	Hotelstars float32
-	Offers     []Offer
+	Hotelid              int     `json:"hotelid"`
+	Hotelname            string  `json:"hotelname"`
+	Hotelstars           float32 `json:"hotelstars"`
+	Offers               []Offer `json:"offers"`
+	CountAvailableOffers int     `json:"count_available_offers"`
 }

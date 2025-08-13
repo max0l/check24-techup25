@@ -79,8 +79,26 @@ func QueryHotelOffers(h *ent.Hotel, site int, client *ent.Client, ctx context.Co
 
 	var hotelResponse data.HotelResponse
 
-	hotelsByPrice := client.Hotel.QueryOffers(h).Order(offer.ByPrice())
-	hotelOffers, err := hotelsByPrice.Offset((site - 1) * ResponseSize).Limit(ResponseSize).All(ctx)
+	hotelResponse.Hotelid = h.ID
+	hotelResponse.Hotelname = h.Hotelname
+	hotelResponse.Hotelstars = h.Hotelstars
+
+	hotelsOfferQuerry := client.Hotel.QueryOffers(h)
+
+	amount, err := hotelsOfferQuerry.Count(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("There was an error querring the DB")
+		return hotelResponse, err
+	}
+	log.Debug().Msgf("Found %d offers for hotel with ID: %d", amount, h.ID)
+	if amount == 0 {
+		log.Warn().Msgf("No offers found for hotel with ID: %d", h.ID)
+		return hotelResponse, nil
+	}
+
+	hotelResponse.CountAvailableOffers = amount
+
+	hotelOffers, err := hotelsOfferQuerry.Order(offer.ByPrice()).Offset((site - 1) * ResponseSize).Limit(ResponseSize).All(ctx)
 
 	if err != nil {
 		log.Error().Err(err).Msg("There was an error querring the DB")
@@ -89,9 +107,6 @@ func QueryHotelOffers(h *ent.Hotel, site int, client *ent.Client, ctx context.Co
 
 	log.Info().Msgf("Found %d offers for hotel with ID: %d", len(hotelOffers), h.ID)
 
-	hotelResponse.Hotelid = h.ID
-	hotelResponse.Hotelname = h.Hotelname
-	hotelResponse.Hotelstars = h.Hotelstars
 	hotelResponse.Offers = make([]data.Offer, 0, len(hotelOffers))
 
 	for i, singleOffer := range hotelOffers {
