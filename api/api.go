@@ -65,19 +65,14 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 		return
 	}
 
+	log.Debug().Msgf("Received request for hotel with ID: %d and site %v", hotelID, site)
+
 	if hit := cacheHitCheckHotel(c, hotelID, site, err, redisClient, ctx); hit {
 		return
 	}
 
-	log.Debug().Msgf("Received request for hotel with ID: %d and site %v", hotelID, site)
-	hotelDb, err := db.QueryHotel(hotelID, client, ctx)
+	hotelDb, err := queryDbForHotel(c, client, err, hotelID, ctx)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			c.JSON(404, gin.H{"message": "Hotel not found"})
-			return
-		}
-		log.Error().Err(err).Msg("Error querying hotel from DB")
-		c.JSON(500, gin.H{"message": "Internal server error"})
 		return
 	}
 
@@ -93,6 +88,20 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 	log.Debug().Msgf("Found hotel: %v", hotelResponse)
 	c.JSON(200, hotelResponse)
 	return
+}
+
+func queryDbForHotel(c *gin.Context, client *ent.Client, err error, hotelID int, ctx context.Context) (*ent.Hotel, error) {
+	hotelDb, err := db.QueryHotel(hotelID, client, ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			c.JSON(404, gin.H{"message": "Hotel not found"})
+			return nil, err
+		}
+		log.Error().Err(err).Msg("Error querying hotel from DB")
+		c.JSON(500, gin.H{"message": "Internal server error"})
+		return nil, err
+	}
+	return hotelDb, nil
 }
 
 func cacheHitCheckHotel(c *gin.Context, hotelID int, site int, err error, redisClient *redis.Client, ctx context.Context) bool {
