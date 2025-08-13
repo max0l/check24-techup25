@@ -67,7 +67,7 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 
 	log.Debug().Msgf("Received request for hotel with ID: %d and site %v", hotelID, site)
 
-	if hit := cacheHitCheckHotel(c, hotelID, site, err, redisClient, ctx); hit {
+	if cacheHitCheckHotel(c, hotelID, site, err, redisClient, ctx) {
 		return
 	}
 
@@ -179,15 +179,7 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 		return
 	}
 
-	if request.EarliestDepartureDate.After(request.LatestReturnDate) {
-		log.Error().Msg("Earliest departure date is after latest return date")
-		ginc.JSON(400, gin.H{"message": "Earliest departure date cannot be after latest return date"})
-		return
-	}
-
-	if request.Duration < 1 {
-		log.Warn().Msg("Duration cant be less than a 1 day")
-		ginc.JSON(400, gin.H{"message": "Duration must be at least 1 day"})
+	if checkIfDateDurationIsRight(ginc, request) {
 		return
 	}
 
@@ -198,19 +190,8 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 		return
 	}
 
-	cacheKey := CreateRedisCacheKeyOffers(request, request.Site)
-	log.Debug().Msgf("Checking Redis cache for key: %s", cacheKey)
-	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
-	if err == nil {
-		log.Debug().Msgf("Found cached response for key: %s", cacheKey)
-		var cachedOffers []data.OfferResponse
-		err = json.Unmarshal(cachedResponse, &cachedOffers)
-		if err == nil {
-			log.Debug().Msgf("Returning cached offers: %v", cachedOffers)
-			ginc.JSON(200, cachedOffers)
-			log.Info().Msg("Request handled successfully with cached response")
-			return
-		}
+	if cacheHitCheckOffer(ginc, request, err, redisClient, ctx) {
+		return
 	}
 
 	//TODO: Introduce page size
@@ -234,6 +215,39 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 	log.Debug().Msgf("Response: %v", offerResponse)
 	log.Info().Msg("Request handled successfully")
 	return
+}
+
+func cacheHitCheckOffer(ginc *gin.Context, request data.OfferQuerry, err error, redisClient *redis.Client, ctx context.Context) bool {
+	cacheKey := CreateRedisCacheKeyOffers(request, request.Site)
+	log.Debug().Msgf("Checking Redis cache for key: %s", cacheKey)
+	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Debug().Msgf("Found cached response for key: %s", cacheKey)
+		var cachedOffers []data.OfferResponse
+		err = json.Unmarshal(cachedResponse, &cachedOffers)
+		if err == nil {
+			log.Debug().Msgf("Returning cached offers: %v", cachedOffers)
+			ginc.JSON(200, cachedOffers)
+			log.Info().Msg("Request handled successfully with cached response")
+			return true
+		}
+	}
+	return false
+}
+
+func checkIfDateDurationIsRight(ginc *gin.Context, request data.OfferQuerry) bool {
+	if request.EarliestDepartureDate.After(request.LatestReturnDate) {
+		log.Error().Msg("Earliest departure date is after latest return date")
+		ginc.JSON(400, gin.H{"message": "Earliest departure date cannot be after latest return date"})
+		return true
+	}
+
+	if request.Duration < 1 {
+		log.Warn().Msg("Duration cant be less than a 1 day")
+		ginc.JSON(400, gin.H{"message": "Duration must be at least 1 day"})
+		return true
+	}
+	return false
 }
 
 func bindOfferRequest(ginc *gin.Context, request data.OfferQuerry) error {
