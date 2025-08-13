@@ -174,20 +174,9 @@ func parseHotelIDAndSite(c *gin.Context) (int, int, error) {
 //	@Failure		404						"No Offers Found"
 func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
 	var request data.OfferQuerry
-	err := ginc.BindQuery(&request)
+	err := bindOfferRequest(ginc, request)
 	if err != nil {
-		log.Error().Err(err).Msg("Could not bind query parameters")
 		return
-	} else {
-		log.Debug().Msgf("Got request for:\n\tdepartureAirports: %v, "+
-			"\n\tearliestDepartureDate: %v, "+
-			"\n\tlatestReturnDate %v,"+
-			"\n\tcountAdults: %v, "+
-			"\n\tcountChildren: %v, "+
-			"\n\tduration: %v"+
-			"\n\tsite: %v", request.DepartureAirports, request.EarliestDepartureDate,
-			request.LatestReturnDate, request.CountAdults, request.CountChildren, request.Duration,
-			request.Site)
 	}
 
 	if request.EarliestDepartureDate.After(request.LatestReturnDate) {
@@ -245,6 +234,26 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 	log.Debug().Msgf("Response: %v", offerResponse)
 	log.Info().Msg("Request handled successfully")
 	return
+}
+
+func bindOfferRequest(ginc *gin.Context, request data.OfferQuerry) error {
+	err := ginc.BindQuery(&request)
+	if err != nil {
+		log.Error().Err(err).Msg("Could not bind query parameters")
+		ginc.JSON(400, gin.H{"message": "Invalid query parameters"})
+		return err
+	} else {
+		log.Debug().Msgf("Got request for:\n\tdepartureAirports: %v, "+
+			"\n\tearliestDepartureDate: %v, "+
+			"\n\tlatestReturnDate %v,"+
+			"\n\tcountAdults: %v, "+
+			"\n\tcountChildren: %v, "+
+			"\n\tduration: %v"+
+			"\n\tsite: %v", request.DepartureAirports, request.EarliestDepartureDate,
+			request.LatestReturnDate, request.CountAdults, request.CountChildren, request.Duration,
+			request.Site)
+	}
+	return err
 }
 
 func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *[]data.OfferResponse, request data.OfferQuerry) {
