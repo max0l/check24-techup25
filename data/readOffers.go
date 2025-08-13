@@ -38,29 +38,34 @@ func processOfferBatch(records []dataRecord, offerResultsChannel chan<- *Offer) 
 					log.Error().Msgf("Recovered from panic for record %v: %v", record.id, r)
 				}
 			}()
-			offer := Offer{
-				Offerid:                   record.id,
-				Hotelid:                   parseInt(record.data[0]),
-				Outbounddeparturedatetime: parseTime(record.data[1]),
-				Inbounddeparturedatetime:  parseTime(record.data[2]),
-				Countadults:               parseInt(record.data[3]),
-				Countchildren:             parseInt(record.data[4]),
-				Price:                     parseFloat(record.data[5]),
-				Inbounddepartureairport:   record.data[6],
-				Inboundarrivalairport:     record.data[7],
-				Inboundarrivaldatetime:    parseTime(record.data[8]),
-				Outbounddepartureairport:  record.data[9],
-				Outboundarrivalairport:    record.data[10],
-				Outboundarrivaldatetime:   parseTime(record.data[11]),
-				Mealtype:                  record.data[12],
-				Oceanview:                 record.data[13] == "true",
-				Roomtype:                  record.data[14],
-			}
+			offer := parseOffer(record)
 			offer.DurationInDays = calculateDurationInDays(offer.Outbounddeparturedatetime,
 				offer.Inbounddeparturedatetime)
 			offerResultsChannel <- &offer
 		}(record)
 	}
+}
+
+func parseOffer(record dataRecord) Offer {
+	offer := Offer{
+		Offerid:                   record.id,
+		Hotelid:                   parseInt(record.data[0]),
+		Outbounddeparturedatetime: parseTime(record.data[1]),
+		Inbounddeparturedatetime:  parseTime(record.data[2]),
+		Countadults:               parseInt(record.data[3]),
+		Countchildren:             parseInt(record.data[4]),
+		Price:                     parseFloat(record.data[5]),
+		Inbounddepartureairport:   record.data[6],
+		Inboundarrivalairport:     record.data[7],
+		Inboundarrivaldatetime:    parseTime(record.data[8]),
+		Outbounddepartureairport:  record.data[9],
+		Outboundarrivalairport:    record.data[10],
+		Outboundarrivaldatetime:   parseTime(record.data[11]),
+		Mealtype:                  record.data[12],
+		Oceanview:                 record.data[13] == "true",
+		Roomtype:                  record.data[14],
+	}
+	return offer
 }
 
 func PrintOffersResults(channel <-chan *Offer) {
