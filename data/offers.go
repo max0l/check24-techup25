@@ -32,7 +32,7 @@ type OfferQuerry struct {
 	Site                  int `binding:"required"`
 }
 
-type OfferResponse struct {
+type OfferWithHotel struct {
 	HotelName                 string    `json:"HotelName" example:"Hotel Sunshine"`
 	HotelStars                float32   `json:"HotelStars" example:"4.5"`
 	Outbounddeparturedatetime time.Time `json:"Outbounddeparturedatetime" example:"2025-01-01T00:00:00+02:00"`
@@ -49,4 +49,9 @@ type OfferResponse struct {
 	Mealtye                   string    `json:"Mealtye" example:"allinclusive"`
 	Ocenview                  bool      `json:"Ocenview" example:"true"`
 	Rommtype                  string    `json:"Rommtype" example:"double"`
+}
+
+type OfferResponse struct {
+	Offers      []OfferWithHotel `json:"Offers"`
+	CountOffers int              `json:"CountOffers" example:"5"`
 }

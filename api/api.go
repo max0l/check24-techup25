@@ -221,7 +221,7 @@ func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *[]data.Offe
 
 		log.Debug().Msgf("Processing offer: %v", i)
 
-		response := data.OfferResponse{
+		offerWithHotel := data.OfferWithHotel{
 			HotelName:                 hotelResult.Hotelname,
 			HotelStars:                hotelResult.Hotelstars,
 			Outbounddeparturedatetime: offerResult.Outbounddeparturedatetime,
@@ -238,6 +238,10 @@ func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *[]data.Offe
 			Mealtye:                   offerResult.Mealtype,
 			Ocenview:                  offerResult.Oceanview,
 			Rommtype:                  offerResult.Roomtype,
+		}
+		response := data.OfferResponse{
+			Offers:      []data.OfferWithHotel{offerWithHotel},
+			CountOffers: len(uniqueOffers),
 		}
 		*responsesStore = append(*responsesStore, response)
 	}
