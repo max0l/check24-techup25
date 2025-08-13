@@ -37,20 +37,9 @@ func Migrate(client ent.Client) error {
 
 // TODO: change edge name 'hotelid' of offer
 func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client, ctx context.Context) []*ent.Offer {
-	results, err := client.Offer.Query().
-		Where(offer.OutbounddepartureairportIn(airports...),
-			offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate),
-			offer.InboundarrivaldatetimeLTE(request.LatestReturnDate),
-			offer.CountadultsEQ(request.CountAdults),
-			offer.CountchildrenEQ(request.CountChildren),
-			offer.DurationInDaysEQ(request.Duration)).
-		Order(offer.ByPrice()).WithHotel().
-		All(ctx)
-	//TODO: add Duration
-	log.Debug().Msgf("Querying DB for offers done, got %v results", len(results))
+	results, err := queryOffersFromDb(request, airports, client, ctx)
 	if err != nil {
-		log.Warn().Err(err).Msg("Could not query DB")
-		return []*ent.Offer{}
+		return results
 	}
 
 	uniqueOffers := make([]*ent.Offer, 0, len(results))
@@ -73,6 +62,25 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 
 	log.Debug().Msg("Queried offers")
 	return uniqueOffers
+}
+
+func queryOffersFromDb(request data.OfferQuerry, airports []string, client *ent.Client, ctx context.Context) ([]*ent.Offer, error) {
+	results, err := client.Offer.Query().
+		Where(offer.OutbounddepartureairportIn(airports...),
+			offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate),
+			offer.InboundarrivaldatetimeLTE(request.LatestReturnDate),
+			offer.CountadultsEQ(request.CountAdults),
+			offer.CountchildrenEQ(request.CountChildren),
+			offer.DurationInDaysEQ(request.Duration)).
+		Order(offer.ByPrice()).WithHotel().
+		All(ctx)
+
+	log.Debug().Msgf("Querying DB for offers done, got %v results", len(results))
+	if err != nil {
+		log.Warn().Err(err).Msg("Could not query DB")
+		return []*ent.Offer{}, err
+	}
+	return results, nil
 }
 
 func QueryHotelOffers(h *ent.Hotel, site int, client *ent.Client, ctx context.Context) (data.HotelResponse, error) {
