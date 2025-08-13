@@ -44,55 +44,55 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 			continue
 		}
 
-		offerDb := client.Offer.Create().
-			SetID(offer.Offerid).
-			SetHotel(hotel).
-			SetOutbounddeparturedatetime(offer.Outbounddeparturedatetime).
-			SetInbounddeparturedatetime(offer.Inbounddeparturedatetime).
-			SetCountadults(offer.Countadults).
-			SetCountchildren(offer.Countchildren).
-			SetPrice(offer.Price).
-			SetInbounddepartureairport(offer.Inbounddepartureairport).
-			SetInboundarrivalairport(offer.Inboundarrivalairport).
-			SetInboundarrivaldatetime(offer.Inboundarrivaldatetime).
-			SetOutbounddepartureairport(offer.Outbounddepartureairport).
-			SetOutboundarrivalairport(offer.Outboundarrivalairport).
-			SetOutboundarrivaldatetime(offer.Outboundarrivaldatetime).
-			SetMealtype(offer.Mealtype).
-			SetOceanview(offer.Oceanview).
-			SetRoomtype(offer.Roomtype).
-			SetDurationInDays(offer.DurationInDays)
+		offerDb := createEntOffer(client, offer, hotel)
 
 		offerBatch = append(offerBatch, offerDb)
 		if len(offerBatch) == batchSize {
 			log.Trace().Msgf("Sending %v offers to the DB", len(offerBatch))
-			err = client.Offer.CreateBulk(offerBatch...).
-				OnConflict(
-					sql.ConflictColumns("id"),
-					sql.ResolveWithNewValues(),
-				).
-				UpdateNewValues().
-				Exec(ctx)
-			if err != nil {
-				log.Error().Err(err).Msg("Could not send offers")
-			} else {
-				log.Debug().Msgf("Sent %v offers to the DB", len(offerBatch))
-			}
+			sendBulkOffersToDb(ctx, client, err, offerBatch)
 			offerBatch = offerBatch[:0]
 		}
 	}
 
 	if len(offerBatch) > 0 && len(offerBatch) < batchSize {
 		log.Trace().Msgf("Sending last %v offers to the DB", len(offerBatch))
-		err = client.Offer.CreateBulk(offerBatch...).
-			OnConflict(
-				sql.ConflictColumns("id"),
-				sql.ResolveWithNewValues(),
-			).
-			UpdateNewValues().
-			Exec(ctx)
-		if err != nil {
-			log.Error().Err(err).Msg("Could not send last offers")
-		}
+		sendBulkOffersToDb(ctx, client, err, offerBatch)
 	}
+}
+
+func sendBulkOffersToDb(ctx context.Context, client *ent.Client, err error, offerBatch []*ent.OfferCreate) {
+	err = client.Offer.CreateBulk(offerBatch...).
+		OnConflict(
+			sql.ConflictColumns("id"),
+			sql.ResolveWithNewValues(),
+		).
+		UpdateNewValues().
+		Exec(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Could not send offers")
+	} else {
+		log.Debug().Msgf("Sent %v offers to the DB", len(offerBatch))
+	}
+}
+
+func createEntOffer(client *ent.Client, offer *data.Offer, hotel *ent.Hotel) *ent.OfferCreate {
+	offerDb := client.Offer.Create().
+		SetID(offer.Offerid).
+		SetHotel(hotel).
+		SetOutbounddeparturedatetime(offer.Outbounddeparturedatetime).
+		SetInbounddeparturedatetime(offer.Inbounddeparturedatetime).
+		SetCountadults(offer.Countadults).
+		SetCountchildren(offer.Countchildren).
+		SetPrice(offer.Price).
+		SetInbounddepartureairport(offer.Inbounddepartureairport).
+		SetInboundarrivalairport(offer.Inboundarrivalairport).
+		SetInboundarrivaldatetime(offer.Inboundarrivaldatetime).
+		SetOutbounddepartureairport(offer.Outbounddepartureairport).
+		SetOutboundarrivalairport(offer.Outboundarrivalairport).
+		SetOutboundarrivaldatetime(offer.Outboundarrivaldatetime).
+		SetMealtype(offer.Mealtype).
+		SetOceanview(offer.Oceanview).
+		SetRoomtype(offer.Roomtype).
+		SetDurationInDays(offer.DurationInDays)
+	return offerDb
 }
