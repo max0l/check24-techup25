@@ -194,15 +194,9 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 		return
 	}
 
-	//TODO: Introduce page size
-	log.Debug().Msg("Querying DB for offers")
-	response := db.QueryOffers(request, airports, client, ctx)
-	if len(response) == 0 {
-		log.Warn().Msg("No offers found for the given request")
-		ginc.JSON(404, gin.H{"message": "No offers found"})
+	response, done := getOffersFromDB(ginc, client, request, airports, ctx)
+	if done {
 		return
-	} else {
-		log.Info().Msgf("Found %v offers for the given request", len(response))
 	}
 
 	offerResponse := make([]data.OfferResponse, 0, 50)
@@ -215,6 +209,19 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 	log.Debug().Msgf("Response: %v", offerResponse)
 	log.Info().Msg("Request handled successfully")
 	return
+}
+
+func getOffersFromDB(ginc *gin.Context, client *ent.Client, request data.OfferQuerry, airports []string, ctx context.Context) ([]*ent.Offer, bool) {
+	//TODO: Introduce page size
+	log.Debug().Msg("Querying DB for offers")
+	response := db.QueryOffers(request, airports, client, ctx)
+	if len(response) == 0 {
+		log.Warn().Msg("No offers found for the given request")
+		ginc.JSON(404, gin.H{"message": "No offers found"})
+		return nil, true
+	}
+	log.Info().Msgf("Found %v offers for the given request", len(response))
+	return response, false
 }
 
 func cacheHitCheckOffer(ginc *gin.Context, request data.OfferQuerry, err error, redisClient *redis.Client, ctx context.Context) bool {
