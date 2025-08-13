@@ -293,30 +293,35 @@ func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *[]data.Offe
 
 		log.Debug().Msgf("Processing offer: %v", i)
 
-		offerWithHotel := data.OfferWithHotel{
-			HotelName:                 hotelResult.Hotelname,
-			HotelStars:                hotelResult.Hotelstars,
-			Outbounddeparturedatetime: offerResult.Outbounddeparturedatetime,
-			Inbounddeparturedatetime:  offerResult.Inbounddeparturedatetime,
-			Countadults:               offerResult.Countadults,
-			Countchildren:             offerResult.Countchildren,
-			Price:                     offerResult.Price,
-			Inbounddepartureairport:   offerResult.Inbounddepartureairport,
-			Inboundarrivalairport:     offerResult.Inboundarrivalairport,
-			Inboundarrivaldatetime:    offerResult.Inboundarrivaldatetime,
-			Outbounddepartureairport:  offerResult.Outbounddepartureairport,
-			Outboundarrivalairport:    offerResult.Outboundarrivalairport,
-			Outboundarrivaldatetime:   offerResult.Outboundarrivaldatetime,
-			Mealtye:                   offerResult.Mealtype,
-			Ocenview:                  offerResult.Oceanview,
-			Rommtype:                  offerResult.Roomtype,
-		}
+		offerWithHotel := parseOfferResult(hotelResult, offerResult)
 		response := data.OfferResponse{
 			Offers:      []data.OfferWithHotel{offerWithHotel},
 			CountOffers: len(uniqueOffers),
 		}
 		*responsesStore = append(*responsesStore, response)
 	}
+}
+
+func parseOfferResult(hotelResult *ent.Hotel, offerResult *ent.Offer) data.OfferWithHotel {
+	offerWithHotel := data.OfferWithHotel{
+		HotelName:                 hotelResult.Hotelname,
+		HotelStars:                hotelResult.Hotelstars,
+		Outbounddeparturedatetime: offerResult.Outbounddeparturedatetime,
+		Inbounddeparturedatetime:  offerResult.Inbounddeparturedatetime,
+		Countadults:               offerResult.Countadults,
+		Countchildren:             offerResult.Countchildren,
+		Price:                     offerResult.Price,
+		Inbounddepartureairport:   offerResult.Inbounddepartureairport,
+		Inboundarrivalairport:     offerResult.Inboundarrivalairport,
+		Inboundarrivaldatetime:    offerResult.Inboundarrivaldatetime,
+		Outbounddepartureairport:  offerResult.Outbounddepartureairport,
+		Outboundarrivalairport:    offerResult.Outboundarrivalairport,
+		Outboundarrivaldatetime:   offerResult.Outboundarrivaldatetime,
+		Mealtye:                   offerResult.Mealtype,
+		Ocenview:                  offerResult.Oceanview,
+		Rommtype:                  offerResult.Roomtype,
+	}
+	return offerWithHotel
 }
 
 func parseAirportsToArray(airports []string) ([]string, error) {
