@@ -3,6 +3,7 @@ package main
 import (
 	"check24-techup25/data"
 	"check24-techup25/db"
+	"check24-techup25/db/ent"
 	"check24-techup25/db/migrate"
 	"check24-techup25/logging"
 	"context"
@@ -32,13 +33,7 @@ func main() {
 		dbDSN = "host=localhost port=5432 user=user dbname=check24 password=password sslmode=disable"
 	}
 
-	log.Info().Msg("Connecting to DB...")
-	client, err := db.NewClient(dbDSN)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Could not connect to DB")
-	} else {
-		log.Info().Msg("Connected to DB")
-	}
+	client := parseDbDSN(dbDSN)
 
 	defer func() {
 		if err := client.Close(); err != nil {
@@ -46,20 +41,11 @@ func main() {
 		}
 	}()
 
-	log.Info().Msg("Running Migration...")
-	if err = db.Migrate(*client); err != nil {
-		log.Error().Err(err).Msg("Could Not migrate current schema")
-	} else {
-		log.Info().Msg("Migration Done")
-	}
+	migrateSchema(client)
 
 	ctx := context.Background()
 
-	if err := client.Ping(ctx); err != nil {
-		log.Fatal().Err(err).Msg("Could not ping DB")
-	} else {
-		log.Info().Msg("Ping to DB successful")
-	}
+	pingDB(client, ctx)
 
 	hotelsResultsChannel := make(chan *data.Hotel, data.BatchSize)
 	offerResultsChannel := make(chan *data.Offer, data.BatchSize)
@@ -68,6 +54,43 @@ func main() {
 
 	var wg sync.WaitGroup
 
+	startMigrating(&wg, ctx, client, hotelsResultsChannel, hotelFilePath, offerResultsChannel, offersFilePath)
+
+	wg.Wait()
+
+	log.Info().Msg("Done")
+}
+
+func parseDbDSN(dbDSN string) *ent.Client {
+	log.Info().Msg("Connecting to DB...")
+	client, err := db.NewClient(dbDSN)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Could not connect to DB")
+	} else {
+		log.Info().Msg("Connected to DB")
+	}
+	return client
+}
+
+func migrateSchema(client *ent.Client) {
+	log.Info().Msg("Running Migration...")
+	if err := db.Migrate(*client); err != nil {
+		log.Error().Err(err).Msg("Could Not migrate current schema")
+	} else {
+		log.Info().Msg("Migration Done")
+	}
+}
+
+func pingDB(client *ent.Client, ctx context.Context) {
+	if err := client.Ping(ctx); err != nil {
+		log.Fatal().Err(err).Msg("Could not ping DB")
+	} else {
+		log.Info().Msg("Ping to DB successful")
+	}
+}
+
+func startMigrating(wg *sync.WaitGroup, ctx context.Context, client *ent.Client, hotelsResultsChannel chan *data.Hotel,
+	hotelFilePath *string, offerResultsChannel chan *data.Offer, offersFilePath *string) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -84,10 +107,4 @@ func main() {
 		migrate.MigrateOffers(ctx, client, offerResultsChannel)
 	}()
 	data.ReadOffersCSVFile(*offersFilePath, offerResultsChannel)
-
-	wg.Wait()
-
-	//TODO: Introduce edges
-
-	log.Info().Msg("Done")
 }
