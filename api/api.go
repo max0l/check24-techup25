@@ -54,6 +54,13 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 //	@Description	handles hotel requests and returns the hotel information.
 //	@Router			/hotel/{hotelid} [get]
 //	@Param			site	query		int					true	"Site, e.g. 1 or 2"
+//	@Param			departureAirports		query		[]string				true	"List of departure airports, e.g. FRA, MUC"
+//	@Param			earliestDepartureDate	query		string					true	"Earliest departure date in format RFC3339"
+//	@Param			latestReturnDate		query		string					true	"Latest return date in format RFC3339"
+//	@Param			countAdults				query		int						true	"Number of adults"
+//	@Param			countChildren			query		int						false	"Number of children"
+//	@Param			duration				query		int						true	"Duration of the trip in days"
+//	@Param			site					query		int						true	"Site, e.g. 1 or 2"
 //	@Param			hotelid	path		int					true	"ID of the hotel"
 //	@Success		200		{object}	data.HotelResponse	"Hotel information"
 //	@Failure		400		"Bad Request"
@@ -162,13 +169,13 @@ func parseHotelIDAndSite(c *gin.Context) (int, int, error) {
 //	@Summary		handles offer requests
 //	@Description	handles offer requests and returns a list of offers.
 //	@Router			/offers [get]
-//	@Param			DepartureAirports		query		[]string				true	"List of departure airports, e.g. FRA, MUC"
-//	@Param			EarliestDepartureDate	query		string					true	"Earliest departure date in format RFC3339"
-//	@Param			LatestReturnDate		query		string					true	"Latest return date in format RFC3339"
-//	@Param			CountAdults				query		int						true	"Number of adults"
-//	@Param			CountChildren			query		int						false	"Number of children"
-//	@Param			Duration				query		int						true	"Duration of the trip in days"
-//	@Param			Site					query		int						true	"Site, e.g. 1 or 2"
+//	@Param			departureAirports		query		[]string				true	"List of departure airports, e.g. FRA, MUC"
+//	@Param			earliestDepartureDate	query		string					true	"Earliest departure date in format RFC3339"
+//	@Param			latestReturnDate		query		string					true	"Latest return date in format RFC3339"
+//	@Param			countAdults				query		int						true	"Number of adults"
+//	@Param			countChildren			query		int						false	"Number of children"
+//	@Param			duration				query		int						true	"Duration of the trip in days"
+//	@Param			site					query		int						true	"Site, e.g. 1 or 2"
 //	@Success		200						{object}	[]data.OfferResponse	"List of offers matching the request"
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"No Offers Found"
