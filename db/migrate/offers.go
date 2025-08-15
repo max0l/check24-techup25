@@ -4,10 +4,14 @@ import (
 	"check24-techup25/data"
 	"check24-techup25/db/ent"
 	"context"
+	"errors"
+	"os"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/rs/zerolog/log"
 )
 
+// MigrateOffers migrates offers from the given channel to the database in batches.
 func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Offer) {
 	var (
 		offerBatch []*ent.OfferCreate
@@ -16,13 +20,9 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 	for offer := range offers {
 
 		// This will make the insertion a little bit faster
-		if offer.Hotelid > 998 {
-			log.Trace().Err(err).Msgf("Skipping hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
-			continue
-		}
-		hotel, err := client.Hotel.Get(ctx, offer.Hotelid)
+		hotel, err := handleOfferHotel(ctx, client, offer)
 		if err != nil {
-			log.Warn().Err(err).Msgf("Could not find hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
+			log.Error().Err(err).Msgf("Could not handle hotel for offer %v", offer.Offerid)
 			continue
 		}
 
@@ -42,6 +42,57 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 	}
 }
 
+// handleOfferHotel checks if the hotel exists for the given offer and creates it if it does not exist.
+// If the hotel ID is greater than 998, it will skip the creation if the environment variable SKIP_INVALID_HOTELS is set to true.
+// The number 998 is used because querying the DB for every hotel will slow down the migration process significantly.
+func handleOfferHotel(ctx context.Context, client *ent.Client, offer *data.Offer) (*ent.Hotel, error) {
+	var hotel *ent.Hotel
+	doSkip := doSkipInvalidHotels()
+	if doSkip {
+		if offer.Hotelid > 998 {
+			log.Trace().Msgf("Creating hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
+			err := client.Hotel.Create().
+				SetID(offer.Hotelid).
+				SetHotelname("Placeholder").
+				SetHotelstars(0).
+				OnConflict(
+					sql.ConflictColumns("id"),
+					sql.ResolveWithNewValues()).
+				UpdateNewValues().
+				Exec(ctx)
+			if err != nil {
+				log.Error().Err(err).Msgf("Could not create hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
+				return nil, err
+			}
+		}
+	}
+	if doSkip && offer.Hotelid > 998 {
+		log.Trace().Msgf("Skipping hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
+		return nil, errors.New("hotel ID is not in CSV")
+	}
+
+	hotel, err := client.Hotel.Get(ctx, offer.Hotelid)
+	if err != nil {
+		log.Warn().Err(err).Msgf("Could not find hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
+		return nil, err
+	}
+	return hotel, nil
+}
+
+// doSkipInvalidHotels checks if the environment variable SKIP_INVALID_HOTELS is set to true.
+// If not set, it defaults to false.
+func doSkipInvalidHotels() bool {
+	skipInvalidHotels := os.Getenv("SKIP_INVALID_HOTELS")
+	if skipInvalidHotels == "" {
+		return false
+	}
+	if skipInvalidHotels == "true" {
+		return true
+	}
+	return false
+}
+
+// createEntOffer creates an ent.OfferCreate object from the given data.Offer and ent.Hotel.
 func createEntOffer(client *ent.Client, offer *data.Offer, hotel *ent.Hotel) *ent.OfferCreate {
 	offerDb := client.Offer.Create().
 		SetID(offer.Offerid).
