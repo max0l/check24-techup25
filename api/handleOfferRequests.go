@@ -29,12 +29,13 @@ import (
 //	@Failure		404						"No Offers Found"
 func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
 	var request data.RequestQuerryParams
+	log.Trace().Msgf("Got request: %v", ginc.Request)
 	err := bindOfferRequest(ginc, &request)
 	if err != nil {
 		return
 	}
 
-	if checkIfDateDurationIsRight(ginc, request) {
+	if checkIfParamsAreRight(ginc, request) {
 		return
 	}
 

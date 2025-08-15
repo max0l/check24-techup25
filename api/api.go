@@ -46,7 +46,7 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 	}
 }
 
-func checkIfDateDurationIsRight(ginc *gin.Context, request data.RequestQuerryParams) bool {
+func checkIfParamsAreRight(ginc *gin.Context, request data.RequestQuerryParams) bool {
 	if request.EarliestDepartureDate.After(request.LatestReturnDate) {
 		log.Error().Msg("Earliest departure date is after latest return date")
 		ginc.JSON(400, gin.H{"message": "Earliest departure date cannot be after latest return date"})
@@ -56,6 +56,16 @@ func checkIfDateDurationIsRight(ginc *gin.Context, request data.RequestQuerryPar
 	if request.Duration < 1 {
 		log.Warn().Msgf("Duration cant be less than a 1 day, but it was %v", request.Duration)
 		ginc.JSON(400, gin.H{"message": "Duration must be at least 1 day"})
+		return true
+	}
+	if request.Site < 1 {
+		log.Warn().Msgf("Site cant be less than 1, but it was %v", request.Site)
+		ginc.JSON(400, gin.H{"message": "Site must be at least 1"})
+		return true
+	}
+	if request.CountAdults < 1 {
+		log.Warn().Msgf("CountAdults cant be less than 1, but it was %v", request.CountAdults)
+		ginc.JSON(400, gin.H{"message": "CountAdults must be at least 1"})
 		return true
 	}
 	return false
