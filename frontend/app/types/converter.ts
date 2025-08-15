@@ -1,44 +1,41 @@
 import {Paths} from "@/app/types/openapi";
 import {ReadonlyURLSearchParams} from "next/navigation";
 
-export function GetBestOffersByHotelToQuery(input: Paths.GetBestOffersByHotel.QueryParameters): string {
+export function GetBestOffersByHotelToQuery(input: Paths.Offers.Get.QueryParameters): string {
     const params = {
-        earliestDepartureDate: input.earliestDepartureDate,
-        latestReturnDate: input.latestReturnDate,
-        duration: input.duration.toString(),
-        countAdults: input.countAdults.toString(),
-        countChildren: input.countChildren.toString(),
+        EarliestDepartureDate: input.EarliestDepartureDate,
+        LatestReturnDate: input.LatestReturnDate,
+        Duration: input.Duration.toString(),
+        CountAdults: input.CountAdults.toString(),
+        CountChildren: (input.CountChildren ?? 0).toString(),
+        site: input.Site.toString()
     };
 
     const searchParams = new URLSearchParams(params);
     
     // cant pass an object with an array to URLSearchParams --> append individually
-    input.departureAirports.forEach((airport) => {
-        searchParams.append("departureAirports", airport);
+    input.DepartureAirports.forEach((airport) => {
+        searchParams.append("DepartureAirports", airport);
     })
 
     return searchParams.toString();
 }
 
-export function GetBestOffersByHotelFromQuery(query: ReadonlyURLSearchParams): Paths.GetBestOffersByHotel.QueryParameters {
+export function GetBestOffersByHotelFromQuery(query: ReadonlyURLSearchParams): Paths.Offers.Get.QueryParameters {
     return {
-        earliestDepartureDate: query.get("earliestDepartureDate") as string,
-        latestReturnDate: query.get("latestReturnDate") as string,
-        countAdults: parseInt(query.get("countAdults") as string),
-        countChildren: parseInt(query.get("countChildren") as string),
-        departureAirports: query.getAll("departureAirports"),
-        duration: parseInt(query.get("duration") as string),
+        EarliestDepartureDate: query.get("EarliestDepartureDate") as string,
+        LatestReturnDate: query.get("LatestReturnDate") as string,
+        CountAdults: parseInt(query.get("CountAdults") as string),
+        CountChildren: parseInt(query.get("CountChildren") as string),
+        DepartureAirports: query.getAll("DepartureAirports"),
+        Duration: parseInt(query.get("Duration") as string),
+        Site: parseInt(query.get("Site") as string),
     };
 }
 
-export function GetHotelOffersFromQuery(query: ReadonlyURLSearchParams): Paths.GetHotelOffers.QueryParameters & Paths.GetHotelOffers.PathParameters {
+export function GetHotelOffersFromQuery(query: ReadonlyURLSearchParams): Paths.Hotel$Hotelid.Get.PathParameters & Paths.Hotel$Hotelid.Get.QueryParameters {
     return {
-        earliestDepartureDate: query.get("earliestDepartureDate") as string,
-        latestReturnDate: query.get("latestReturnDate") as string,
-        countAdults: parseInt(query.get("countAdults") as string),
-        countChildren: parseInt(query.get("countChildren") as string),
-        departureAirports: query.getAll("departureAirports"),
-        duration: parseInt(query.get("duration") as string),
-        hotelId: parseInt(query.get("hotelId") as string),
+        hotelid: parseInt(query.get("hotelid") as string),
+        site: parseInt(query.get("site") as string),
     }
 }
