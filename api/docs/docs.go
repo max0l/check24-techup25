@@ -28,6 +28,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "integer",
+                        "description": "ID of the hotel",
+                        "name": "hotelid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
                         "type": "array",
                         "items": {
                             "type": "string"
@@ -66,19 +73,6 @@ const docTemplate = `{
                         "description": "Duration of the trip in days",
                         "name": "duration",
                         "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Site, e.g. 1 or 2",
-                        "name": "site",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "ID of the hotel",
-                        "name": "hotelid",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {

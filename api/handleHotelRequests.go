@@ -19,14 +19,13 @@ import (
 //	@Description	handles hotel requests and returns the hotel information.
 //	@Router			/hotel/{hotelid} [get]
 //	@Param			site					query		int					true	"Site, e.g. 1 or 2"
+//	@Param			hotelid					path		int					true	"ID of the hotel"
 //	@Param			departureAirports		query		[]string			false	"List of departure airports, e.g. FRA, MUC"
 //	@Param			earliestDepartureDate	query		string				false	"Earliest departure date in format RFC3339"
 //	@Param			latestReturnDate		query		string				false	"Latest return date in format RFC3339"
 //	@Param			countAdults				query		int					false	"Number of adults"
 //	@Param			countChildren			query		int					false	"Number of children"
 //	@Param			duration				query		int					false	"Duration of the trip in days"
-//	@Param			site					query		int					false	"Site, e.g. 1 or 2"
-//	@Param			hotelid					path		int					true	"ID of the hotel"
 //	@Success		200						{object}	data.HotelResponse	"Hotel information"
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"Hotel Not Found"
