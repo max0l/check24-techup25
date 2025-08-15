@@ -37,7 +37,7 @@ func Migrate(client ent.Client) error {
 }
 
 // TODO: change edge name 'hotelid' of offer
-func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client, ctx context.Context) []*ent.Offer {
+func QueryOffers(request data.RequestQuerryParams, airports []string, client *ent.Client, ctx context.Context) []*ent.Offer {
 	results, err := queryOffersFromDb(request, airports, client, ctx)
 	if err != nil {
 		return results
@@ -65,7 +65,7 @@ func QueryOffers(request data.OfferQuerry, airports []string, client *ent.Client
 	return uniqueOffers
 }
 
-func queryOffersFromDb(request data.OfferQuerry, airports []string, client *ent.Client, ctx context.Context) ([]*ent.Offer, error) {
+func queryOffersFromDb(request data.RequestQuerryParams, airports []string, client *ent.Client, ctx context.Context) ([]*ent.Offer, error) {
 	results, err := client.Offer.Query().
 		Where(offer.OutbounddepartureairportIn(airports...),
 			offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate),

@@ -22,7 +22,7 @@ type Offer struct {
 	DurationInDays            int
 }
 
-type OfferQuerry struct {
+type RequestQuerryParams struct {
 	DepartureAirports     []string  `binding:"required" json:"departureAirports"`
 	EarliestDepartureDate time.Time `binding:"required" json:"earliestDepartureDate"`
 	LatestReturnDate      time.Time `binding:"required" json:"latestReturnDate"`

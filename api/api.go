@@ -46,7 +46,7 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 	}
 }
 
-func checkIfDateDurationIsRight(ginc *gin.Context, request data.OfferQuerry) bool {
+func checkIfDateDurationIsRight(ginc *gin.Context, request data.RequestQuerryParams) bool {
 	if request.EarliestDepartureDate.After(request.LatestReturnDate) {
 		log.Error().Msg("Earliest departure date is after latest return date")
 		ginc.JSON(400, gin.H{"message": "Earliest departure date cannot be after latest return date"})

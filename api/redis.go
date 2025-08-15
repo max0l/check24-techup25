@@ -105,7 +105,7 @@ func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, requestSit
 	}
 }
 
-func storeOfferRequestInRedis(redisClient *redis.Client, request data.OfferQuerry, uniqueOffers []*ent.Offer, ctx context.Context) {
+func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQuerryParams, uniqueOffers []*ent.Offer, ctx context.Context) {
 	var modifiedRequest = request
 	if request.Site != 1 {
 		modifiedRequest.Site = 1
@@ -135,7 +135,7 @@ func storeOfferRequestInRedis(redisClient *redis.Client, request data.OfferQuerr
 
 }
 
-func CreateRedisCacheKeyOffers(request data.OfferQuerry, site int) string {
+func CreateRedisCacheKeyOffers(request data.RequestQuerryParams, site int) string {
 	return fmt.Sprintf("offers:%s:%s:%s:%d:%d:%d:%d",
 		strings.Join(request.DepartureAirports, ","), request.EarliestDepartureDate.String(), request.EarliestDepartureDate.String(),
 		request.CountAdults, request.CountChildren, request.Duration, site)

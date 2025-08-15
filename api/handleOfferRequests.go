@@ -28,7 +28,7 @@ import (
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"No Offers Found"
 func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
-	var request data.OfferQuerry
+	var request data.RequestQuerryParams
 	err := bindOfferRequest(ginc, &request)
 	if err != nil {
 		return
@@ -66,7 +66,7 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 	return
 }
 
-func getOffersFromDB(ginc *gin.Context, client *ent.Client, request data.OfferQuerry, airports []string, ctx context.Context) ([]*ent.Offer, bool) {
+func getOffersFromDB(ginc *gin.Context, client *ent.Client, request data.RequestQuerryParams, airports []string, ctx context.Context) ([]*ent.Offer, bool) {
 	//TODO: Introduce page size
 	log.Debug().Msg("Querying DB for offers")
 	response := db.QueryOffers(request, airports, client, ctx)
@@ -79,7 +79,7 @@ func getOffersFromDB(ginc *gin.Context, client *ent.Client, request data.OfferQu
 	return response, false
 }
 
-func cacheHitCheckOffer(ginc *gin.Context, request data.OfferQuerry, err error, redisClient *redis.Client, ctx context.Context) bool {
+func cacheHitCheckOffer(ginc *gin.Context, request data.RequestQuerryParams, err error, redisClient *redis.Client, ctx context.Context) bool {
 	cacheKey := CreateRedisCacheKeyOffers(request, request.Site)
 	log.Debug().Msgf("Checking Redis cache for key: %s", cacheKey)
 	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
@@ -97,7 +97,7 @@ func cacheHitCheckOffer(ginc *gin.Context, request data.OfferQuerry, err error, 
 	return false
 }
 
-func bindOfferRequest(ginc *gin.Context, request *data.OfferQuerry) error {
+func bindOfferRequest(ginc *gin.Context, request *data.RequestQuerryParams) error {
 	err := ginc.BindQuery(&request)
 	if err != nil {
 		log.Error().Err(err).Msg("Could not bind query parameters")
@@ -117,7 +117,7 @@ func bindOfferRequest(ginc *gin.Context, request *data.OfferQuerry) error {
 	return err
 }
 
-func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *[]data.OfferResponse, request data.OfferQuerry) {
+func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *[]data.OfferResponse, request data.RequestQuerryParams) {
 
 	processedResults := 0
 	for i := db.ResponseSize * (request.Site - 1); i < len(uniqueOffers); i++ {
