@@ -23,13 +23,13 @@ type Offer struct {
 }
 
 type RequestQuerryParams struct {
-	DepartureAirports     []string  `binding:"required" json:"departureAirports"`
-	EarliestDepartureDate time.Time `binding:"required" json:"earliestDepartureDate"`
-	LatestReturnDate      time.Time `binding:"required" json:"latestReturnDate"`
-	CountAdults           int       `binding:"required" json:"countAdults"`
+	DepartureAirports     []string  `json:"departureAirports"`
+	EarliestDepartureDate time.Time `json:"earliestDepartureDate"`
+	LatestReturnDate      time.Time `json:"latestReturnDate"`
+	CountAdults           int       `json:"countAdults"`
 	CountChildren         int       `json:"countChildren"`
-	Duration              int       `binding:"required" json:"duration"`
-	Site                  int       `binding:"required" json:"site"`
+	Duration              int       `json:"duration"`
+	Site                  int       `json:"site"`
 }
 
 type OfferWithHotel struct {

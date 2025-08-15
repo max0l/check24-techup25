@@ -23,7 +23,7 @@ import (
 //	@Param			countAdults				query		int						true	"Number of adults"
 //	@Param			countChildren			query		int						false	"Number of children"
 //	@Param			duration				query		int						true	"Duration of the trip in days"
-//	@Param			site					query		int						true	"Site, e.g. 1 or 2"
+//	@Param			site					query		int						false	"Site, e.g. 1 or 2"
 //	@Success		200						{object}	[]data.OfferResponse	"List of offers matching the request"
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"No Offers Found"
