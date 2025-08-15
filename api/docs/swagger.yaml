@@ -1,12 +1,13 @@
 definitions:
   data.HotelResponse:
     properties:
+      count_available_offers:
+        type: integer
       hotelid:
         type: integer
       hotelname:
         type: string
       hotelstars:
-        format: float32
         type: number
       offers:
         items:
@@ -53,52 +54,62 @@ definitions:
     type: object
   data.OfferResponse:
     properties:
-      Countadults:
+      countOffers:
+        example: 5
+        type: integer
+      offers:
+        items:
+          $ref: '#/definitions/data.OfferWithHotel'
+        type: array
+    type: object
+  data.OfferWithHotel:
+    properties:
+      countadults:
         example: 2
         type: integer
-      Countchildren:
+      countchildren:
         example: 1
         type: integer
-      HotelName:
+      hotelName:
         example: Hotel Sunshine
         type: string
-      HotelStars:
+      hotelStars:
         example: 4.5
         type: number
-      Inboundarrivalairport:
+      inboundarrivalairport:
         example: PMI
         type: string
-      Inboundarrivaldatetime:
+      inboundarrivaldatetime:
         example: "2025-12-31T00:00:00+02:00"
         type: string
-      Inbounddepartureairport:
+      inbounddepartureairport:
         example: BER
         type: string
-      Inbounddeparturedatetime:
+      inbounddeparturedatetime:
         example: "2025-12-31T00:00:00+02:00"
         type: string
-      Mealtye:
+      mealtye:
         example: allinclusive
         type: string
-      Ocenview:
+      ocenview:
         example: true
         type: boolean
-      Outboundarrivalairport:
+      outboundarrivalairport:
         example: BER
         type: string
-      Outboundarrivaldatetime:
+      outboundarrivaldatetime:
         example: "2025-01-01T00:00:00+02:00"
         type: string
-      Outbounddepartureairport:
+      outbounddepartureairport:
         example: PMI
         type: string
-      Outbounddeparturedatetime:
+      outbounddeparturedatetime:
         example: "2025-01-01T00:00:00+02:00"
         type: string
-      Price:
+      price:
         example: 299.99
         type: number
-      Rommtype:
+      rommtype:
         example: double
         type: string
     type: object
@@ -115,6 +126,37 @@ paths:
         in: query
         name: site
         required: true
+        type: integer
+      - collectionFormat: csv
+        description: List of departure airports, e.g. FRA, MUC
+        in: query
+        items:
+          type: string
+        name: departureAirports
+        type: array
+      - description: Earliest departure date in format RFC3339
+        in: query
+        name: earliestDepartureDate
+        type: string
+      - description: Latest return date in format RFC3339
+        in: query
+        name: latestReturnDate
+        type: string
+      - description: Number of adults
+        in: query
+        name: countAdults
+        type: integer
+      - description: Number of children
+        in: query
+        name: countChildren
+        type: integer
+      - description: Duration of the trip in days
+        in: query
+        name: duration
+        type: integer
+      - description: Site, e.g. 1 or 2
+        in: query
+        name: site
         type: integer
       - description: ID of the hotel
         in: path
@@ -140,37 +182,36 @@ paths:
         in: query
         items:
           type: string
-        name: DepartureAirports
+        name: departureAirports
         required: true
         type: array
       - description: Earliest departure date in format RFC3339
         in: query
-        name: EarliestDepartureDate
+        name: earliestDepartureDate
         required: true
         type: string
       - description: Latest return date in format RFC3339
         in: query
-        name: LatestReturnDate
+        name: latestReturnDate
         required: true
         type: string
       - description: Number of adults
         in: query
-        name: CountAdults
+        name: countAdults
         required: true
         type: integer
       - description: Number of children
         in: query
-        name: CountChildren
+        name: countChildren
         type: integer
       - description: Duration of the trip in days
         in: query
-        name: Duration
+        name: duration
         required: true
         type: integer
       - description: Site, e.g. 1 or 2
         in: query
-        name: Site
-        required: true
+        name: site
         type: integer
       responses:
         "200":

@@ -28,6 +28,52 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "List of departure airports, e.g. FRA, MUC",
+                        "name": "departureAirports",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Earliest departure date in format RFC3339",
+                        "name": "earliestDepartureDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Latest return date in format RFC3339",
+                        "name": "latestReturnDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of adults",
+                        "name": "countAdults",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of children",
+                        "name": "countChildren",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Duration of the trip in days",
+                        "name": "duration",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Site, e.g. 1 or 2",
+                        "name": "site",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "ID of the hotel",
                         "name": "hotelid",
@@ -63,50 +109,49 @@ const docTemplate = `{
                         },
                         "collectionFormat": "csv",
                         "description": "List of departure airports, e.g. FRA, MUC",
-                        "name": "DepartureAirports",
+                        "name": "departureAirports",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Earliest departure date in format RFC3339",
-                        "name": "EarliestDepartureDate",
+                        "name": "earliestDepartureDate",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Latest return date in format RFC3339",
-                        "name": "LatestReturnDate",
+                        "name": "latestReturnDate",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "integer",
                         "description": "Number of adults",
-                        "name": "CountAdults",
+                        "name": "countAdults",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "integer",
                         "description": "Number of children",
-                        "name": "CountChildren",
+                        "name": "countChildren",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "description": "Duration of the trip in days",
-                        "name": "Duration",
+                        "name": "duration",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "integer",
                         "description": "Site, e.g. 1 or 2",
-                        "name": "Site",
-                        "in": "query",
-                        "required": true
+                        "name": "site",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -133,6 +178,9 @@ const docTemplate = `{
         "data.HotelResponse": {
             "type": "object",
             "properties": {
+                "count_available_offers": {
+                    "type": "integer"
+                },
                 "hotelid": {
                     "type": "integer"
                 },
@@ -140,8 +188,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "hotelstars": {
-                    "type": "number",
-                    "format": "float32"
+                    "type": "number"
                 },
                 "offers": {
                     "type": "array",
@@ -211,67 +258,82 @@ const docTemplate = `{
         "data.OfferResponse": {
             "type": "object",
             "properties": {
-                "Countadults": {
+                "countOffers": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "offers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.OfferWithHotel"
+                    }
+                }
+            }
+        },
+        "data.OfferWithHotel": {
+            "type": "object",
+            "properties": {
+                "countadults": {
                     "type": "integer",
                     "example": 2
                 },
-                "Countchildren": {
+                "countchildren": {
                     "type": "integer",
                     "example": 1
                 },
-                "HotelName": {
+                "hotelName": {
                     "type": "string",
                     "example": "Hotel Sunshine"
                 },
-                "HotelStars": {
+                "hotelStars": {
                     "type": "number",
                     "example": 4.5
                 },
-                "Inboundarrivalairport": {
+                "inboundarrivalairport": {
                     "type": "string",
                     "example": "PMI"
                 },
-                "Inboundarrivaldatetime": {
+                "inboundarrivaldatetime": {
                     "type": "string",
                     "example": "2025-12-31T00:00:00+02:00"
                 },
-                "Inbounddepartureairport": {
+                "inbounddepartureairport": {
                     "type": "string",
                     "example": "BER"
                 },
-                "Inbounddeparturedatetime": {
+                "inbounddeparturedatetime": {
                     "type": "string",
                     "example": "2025-12-31T00:00:00+02:00"
                 },
-                "Mealtye": {
+                "mealtye": {
                     "type": "string",
                     "example": "allinclusive"
                 },
-                "Ocenview": {
+                "ocenview": {
                     "type": "boolean",
                     "example": true
                 },
-                "Outboundarrivalairport": {
+                "outboundarrivalairport": {
                     "type": "string",
                     "example": "BER"
                 },
-                "Outboundarrivaldatetime": {
+                "outboundarrivaldatetime": {
                     "type": "string",
                     "example": "2025-01-01T00:00:00+02:00"
                 },
-                "Outbounddepartureairport": {
+                "outbounddepartureairport": {
                     "type": "string",
                     "example": "PMI"
                 },
-                "Outbounddeparturedatetime": {
+                "outbounddeparturedatetime": {
                     "type": "string",
                     "example": "2025-01-01T00:00:00+02:00"
                 },
-                "Price": {
+                "price": {
                     "type": "number",
                     "example": 299.99
                 },
-                "Rommtype": {
+                "rommtype": {
                     "type": "string",
                     "example": "double"
                 }
