@@ -36,6 +36,13 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 		return
 	}
 
+	var request data.RequestQuerryParams
+	log.Trace().Msgf("Got request: %v", c.Request)
+	err2 := bindOptionalHotelParams(c, &request)
+	if err2 != nil {
+		return
+	}
+
 	log.Debug().Msgf("Received request for hotel with ID: %d and site %v", hotelID, site)
 
 	if cacheHitCheckHotel(c, hotelID, site, err, redisClient, ctx) {
@@ -57,6 +64,39 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 	log.Debug().Msgf("Found hotel: %v", hotelResponse)
 	c.JSON(200, hotelResponse)
 	return
+}
+
+func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) error {
+	var request data.RequestQuerryParams
+	err := c.ShouldBindQuery(&request)
+	if err != nil {
+		return err
+	}
+	if !request.EarliestDepartureDate.IsZero() {
+		params.EarliestDepartureDate = request.EarliestDepartureDate
+	}
+	if !request.LatestReturnDate.IsZero() {
+		params.LatestReturnDate = request.LatestReturnDate
+	}
+	if request.CountAdults > 0 {
+		params.CountAdults = request.CountAdults
+	}
+	if request.CountChildren > 0 {
+		params.CountChildren = request.CountChildren
+	}
+	if request.Duration > 0 {
+		params.Duration = request.Duration
+	}
+	if request.DepartureAirports != nil && len(request.DepartureAirports) > 0 {
+		params.DepartureAirports = request.DepartureAirports
+	}
+	if request.Site > 0 {
+		params.Site = request.Site
+	} else {
+		params.Site = 1 // Default site if not provided
+		log.Warn().Msgf("Site not provided, defaulting to site 1")
+	}
+	return nil
 }
 
 // parseHotelIDAndSite extracts and validates hotel ID and site from the request context
