@@ -28,4 +28,4 @@ To get these offer a query of type 2 has been executed for a specific hotel (see
 ## Regenerate types
 The frontend generates its types from an openapi spec that defines the API of the backend.
 If you want to make changes to that openapi spec (because you want to change the backend's API), you can regenerate these types by running:
-`npx openapi-client-axios-typegen ./apimock/__files/openapi.json > app/types/openapi.d.ts`
+`npx  openapi-client-axios-typegen ../api/docs/swagger.json > app/types/openapi.d.ts`
