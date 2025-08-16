@@ -59,14 +59,14 @@ func CloseRedisClient(client *redis.Client) {
 	}
 }
 
-func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, requestSite int, entClient *ent.Client, ctx context.Context) {
+func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams, requestSite int, entClient *ent.Client, ctx context.Context) {
 	site := requestSite
 	if site < 1 {
 		site = 1
 	}
 
 	for {
-		redisKey := CreateRedisCacheKeyHotel(hotelId, site)
+		redisKey := CreateRedisCacheKeyHotel(hotelId, request, site)
 
 		hotelDb, err := db.QueryHotel(hotelId, entClient, ctx)
 		if err != nil {
@@ -78,7 +78,7 @@ func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, requestSit
 			return
 		}
 
-		hotelResponse, err := db.QueryOffersOfAHotel(hotelDb, site, entClient, ctx)
+		hotelResponse, err := db.QueryOffersOfAHotel(hotelDb, request, site, entClient, ctx)
 		if err != nil {
 			log.Error().Err(err).Msg("Error querying hotel offers from DB")
 			return
@@ -143,6 +143,47 @@ func CreateRedisCacheKeyOffers(request data.RequestQuerryParams, site int) strin
 		request.CountAdults, request.CountChildren, request.Duration, site)
 }
 
-func CreateRedisCacheKeyHotel(hotelId int, site int) string {
-	return fmt.Sprintf("hotel:%d:%d", hotelId, site)
+func CreateRedisCacheKeyHotel(hotelId int, request data.RequestQuerryParams, site int) string {
+	// Airports
+	airports := "any"
+	if len(request.DepartureAirports) > 0 {
+		airports = strings.Join(request.DepartureAirports, ",")
+	}
+
+	// Dates
+	earliest := "none"
+	if !request.EarliestDepartureDate.IsZero() {
+		earliest = request.EarliestDepartureDate.String()
+	}
+
+	latest := "none"
+	if !request.LatestReturnDate.IsZero() {
+		latest = request.LatestReturnDate.String()
+	}
+	adults := "none"
+	if request.CountAdults > 0 {
+		adults = strconv.Itoa(request.CountAdults)
+	}
+
+	children := "none"
+	if request.CountChildren > 0 {
+		children = strconv.Itoa(request.CountChildren)
+	}
+
+	duration := "none"
+	if request.Duration > 0 {
+		duration = strconv.Itoa(request.Duration)
+	}
+
+	return fmt.Sprintf(
+		"hotel:%d:%s:%s:%s:%s:%s:%s:%d",
+		hotelId,
+		airports,
+		earliest,
+		latest,
+		adults,
+		children,
+		duration,
+		site,
+	)
 }

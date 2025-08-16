@@ -31,7 +31,7 @@ import (
 //	@Failure		404						"Hotel Not Found"
 func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
 
-	hotelID, site, err := parseHotelIDAndSite(c)
+	hotelID, err := parseHotelID(c)
 	if err != nil {
 		return
 	}
@@ -43,9 +43,9 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 		return
 	}
 
-	log.Debug().Msgf("Received request for hotel with ID: %d and site %v", hotelID, site)
+	log.Debug().Msgf("Received request for hotel with ID: %d and params: %v", hotelID, request)
 
-	if cacheHitCheckHotel(c, hotelID, site, err, redisClient, ctx) {
+	if cacheHitCheckHotel(c, hotelID, request, request.Site, err, redisClient, ctx) {
 		return
 	}
 
@@ -54,12 +54,12 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 		return
 	}
 
-	hotelResponse, err := getOffersOfHotel(c, client, err, hotelDb, site, ctx)
+	hotelResponse, err := getOffersOfHotel(c, client, err, hotelDb, request, request.Site, ctx)
 	if err != nil {
 		return
 	}
 
-	go storeHotelRequestInRedis(redisClient, hotelID, site, client, ctx)
+	go storeHotelRequestInRedis(redisClient, hotelID, request, request.Site, client, ctx)
 
 	log.Debug().Msgf("Found hotel: %v", hotelResponse)
 	c.JSON(200, hotelResponse)
@@ -99,30 +99,21 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 	return nil
 }
 
-// parseHotelIDAndSite extracts and validates hotel ID and site from the request context
-func parseHotelIDAndSite(c *gin.Context) (int, int, error) {
+// parseHotelID extracts and validates hotel ID and site from the request context
+func parseHotelID(c *gin.Context) (int, error) {
 	hotelID, err := strconv.Atoi(c.Param("hotelid"))
 	if err != nil {
 		log.Error().Err(err).Msg("Could not parse hotel ID from request")
 		c.JSON(400, gin.H{"message": "Invalid hotel ID"})
-		return 0, 0, err
+		return 0, err
 	}
-	siteQuery, exists := c.GetQuery("site")
-	if !exists {
-		siteQuery = "1"
-		log.Warn().Msgf("Could not find site query from request")
-	}
-	site, err := strconv.Atoi(siteQuery)
-	if err != nil {
-		log.Error().Err(err).Msg("Could not parse site from request")
-		c.JSON(400, gin.H{"message": "Invalid site"})
-		return 0, 0, err
-	}
-	return hotelID, site, nil
+	return hotelID, nil
 }
 
-func getOffersOfHotel(c *gin.Context, client *ent.Client, err error, hotelDb *ent.Hotel, site int, ctx context.Context) (data.HotelResponse, error) {
-	hotelResponse, err := db.QueryOffersOfAHotel(hotelDb, site, client, ctx)
+func getOffersOfHotel(c *gin.Context, client *ent.Client, err error, hotelDb *ent.Hotel,
+	request data.RequestQuerryParams, site int, ctx context.Context) (data.HotelResponse, error) {
+
+	hotelResponse, err := db.QueryOffersOfAHotel(hotelDb, request, site, client, ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Error querying hotel offers from DB")
 		c.JSON(500, gin.H{"message": "Internal server error"})
@@ -145,8 +136,10 @@ func queryDbForHotel(c *gin.Context, client *ent.Client, err error, hotelID int,
 	return hotelDb, nil
 }
 
-func cacheHitCheckHotel(c *gin.Context, hotelID int, site int, err error, redisClient *redis.Client, ctx context.Context) bool {
-	cacheKey := CreateRedisCacheKeyHotel(hotelID, site)
+func cacheHitCheckHotel(c *gin.Context, hotelID int, request data.RequestQuerryParams,
+	site int, err error, redisClient *redis.Client, ctx context.Context) bool {
+
+	cacheKey := CreateRedisCacheKeyHotel(hotelID, request, site)
 	log.Debug().Msgf("Checking Redis cache for key: %s", cacheKey)
 	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
 	if err == nil {

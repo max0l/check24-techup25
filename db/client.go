@@ -5,6 +5,7 @@ import (
 	"check24-techup25/db/ent"
 	"check24-techup25/db/ent/hotel"
 	"check24-techup25/db/ent/offer"
+	"check24-techup25/db/ent/predicate"
 	"context"
 	"errors"
 
@@ -84,7 +85,8 @@ func queryOffersFromDb(request data.RequestQuerryParams, airports []string, clie
 	return results, nil
 }
 
-func QueryOffersOfAHotel(h *ent.Hotel, site int, client *ent.Client, ctx context.Context) (data.HotelResponse, error) {
+func QueryOffersOfAHotel(h *ent.Hotel, request data.RequestQuerryParams,
+	site int, client *ent.Client, ctx context.Context) (data.HotelResponse, error) {
 
 	var hotelResponse data.HotelResponse
 
@@ -92,7 +94,9 @@ func QueryOffersOfAHotel(h *ent.Hotel, site int, client *ent.Client, ctx context
 	hotelResponse.Hotelname = h.Hotelname
 	hotelResponse.Hotelstars = h.Hotelstars
 
-	hotelsOfferQuerry := client.Hotel.QueryOffers(h)
+	predicates, err := makeHotelOfferPredicates(request)
+
+	hotelsOfferQuerry := client.Hotel.QueryOffers(h).Where(predicates...)
 
 	amount, err := getOfferAmountOfOneHotel(h, hotelsOfferQuerry, ctx)
 	if err != nil {
@@ -109,6 +113,35 @@ func QueryOffersOfAHotel(h *ent.Hotel, site int, client *ent.Client, ctx context
 	}
 
 	return hotelResponse, nil
+}
+
+func makeHotelOfferPredicates(request data.RequestQuerryParams) ([]predicate.Offer, error) {
+	var predicates []predicate.Offer
+
+	if request.DepartureAirports != nil && len(request.DepartureAirports) > 0 {
+		predicates = append(predicates, offer.OutbounddepartureairportIn(request.DepartureAirports...))
+	}
+
+	if !request.EarliestDepartureDate.IsZero() {
+		predicates = append(predicates, offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate))
+	}
+	if !request.LatestReturnDate.IsZero() {
+		predicates = append(predicates, offer.InboundarrivaldatetimeLTE(request.LatestReturnDate))
+	}
+	if request.CountAdults > 0 {
+		predicates = append(predicates, offer.CountadultsEQ(request.CountAdults))
+	}
+	if request.CountChildren > 0 {
+		predicates = append(predicates, offer.CountchildrenEQ(request.CountChildren))
+	}
+	if request.Duration > 0 {
+		predicates = append(predicates, offer.DurationInDaysEQ(request.Duration))
+	}
+	if len(predicates) == 0 {
+		return nil, errors.New("no predicates provided for hotel offer query")
+	}
+	//return offer.And(predicates...), nil
+	return predicates, nil
 }
 
 func querryAllHotelOffersFromDb(h *ent.Hotel, site int, hotelsOfferQuerry *ent.OfferQuery, ctx context.Context,
