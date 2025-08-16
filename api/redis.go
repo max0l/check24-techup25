@@ -113,9 +113,11 @@ func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQue
 	for {
 		redisKey := CreateRedisCacheKeyOffers(modifiedRequest, modifiedRequest.Site)
 
-		responseStore := make([]data.OfferResponse, 0, 50)
+		responseStore := data.OfferResponse{
+			Offers: make([]data.OfferWithHotel, 0, 50),
+		}
 		parseOfferDbResponse(uniqueOffers, &responseStore, modifiedRequest)
-		if len(responseStore) == 0 {
+		if len(responseStore.Offers) == 0 {
 			return
 		}
 

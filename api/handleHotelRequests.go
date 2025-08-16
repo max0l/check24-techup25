@@ -93,7 +93,7 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 	if request.Site > 0 {
 		params.Site = request.Site
 	} else {
-		params.Site = 1 // Default site if not provided
+		params.Site = 1
 		log.Warn().Msgf("Site not provided, defaulting to site 1")
 	}
 	return nil

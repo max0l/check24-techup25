@@ -24,7 +24,7 @@ import (
 //	@Param			countChildren			query		int						false	"Number of children"
 //	@Param			duration				query		int						true	"Duration of the trip in days"
 //	@Param			site					query		int						false	"Site, e.g. 1 or 2"
-//	@Success		200						{object}	[]data.OfferResponse	"List of offers matching the request"
+//	@Success		200						{object}	data.OfferResponse	"List of offers matching the request"
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"No Offers Found"
 func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
@@ -55,7 +55,9 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 		return
 	}
 
-	offerResponse := make([]data.OfferResponse, 0, 50)
+	offerResponse := data.OfferResponse{
+		Offers: make([]data.OfferWithHotel, 0, 50),
+	}
 
 	parseOfferDbResponse(response, &offerResponse, request)
 
@@ -118,8 +120,9 @@ func bindOfferRequest(ginc *gin.Context, request *data.RequestQuerryParams) erro
 	return err
 }
 
-func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *[]data.OfferResponse, request data.RequestQuerryParams) {
+func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *data.OfferResponse, request data.RequestQuerryParams) {
 
+	responsesStore.CountOffers = len(uniqueOffers)
 	processedResults := 0
 	for i := db.ResponseSize * (request.Site - 1); i < len(uniqueOffers); i++ {
 
@@ -135,11 +138,7 @@ func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *[]data.Offe
 		log.Debug().Msgf("Processing offer: %v", i)
 
 		offerWithHotel := parseOfferResult(hotelResult, offerResult)
-		response := data.OfferResponse{
-			Offers:      []data.OfferWithHotel{offerWithHotel},
-			CountOffers: len(uniqueOffers),
-		}
-		*responsesStore = append(*responsesStore, response)
+		responsesStore.Offers = append(responsesStore.Offers, offerWithHotel)
 	}
 }
 
