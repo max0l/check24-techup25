@@ -46,29 +46,24 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 // If the hotel ID is greater than 998, it will skip the creation if the environment variable SKIP_INVALID_HOTELS is set to true.
 // The number 998 is used because querying the DB for every hotel will slow down the migration process significantly.
 func handleOfferHotel(ctx context.Context, client *ent.Client, offer *data.Offer) (*ent.Hotel, error) {
-	var hotel *ent.Hotel
-	doSkip := doSkipInvalidHotels()
-	if doSkip {
-		if offer.Hotelid > 998 {
-			log.Trace().Msgf("Creating hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
-			err := client.Hotel.Create().
-				SetID(offer.Hotelid).
-				SetHotelname("Placeholder").
-				SetHotelstars(0).
-				OnConflict(
-					sql.ConflictColumns("id"),
-					sql.ResolveWithNewValues()).
-				UpdateNewValues().
-				Exec(ctx)
-			if err != nil {
-				log.Error().Err(err).Msgf("Could not create hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
-				return nil, err
-			}
-		}
-	}
-	if doSkip && offer.Hotelid > 998 {
+	if doSkipInvalidHotels() && offer.Hotelid > 998 {
 		log.Trace().Msgf("Skipping hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
 		return nil, errors.New("hotel ID is not in CSV")
+	}
+
+	if offer.Hotelid > 998 {
+		log.Trace().Msgf("Creating hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
+		err := client.Hotel.Create().
+			SetID(offer.Hotelid).
+			SetHotelname("Placeholder").
+			SetHotelstars(0).
+			OnConflict(sql.ConflictColumns("id"), sql.ResolveWithNewValues()).
+			UpdateNewValues().
+			Exec(ctx)
+		if err != nil {
+			log.Error().Err(err).Msgf("Could not create hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
+			return nil, err
+		}
 	}
 
 	hotel, err := client.Hotel.Get(ctx, offer.Hotelid)
