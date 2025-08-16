@@ -27,14 +27,6 @@ func (kh *KnownHotels) AddHotel(hotel *ent.Hotel) {
 	kh.hotels[hotel.ID] = *hotel
 }
 
-func (kh *KnownHotels) AddMultipleHotels(hotels []ent.Hotel) {
-	kh.Lock()
-	defer kh.Unlock()
-	for _, hotel := range hotels {
-		kh.hotels[hotel.ID] = hotel
-	}
-}
-
 func (kh *KnownHotels) ContainsHotel(hotelID int) bool {
 	kh.RLock()
 	defer kh.RUnlock()
