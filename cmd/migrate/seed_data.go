@@ -101,10 +101,12 @@ func startMigrating(wg *sync.WaitGroup, ctx context.Context, client *ent.Client,
 
 	wg.Wait()
 
+	var seenHotels = make(map[int]bool)
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		migrate.MigrateOffers(ctx, client, offerResultsChannel)
+		migrate.MigrateOffers(ctx, client, &seenHotels, offerResultsChannel)
 	}()
 	data.ReadOffersCSVFile(*offersFilePath, offerResultsChannel)
 }

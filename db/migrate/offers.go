@@ -12,7 +12,8 @@ import (
 )
 
 // MigrateOffers migrates offers from the given channel to the database in batches.
-func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Offer) {
+func MigrateOffers(ctx context.Context, client *ent.Client, seenHotels *map[int]bool,
+	offers chan *data.Offer) {
 	var (
 		offerBatch []*ent.OfferCreate
 		err        error
@@ -20,7 +21,7 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 	for offer := range offers {
 
 		// This will make the insertion a little bit faster
-		hotel, err := handleOfferHotel(ctx, client, offer)
+		hotel, err := handleOfferHotel(ctx, client, offer, seenHotels)
 		if err != nil {
 			log.Error().Err(err).Msgf("Could not handle hotel for offer %v", offer.Offerid)
 			continue
@@ -45,13 +46,14 @@ func MigrateOffers(ctx context.Context, client *ent.Client, offers chan *data.Of
 // handleOfferHotel checks if the hotel exists for the given offer and creates it if it does not exist.
 // If the hotel ID is greater than 998, it will skip the creation if the environment variable SKIP_INVALID_HOTELS is set to true.
 // The number 998 is used because querying the DB for every hotel will slow down the migration process significantly.
-func handleOfferHotel(ctx context.Context, client *ent.Client, offer *data.Offer) (*ent.Hotel, error) {
+func handleOfferHotel(ctx context.Context, client *ent.Client, offer *data.Offer,
+	seenHotels *map[int]bool) (*ent.Hotel, error) {
 	if doSkipInvalidHotels() && offer.Hotelid > 998 {
 		log.Trace().Msgf("Skipping hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
 		return nil, errors.New("hotel ID is not in CSV")
 	}
 
-	if offer.Hotelid > 998 {
+	if offer.Hotelid > 998 && !seenHotel(offer.Hotelid, seenHotels) {
 		log.Trace().Msgf("Creating hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
 		err := client.Hotel.Create().
 			SetID(offer.Hotelid).
@@ -72,6 +74,20 @@ func handleOfferHotel(ctx context.Context, client *ent.Client, offer *data.Offer
 		return nil, err
 	}
 	return hotel, nil
+}
+
+func seenHotel(hotelid int, hotels *map[int]bool) bool {
+	if hotels == nil {
+		return false
+	}
+	if _, ok := (*hotels)[hotelid]; ok {
+		log.Trace().Msgf("Hotel with ID %d already seen", hotelid)
+		return true
+	}
+	(*hotels)[hotelid] = true
+	log.Trace().Msgf("Hotel with ID %d is now marked as seen", hotelid)
+	return false
+
 }
 
 // doSkipInvalidHotels checks if the environment variable SKIP_INVALID_HOTELS is set to true.
