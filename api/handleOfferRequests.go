@@ -50,7 +50,7 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 		return
 	}
 
-	response, done := getOffersFromDB(ginc, client, request, airports, ctx)
+	dbResponse, done := getOffersFromDB(ginc, client, request, airports, ctx)
 	if done {
 		return
 	}
@@ -59,9 +59,9 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 		Offers: make([]data.OfferWithHotel, 0, 50),
 	}
 
-	parseOfferDbResponse(response, &offerResponse, request)
+	parseOfferDbResponse(dbResponse, &offerResponse, request)
 
-	go storeOfferRequestInRedis(redisClient, request, response, ctx)
+	go storeOfferRequestInRedis(redisClient, request, dbResponse, ctx)
 
 	ginc.JSON(200, offerResponse)
 	log.Debug().Msgf("Response: %v", offerResponse)
@@ -88,13 +88,15 @@ func cacheHitCheckOffer(ginc *gin.Context, request data.RequestQuerryParams, err
 	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
 	if err == nil {
 		log.Debug().Msgf("Found cached response for key: %s", cacheKey)
-		var cachedOffers []data.OfferResponse
+		var cachedOffers data.OfferResponse
 		err = json.Unmarshal(cachedResponse, &cachedOffers)
 		if err == nil {
 			log.Debug().Msgf("Returning cached offers: %v", cachedOffers)
 			ginc.JSON(200, cachedOffers)
 			log.Info().Msg("Request handled successfully with cached response")
 			return true
+		} else {
+			log.Error().Err(err).Msg("Could not unmarshal cached offers response")
 		}
 	}
 	return false

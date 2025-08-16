@@ -109,4 +109,5 @@ func startMigrating(wg *sync.WaitGroup, ctx context.Context, client *ent.Client,
 		migrate.MigrateOffers(ctx, client, knownHotels, offerResultsChannel)
 	}()
 	data.ReadOffersCSVFile(*offersFilePath, offerResultsChannel)
+	return
 }

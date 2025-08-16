@@ -31,14 +31,14 @@ func MigrateOffers(ctx context.Context, client *ent.Client, knownHotels *KnownHo
 
 		offerBatch = append(offerBatch, offerDb)
 		if len(offerBatch) == batchSize {
-			log.Trace().Msgf("Sending %v offers to the DB", len(offerBatch))
+			log.Debug().Msgf("Sending %v offers to the DB", len(offerBatch))
 			sendBulkOffersToDb(ctx, client, err, offerBatch)
 			offerBatch = offerBatch[:0]
 		}
 	}
 
 	if len(offerBatch) > 0 && len(offerBatch) < batchSize {
-		log.Trace().Msgf("Sending last %v offers to the DB", len(offerBatch))
+		log.Debug().Msgf("Sending last %v offers to the DB", len(offerBatch))
 		sendBulkOffersToDb(ctx, client, err, offerBatch)
 	}
 }
