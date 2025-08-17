@@ -61,11 +61,9 @@ func CloseRedisClient(client *redis.Client) {
 
 func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams, requestSite int, entClient *ent.Client, ctx context.Context) {
 	site := requestSite
-	if site < 1 {
-		site = 1
-	}
 
-	for {
+	// Only cache 50 sites for each request because some results could contain over 100000 offers (which means 2000 sites)
+	for site < requestSite+50 {
 		redisKey := CreateRedisCacheKeyHotel(hotelId, request, site)
 
 		hotelDb, err := db.QueryHotel(hotelId, entClient, ctx)
