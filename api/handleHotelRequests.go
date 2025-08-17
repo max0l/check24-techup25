@@ -36,7 +36,7 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 		return
 	}
 
-	var request data.RequestQuerryParams
+	request := data.RequestQuerryParams{}
 	log.Trace().Msgf("Got request: %v", c.Request)
 	err2 := bindOptionalHotelParams(c, &request)
 	if err2 != nil {
@@ -70,7 +70,19 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 	var request data.RequestQuerryParams
 	err := c.ShouldBindQuery(&request)
 	if err != nil {
+		log.Error().Err(err).Msg("Could not bind query parameters to request")
+		c.JSON(400, gin.H{"message": "Invalid query parameters"})
 		return err
+	} else {
+		log.Debug().Msgf("Got request for:\n\tdepartureAirports: %v, "+
+			"\n\tearliestDepartureDate: %v, "+
+			"\n\tlatestReturnDate %v,"+
+			"\n\tcountAdults: %v, "+
+			"\n\tcountChildren: %v, "+
+			"\n\tduration: %v"+
+			"\n\tsite: %v", request.DepartureAirports, request.EarliestDepartureDate,
+			request.LatestReturnDate, request.CountAdults, request.CountChildren, request.Duration,
+			request.Site)
 	}
 	if !request.EarliestDepartureDate.IsZero() {
 		params.EarliestDepartureDate = request.EarliestDepartureDate

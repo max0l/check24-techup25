@@ -91,6 +91,9 @@ func QueryOffersOfAHotel(h *ent.Hotel, request data.RequestQuerryParams,
 	var hotelResponse data.HotelResponse
 
 	hotelResponse.Hotelid = h.ID
+
+	log.Debug().Msgf("Querying hotel with id %v", hotelResponse.Hotelid)
+
 	hotelResponse.Hotelname = h.Hotelname
 	hotelResponse.Hotelstars = h.Hotelstars
 
@@ -140,7 +143,7 @@ func makeHotelOfferPredicates(request data.RequestQuerryParams) ([]predicate.Off
 	if len(predicates) == 0 {
 		return nil, errors.New("no predicates provided for hotel offer query")
 	}
-	//return offer.And(predicates...), nil
+
 	return predicates, nil
 }
 
