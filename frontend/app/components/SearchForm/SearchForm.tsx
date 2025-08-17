@@ -56,9 +56,9 @@ export default function SearchForm({submitCallback}: Properties) {
     useEffect(() => {
         const params = GetBestOffersByHotelFromQuery(query)
         setDepartureAirports(params.departureAirports && params.departureAirports[0] && params.departureAirports[0].length !== 0 ? params.departureAirports : [])
-        setCountChildren(isNaN(params.countChildren) ? 0 : params.countChildren);
-        setCountAdults(isNaN(params.countAdults) ? 0 : params.countAdults);
-        setDuration(isNaN(params.duration) ? 0 : params.duration);
+        setCountChildren(Number(params.countChildren) || 0);
+        setCountAdults(Number(params.countAdults) || 0);
+        setDuration(Number(params.duration) || 0);
         setDurationInput(params.duration ? params.duration.toString() : "");
         setEarliestDepartureDate(params.earliestDepartureDate ? dayjs(params.earliestDepartureDate) : null);
         setLatestReturnDate(params.latestReturnDate ? dayjs(params.latestReturnDate) : null);
