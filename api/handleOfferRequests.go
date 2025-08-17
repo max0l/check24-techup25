@@ -17,13 +17,13 @@ import (
 //	@Summary		handles offer requests
 //	@Description	handles offer requests and returns a list of offers.
 //	@Router			/offers [get]
-//	@Param			departureAirports		query		[]string				true	"List of departure airports, e.g. FRA, MUC"
-//	@Param			earliestDepartureDate	query		string					true	"Earliest departure date in format RFC3339"
-//	@Param			latestReturnDate		query		string					true	"Latest return date in format RFC3339"
-//	@Param			countAdults				query		int						true	"Number of adults"
-//	@Param			countChildren			query		int						false	"Number of children"
-//	@Param			duration				query		int						true	"Duration of the trip in days"
-//	@Param			site					query		int						false	"Site, e.g. 1 or 2"
+//	@Param			departureAirports		query		[]string			true	"List of departure airports, e.g. FRA, MUC"
+//	@Param			earliestDepartureDate	query		string				true	"Earliest departure date in format RFC3339"
+//	@Param			latestReturnDate		query		string				true	"Latest return date in format RFC3339"
+//	@Param			countAdults				query		int					true	"Number of adults"
+//	@Param			countChildren			query		int					false	"Number of children"
+//	@Param			duration				query		int					true	"Duration of the trip in days"
+//	@Param			site					query		int					false	"Site, e.g. 1 or 2"
 //	@Success		200						{object}	data.OfferResponse	"List of offers matching the request"
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"No Offers Found"

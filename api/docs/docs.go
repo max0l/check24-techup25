@@ -22,16 +22,16 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Site, e.g. 1 or 2",
-                        "name": "site",
-                        "in": "query",
+                        "description": "ID of the hotel",
+                        "name": "hotelid",
+                        "in": "path",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "ID of the hotel",
-                        "name": "hotelid",
-                        "in": "path",
+                        "description": "Site, e.g. 1 or 2",
+                        "name": "site",
+                        "in": "query",
                         "required": true
                     },
                     {
@@ -152,10 +152,7 @@ const docTemplate = `{
                     "200": {
                         "description": "List of offers matching the request",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/data.OfferResponse"
-                            }
+                            "$ref": "#/definitions/data.OfferResponse"
                         }
                     },
                     "400": {
@@ -275,11 +272,19 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
-                "hotelName": {
+                "durationindays": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "hotelid": {
+                    "type": "integer",
+                    "example": 123
+                },
+                "hotelname": {
                     "type": "string",
                     "example": "Hotel Sunshine"
                 },
-                "hotelStars": {
+                "hotelstars": {
                     "type": "number",
                     "example": 4.5
                 },

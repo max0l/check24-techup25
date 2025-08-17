@@ -70,10 +70,16 @@ definitions:
       countchildren:
         example: 1
         type: integer
-      hotelName:
+      durationindays:
+        example: 7
+        type: integer
+      hotelid:
+        example: 123
+        type: integer
+      hotelname:
         example: Hotel Sunshine
         type: string
-      hotelStars:
+      hotelstars:
         example: 4.5
         type: number
       inboundarrivalairport:
@@ -122,14 +128,14 @@ paths:
     get:
       description: handles hotel requests and returns the hotel information.
       parameters:
-      - description: Site, e.g. 1 or 2
-        in: query
-        name: site
-        required: true
-        type: integer
       - description: ID of the hotel
         in: path
         name: hotelid
+        required: true
+        type: integer
+      - description: Site, e.g. 1 or 2
+        in: query
+        name: site
         required: true
         type: integer
       - collectionFormat: csv
@@ -213,9 +219,7 @@ paths:
         "200":
           description: List of offers matching the request
           schema:
-            items:
-              $ref: '#/definitions/data.OfferResponse'
-            type: array
+            $ref: '#/definitions/data.OfferResponse'
         "400":
           description: Bad Request
         "404":

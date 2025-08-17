@@ -18,8 +18,8 @@ import (
 //	@Summary		handles hotel requests
 //	@Description	handles hotel requests and returns the hotel information.
 //	@Router			/hotel/{hotelid} [get]
-//	@Param			site					query		int					true	"Site, e.g. 1 or 2"
 //	@Param			hotelid					path		int					true	"ID of the hotel"
+//	@Param			site					query		int					true	"Site, e.g. 1 or 2"
 //	@Param			departureAirports		query		[]string			false	"List of departure airports, e.g. FRA, MUC"
 //	@Param			earliestDepartureDate	query		string				false	"Earliest departure date in format RFC3339"
 //	@Param			latestReturnDate		query		string				false	"Latest return date in format RFC3339"
