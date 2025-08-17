@@ -148,6 +148,7 @@ func parseOfferResult(hotelResult *ent.Hotel, offerResult *ent.Offer) data.Offer
 	offerWithHotel := data.OfferWithHotel{
 		HotelName:                 hotelResult.Hotelname,
 		HotelStars:                hotelResult.Hotelstars,
+		HotelId:                   hotelResult.ID,
 		Outbounddeparturedatetime: offerResult.Outbounddeparturedatetime,
 		Inbounddeparturedatetime:  offerResult.Inbounddeparturedatetime,
 		Countadults:               offerResult.Countadults,
