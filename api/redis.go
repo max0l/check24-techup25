@@ -140,7 +140,7 @@ func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQue
 
 func CreateRedisCacheKeyOffers(request data.RequestQuerryParams, site int) string {
 	return fmt.Sprintf("offers:%s:%s:%s:%d:%d:%d:%d",
-		strings.Join(request.DepartureAirports, ","), request.EarliestDepartureDate.String(), request.EarliestDepartureDate.String(),
+		strings.Join(request.DepartureAirports, ","), request.EarliestDepartureDate.String(), request.LatestReturnDate.String(),
 		request.CountAdults, request.CountChildren, request.Duration, site)
 }
 
