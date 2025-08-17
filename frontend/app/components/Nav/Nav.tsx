@@ -9,7 +9,7 @@ export default function Nav() {
                 <Box sx={{height: "50%", width: 200, ml: "-15px", position: "relative"}}>
                     <Image src="/logo.svg" alt="CHECK24 Logo" fill/>
                 </Box>
-                <Typography variant="h6" color="white">GenDev 2023</Typography>
+                <Typography variant="h6" color="white">Techup 2025</Typography>
             </Container>
         </Box>
     )

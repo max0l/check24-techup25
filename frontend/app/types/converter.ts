@@ -33,7 +33,7 @@ export function GetBestOffersByHotelFromQuery(query: ReadonlyURLSearchParams): P
     };
 }
 
-export function GetHotelOffersFromQuery(query: ReadonlyURLSearchParams): Paths.Hotel$Hotelid.Get.PathParameters & Paths.Hotel$Hotelid.Get.QueryParameters {
+export function GetHotelOffersFromQuery(query: ReadonlyURLSearchParams): Paths.Hotel$Hotelid.Get.QueryParameters {
     return {
         earliestDepartureDate: query.get("earliestDepartureDate") as string,
         latestReturnDate: query.get("latestReturnDate") as string,
@@ -41,7 +41,12 @@ export function GetHotelOffersFromQuery(query: ReadonlyURLSearchParams): Paths.H
         countChildren: parseInt(query.get("countChildren") as string),
         departureAirports: query.getAll("departureAirports"),
         duration: parseInt(query.get("duration") as string),
-        hotelid: parseInt(query.get("hotelid") as string),
         site: parseInt(query.get("site") as string),
+    }
+}
+
+export function GetHotelIdFromQuery(query: ReadonlyURLSearchParams): Paths.Hotel$Hotelid.Get.PathParameters {
+    return {
+        hotelid: parseInt(query.get("hotelid") as string)
     }
 }

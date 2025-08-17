@@ -4,16 +4,16 @@ import SearchForm from "@/app/components/SearchForm/SearchForm";
 import {Stack, Typography} from "@mui/material";
 import Hotel from "@/app/components/Hotel/Hotel";
 import {OpenAPIClientAxios} from "openapi-client-axios";
-import {Client, Components, Paths} from "@/app/types/openapi";
+import {Client, Definitions, Paths} from "@/app/types/openapi";
 import {useEffect, useState} from "react";
 import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
-import BestHotelOffer = Components.Schemas.BestHotelOffer;
+import BestHotelOffer = Definitions.DataOfferResponse
 import {GetBestOffersByHotelFromQuery, GetBestOffersByHotelToQuery} from "@/app/types/converter";
 
 export default function HomePage() {
-    const [offers, setOffers] = useState<BestHotelOffer[]>([]);
-    const [queryParameters, setQueryParameters] = useState<Paths.GetBestOffersByHotel.QueryParameters>();
+    const [offers, setOffers] = useState<BestHotelOffer>();
+    const [queryParameters, setQueryParameters] = useState<Paths.Offers.Get.QueryParameters>();
     const router = useRouter();
     const query = useSearchParams();
 
@@ -30,7 +30,7 @@ export default function HomePage() {
 
 
     async function onSubmitSearchForm(departureAirports: string[], countAdults: number, countChildren: number, duration: number, earliestDeparture: string, latestReturn: string) {
-        const parameters: Paths.GetBestOffersByHotel.QueryParameters = {
+        const parameters: Paths.Offers.Get.QueryParameters = {
             earliestDepartureDate: earliestDeparture,
             latestReturnDate: latestReturn,
             countAdults: countAdults,
@@ -42,12 +42,14 @@ export default function HomePage() {
         await load(parameters);
     }
 
-    async function load(parameters: Paths.GetBestOffersByHotel.QueryParameters) {
+    async function load(parameters: Paths.Offers.Get.QueryParameters) {
         setQueryParameters(parameters);
         router.push("/?" + GetBestOffersByHotelToQuery(parameters));
-        const api = new OpenAPIClientAxios({definition: 'http://localhost:8090/openapi', withServer: 0})
+        const api = new OpenAPIClientAxios({definition: 'http://localhost:8080/swagger/doc.json', withServer: 0,
+            axiosConfigDefaults: {baseURL: 'http://localhost:8080'}
+        })
         const client = await api.init<Client>()
-        const response = await client.getBestOffersByHotel(parameters);
+        const response = await client.get<BestHotelOffer>(`/offers`, {params: parameters});
         setOffers(response.data);
     }
 
@@ -57,9 +59,9 @@ export default function HomePage() {
             <SearchForm submitCallback={onSubmitSearchForm}/>
             <Typography variant="h4" sx={{mt: "60px", mb: "30px"}}>Hotels for your Mallorca-Trip:</Typography>
             <Stack gap={3}>
-                {offers.map(offer =>
-                    <Link key={offer.hotel.id}
-                          href={{pathname: '/offers', query: {...queryParameters, hotelId: offer.hotel.id}}}
+                {offers?.offers?.map(offer =>
+                    <Link key={offer.hotelid}
+                          href={{pathname: '/offers', query: {...queryParameters, hotelId: offer.hotelid}}}
                           style={{textDecoration: "none"}}>
                         <Hotel offer={offer}/>
                     </Link>

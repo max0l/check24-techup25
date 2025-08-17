@@ -1,26 +1,31 @@
 "use client";
 
 import {OpenAPIClientAxios, Parameters} from "openapi-client-axios";
-import {Client, Components, Paths} from "@/app/types/openapi"
+import {Client, Definitions, Paths} from "@/app/types/openapi"
 import HotelOffer from "@/app/components/HotelOffer/HotelOffer";
 import {useSearchParams} from 'next/navigation';
 import {useEffect, useState} from "react";
 import {Box, Rating, Typography} from "@mui/material";
 import {Stack} from "@mui/system";
-import {GetHotelOffersFromQuery} from "@/app/types/converter";
+import {GetHotelOffersFromQuery, GetHotelIdFromQuery} from "@/app/types/converter";
 
-type HotelOffer = Components.Schemas.GetHotelOffersResponse
+
+type HotelOfferResp = Definitions.DataHotelResponse
+
+//type GetHotelResp   = Paths.Hotel$Hotelid.Get.Responses.$200;
 
 export default function Page() {
     const query = useSearchParams()
-    const [hotelOffer, setHotelOffer] = useState<HotelOffer>();
+    const [hotelOffer, setHotelOffer] = useState<HotelOfferResp>();
 
     async function fetchData() {
         const parameters = GetHotelOffersFromQuery(query);
+        const hotelid = GetHotelIdFromQuery(query)
         console.log(parameters);
-        const api = new OpenAPIClientAxios({definition: 'http://localhost:8090/openapi', withServer: 0})
+        const api = new OpenAPIClientAxios({definition: 'http://localhost:8080/swagger/doc.json', withServer: 0,  
+            axiosConfigDefaults: {baseURL: 'http://localhost:8080'}})
         const client = await api.init<Client>()
-        const response = await client.GetHotelOffers(parameters)
+        const response = await client.get<HotelOfferResp>(`/offers`, { params: parameters });
         setHotelOffer(response.data)
     }
 
@@ -35,17 +40,17 @@ export default function Page() {
     return (
         <>
             <Stack direction="row" pt={5} alignItems="center">
-                <Typography variant="h4" mr={2}>{hotelOffer.hotel.name}</Typography>
-                <Rating value={hotelOffer.hotel.stars} readOnly/>
+                <Typography variant="h4" mr={2}>{hotelOffer.hotelname ?? "NaN"}</Typography>
+                <Rating value={hotelOffer.hotelstars ?? 0} readOnly/>
             </Stack>
             <Stack direction="row" height="250px" pt={2}>
-                <Box sx={{borderTopLeftRadius: "5px", borderBottomLeftRadius: "5px", backgroundImage: `url("/hotels/${(hotelOffer.hotel.id % 40) + 1}.jpg")`, width: "50%", backgroundSize: "cover", backgroundPosition: "center"}}/>
-                <Box sx={{borderTopRightRadius: "5px", borderBottomRightRadius: "5px", backgroundImage: `url("/rooms/${(hotelOffer.hotel.id % 30) + 1}.jpg")`, width: "50%", backgroundSize: "cover", backgroundPosition: "center"}}/>
+                <Box sx={{borderTopLeftRadius: "5px", borderBottomLeftRadius: "5px", backgroundImage: `url("/hotels/${((hotelOffer.hotelid ?? 0) % 40) + 1}.jpg")`, width: "50%", backgroundSize: "cover", backgroundPosition: "center"}}/>
+                <Box sx={{borderTopRightRadius: "5px", borderBottomRightRadius: "5px", backgroundImage: `url("/rooms/${((hotelOffer.hotelid ?? 0) % 30) + 1}.jpg")`, width: "50%", backgroundSize: "cover", backgroundPosition: "center"}}/>
             </Stack>
             <Typography pt={2} variant="h6">Offers:</Typography>
             <Stack gap={2} mt={1}>
-                {hotelOffer.items.map(offer =>
-                    <HotelOffer key={offer.price} offer={offer}/>
+                {hotelOffer?.offers?.map(offer =>
+                    <HotelOffer key={offer.offerid} offer={offer}/>
                 )}
             </Stack>
         </>
