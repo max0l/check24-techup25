@@ -10,6 +10,7 @@ import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import BestHotelOffer = Definitions.DataOfferResponse
 import {GetBestOffersByHotelFromQuery, GetBestOffersByHotelToQuery} from "@/app/types/converter";
+import qs from "qs";
 
 export default function HomePage() {
     const [offers, setOffers] = useState<BestHotelOffer>();
@@ -46,10 +47,11 @@ export default function HomePage() {
         setQueryParameters(parameters);
         router.push("/?" + GetBestOffersByHotelToQuery(parameters));
         const api = new OpenAPIClientAxios({definition: 'http://localhost:8080/swagger/doc.json', withServer: 0,
-            axiosConfigDefaults: {baseURL: 'http://localhost:8080'}
+            axiosConfigDefaults: {baseURL: 'http://localhost:8080', 
+                paramsSerializer: {serialize: p => qs.stringify(p, {arrayFormat: "comma"})}}
         })
         const client = await api.init<Client>()
-        const response = await client.get<BestHotelOffer>(`/offers`, {params: parameters});
+        const response = await client.get<BestHotelOffer>(`/offers`, {params: parameters });
         setOffers(response.data);
     }
 
