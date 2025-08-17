@@ -40,6 +40,8 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 	log.Trace().Msgf("Got request: %v", c.Request)
 	err2 := bindOptionalHotelParams(c, &request)
 	if err2 != nil {
+		log.Error().Err(err2).Msg("Could not bind query parameters to request")
+		c.JSON(400, gin.H{"message": "Invalid query parameters"})
 		return
 	}
 
@@ -99,8 +101,14 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 	if request.Duration > 0 {
 		params.Duration = request.Duration
 	}
-	if request.DepartureAirports != nil && len(request.DepartureAirports) > 0 {
-		params.DepartureAirports = request.DepartureAirports
+
+	airports, err := parseAirportsToArray(request.DepartureAirports)
+	if err != nil {
+		log.Error().Err(err).Msg("Could not parse airports from request")
+		return err
+	}
+	if airports != nil && len(airports) > 0 {
+		params.DepartureAirports = append(params.DepartureAirports, airports...)
 	}
 	if request.Site > 0 {
 		params.Site = request.Site
