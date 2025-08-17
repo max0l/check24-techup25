@@ -170,6 +170,7 @@ func createOfferFromDb(h *ent.Hotel, singleOffer *ent.Offer) data.Offer {
 	o := data.Offer{
 		Offerid:                   singleOffer.ID,
 		Hotelid:                   h.ID,
+		DurationInDays:            singleOffer.DurationInDays,
 		Outbounddeparturedatetime: singleOffer.Outbounddeparturedatetime,
 		Inbounddeparturedatetime:  singleOffer.Inbounddeparturedatetime,
 		Countadults:               singleOffer.Countadults,

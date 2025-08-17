@@ -36,6 +36,7 @@ type OfferWithHotel struct {
 	HotelName                 string    `json:"hotelname" example:"Hotel Sunshine"`
 	HotelStars                float32   `json:"hotelstars" example:"4.5"`
 	HotelId                   int       `json:"hotelid" example:"123"`
+	DurationInDays            int       `json:"durationindays" example:"7"`
 	Outbounddeparturedatetime time.Time `json:"outbounddeparturedatetime" example:"2025-01-01T00:00:00+02:00"`
 	Inbounddeparturedatetime  time.Time `json:"inbounddeparturedatetime" example:"2025-12-31T00:00:00+02:00"`
 	Countadults               int       `json:"countadults" example:"2"`
