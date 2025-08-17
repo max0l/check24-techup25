@@ -8,9 +8,10 @@ import type {
 
 declare namespace Definitions {
     export interface DataHotelResponse {
+        count_available_offers?: number;
         hotelid?: number;
         hotelname?: string;
-        hotelstars?: number; // float32
+        hotelstars?: number;
         offers?: DataOffer[];
     }
     export interface DataOffer {
@@ -35,84 +36,102 @@ declare namespace Definitions {
     export interface DataOfferResponse {
         /**
          * example:
+         * 5
+         */
+        countOffers?: number;
+        offers?: DataOfferWithHotel[];
+    }
+    export interface DataOfferWithHotel {
+        /**
+         * example:
          * 2
          */
-        Countadults?: number;
+        countadults?: number;
         /**
          * example:
          * 1
          */
-        Countchildren?: number;
+        countchildren?: number;
+        /**
+         * example:
+         * 7
+         */
+        durationindays?: number;
+        /**
+         * example:
+         * 123
+         */
+        hotelid?: number;
         /**
          * example:
          * Hotel Sunshine
          */
-        HotelName?: string;
+        hotelname?: string;
         /**
          * example:
          * 4.5
          */
-        HotelStars?: number;
+        hotelstars?: number;
         /**
          * example:
          * PMI
          */
-        Inboundarrivalairport?: string;
+        inboundarrivalairport?: string;
         /**
          * example:
          * 2025-12-31T00:00:00+02:00
          */
-        Inboundarrivaldatetime?: string;
+        inboundarrivaldatetime?: string;
         /**
          * example:
          * BER
          */
-        Inbounddepartureairport?: string;
+        inbounddepartureairport?: string;
         /**
          * example:
          * 2025-12-31T00:00:00+02:00
          */
-        Inbounddeparturedatetime?: string;
+        inbounddeparturedatetime?: string;
         /**
          * example:
          * allinclusive
          */
-        Mealtye?: string;
+        mealtye?: string;
         /**
          * example:
          * true
          */
-        Ocenview?: boolean;
+        ocenview?: boolean;
         /**
          * example:
          * BER
          */
-        Outboundarrivalairport?: string;
+        outboundarrivalairport?: string;
         /**
          * example:
          * 2025-01-01T00:00:00+02:00
          */
-        Outboundarrivaldatetime?: string;
+        outboundarrivaldatetime?: string;
         /**
          * example:
          * PMI
          */
-        Outbounddepartureairport?: string;
+        outbounddepartureairport?: string;
         /**
          * example:
          * 2025-01-01T00:00:00+02:00
          */
-        Outbounddeparturedatetime?: string;
+        outbounddeparturedatetime?: string;
         /**
          * example:
          * 299.99
          */
-        Price?: number;
+        price?: number;
         /**
          * example:
          * double
          */
-        Rommtype?: string;
+        rommtype?: string;
     }
 }
 declare namespace Paths {
@@ -120,9 +139,33 @@ declare namespace Paths {
         namespace Get {
             namespace Parameters {
                 /**
+                 * Number of adults
+                 */
+                export type CountAdults = number;
+                /**
+                 * Number of children
+                 */
+                export type CountChildren = number;
+                /**
+                 * List of departure airports, e.g. FRA, MUC
+                 */
+                export type DepartureAirports = string[];
+                /**
+                 * Duration of the trip in days
+                 */
+                export type Duration = number;
+                /**
+                 * Earliest departure date in format RFC3339
+                 */
+                export type EarliestDepartureDate = string;
+                /**
                  * ID of the hotel
                  */
                 export type Hotelid = number;
+                /**
+                 * Latest return date in format RFC3339
+                 */
+                export type LatestReturnDate = string;
                 /**
                  * Site, e.g. 1 or 2
                  */
@@ -133,6 +176,12 @@ declare namespace Paths {
             }
             export interface QueryParameters {
                 site: /* Site, e.g. 1 or 2 */ Parameters.Site;
+                departureAirports?: /* List of departure airports, e.g. FRA, MUC */ Parameters.DepartureAirports;
+                earliestDepartureDate?: /* Earliest departure date in format RFC3339 */ Parameters.EarliestDepartureDate;
+                latestReturnDate?: /* Latest return date in format RFC3339 */ Parameters.LatestReturnDate;
+                countAdults?: /* Number of adults */ Parameters.CountAdults;
+                countChildren?: /* Number of children */ Parameters.CountChildren;
+                duration?: /* Duration of the trip in days */ Parameters.Duration;
             }
             namespace Responses {
                 export type $200 = Definitions.DataHotelResponse;
@@ -172,16 +221,16 @@ declare namespace Paths {
                 export type Site = number;
             }
             export interface QueryParameters {
-                DepartureAirports: /* List of departure airports, e.g. FRA, MUC */ Parameters.DepartureAirports;
-                EarliestDepartureDate: /* Earliest departure date in format RFC3339 */ Parameters.EarliestDepartureDate;
-                LatestReturnDate: /* Latest return date in format RFC3339 */ Parameters.LatestReturnDate;
-                CountAdults: /* Number of adults */ Parameters.CountAdults;
-                CountChildren?: /* Number of children */ Parameters.CountChildren;
-                Duration: /* Duration of the trip in days */ Parameters.Duration;
-                Site: /* Site, e.g. 1 or 2 */ Parameters.Site;
+                departureAirports: /* List of departure airports, e.g. FRA, MUC */ Parameters.DepartureAirports;
+                earliestDepartureDate: /* Earliest departure date in format RFC3339 */ Parameters.EarliestDepartureDate;
+                latestReturnDate: /* Latest return date in format RFC3339 */ Parameters.LatestReturnDate;
+                countAdults: /* Number of adults */ Parameters.CountAdults;
+                countChildren?: /* Number of children */ Parameters.CountChildren;
+                duration: /* Duration of the trip in days */ Parameters.Duration;
+                site?: /* Site, e.g. 1 or 2 */ Parameters.Site;
             }
             namespace Responses {
-                export type $200 = Definitions.DataOfferResponse[];
+                export type $200 = Definitions.DataOfferResponse;
             }
         }
     }
