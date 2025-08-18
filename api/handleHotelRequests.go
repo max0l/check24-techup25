@@ -63,10 +63,9 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 		return
 	}
 
-	go storeHotelRequestInRedis(redisClient, hotelID, request, request.Site, client, ctx)
-
 	log.Debug().Msgf("Found hotel: %v", hotelResponse)
 	c.JSON(200, hotelResponse)
+	go storeHotelRequestInRedis(redisClient, hotelID, request, request.Site, client, ctx)
 	return
 }
 
