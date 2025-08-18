@@ -39,7 +39,7 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 
 	request := data.RequestQuerryParams{}
 	log.Trace().Msgf("Got request: %v", c.Request)
-	//TODO: handle requests with empty or weird data (&departureAirports[])
+
 	err2 := bindOptionalHotelParams(c, &request)
 	if err2 != nil {
 		log.Error().Err(err2).Msg("Could not bind query parameters to request")
@@ -87,7 +87,7 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 			request.Site)
 	}
 
-	if !hotelQueryParamsAreValid(c, request) {
+	if !hotelQueryParamsAreValid(request) {
 		return errors.New("invalid hotel query parameters")
 	}
 
@@ -111,7 +111,7 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 	if err != nil {
 		log.Error().Err(err).Msg("Could not parse airports from request")
 	}
-	if airports != nil && len(airports) > 0 {
+	if len(airports) > 0 {
 		params.DepartureAirports = append(params.DepartureAirports, airports...)
 	}
 	if request.Site > 0 {
@@ -123,8 +123,8 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 	return nil
 }
 
-func hotelQueryParamsAreValid(c *gin.Context, request data.RequestQuerryParams) bool {
-	if request.CountAdults < 0 || request.CountChildren < 0 || request.Duration < 1 || request.Site < 1 {
+func hotelQueryParamsAreValid(request data.RequestQuerryParams) bool {
+	if request.CountAdults < 0 || request.CountChildren < 0 || request.Duration < 0 || request.Site < 1 {
 		log.Error().Msg("received invalid query range")
 		return false
 	}
