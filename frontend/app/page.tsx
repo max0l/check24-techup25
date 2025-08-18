@@ -15,6 +15,7 @@ import {
 } from "@/app/types/converter";
 import qs from "qs";
 import { coerceAndValidate } from "@/app/utils/validators";
+import PaginationBar from "@/app/components/Pagination/PaginationBar";
 
 export default function HomePage() {
     const [offers, setOffers] = useState<BestHotelOffer>();
@@ -84,23 +85,32 @@ export default function HomePage() {
             { arrayFormat: "comma" }
         )}`;
 
+    const PAGE_SIZE = 50;
+
+    const total = offers?.countOffers ?? 0;
+    const page = queryParameters?.site || 1;
+
+    const handlePageChange = (p: number) => {
+        if (!queryParameters) return;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        load({ ...queryParameters, site: p });
+    };
+
     return (
         <>
             <Typography sx={{ mb: "50px", mt: "40px" }} variant="h3">
                 CHECK24 Techup 25
             </Typography>
             <SearchForm submitCallback={onSubmitSearchForm} />
-            <Typography variant="h4" sx={{ mt: "60px", mb: "30px" }}>
+            <Typography variant="h4" sx={{ mt: "40px", mb: "10px" }}>
                 Hotels for your Mallorca-Trip:
             </Typography>
-            {(offers?.countOffers ?? 0) > 0 && (
-                <Pagination
-                    count={Math.ceil((offers?.countOffers ?? 1) / 50)}
-                    page={queryParameters?.site ?? 1}   // controlled component
-                    onChange={(_, page) => {
-                        if (!queryParameters) return;
-                        load({ ...queryParameters, site: page });
-                    }}
+            {total > 0 && (
+                <PaginationBar
+                    page={page}
+                    totalItems={total}
+                    pageSize={PAGE_SIZE}
+                    onChange={handlePageChange}
                 />
             )}
             <Stack gap={3}>
@@ -114,6 +124,14 @@ export default function HomePage() {
                     </Link>
                 ))}
             </Stack>
+            {total > 0 && (
+                <PaginationBar
+                    page={page}
+                    totalItems={total}
+                    pageSize={PAGE_SIZE}
+                    onChange={handlePageChange}
+                />
+            )}
         </>
     );
 }
