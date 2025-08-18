@@ -6,6 +6,7 @@ import (
 	"check24-techup25/db/ent"
 	"context"
 	"encoding/json"
+	"errors"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -38,6 +39,7 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 
 	request := data.RequestQuerryParams{}
 	log.Trace().Msgf("Got request: %v", c.Request)
+	//TODO: handle requests with empty or weird data (&departureAirports[])
 	err2 := bindOptionalHotelParams(c, &request)
 	if err2 != nil {
 		log.Error().Err(err2).Msg("Could not bind query parameters to request")
@@ -72,8 +74,6 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 	var request data.RequestQuerryParams
 	err := c.ShouldBindQuery(&request)
 	if err != nil {
-		log.Error().Err(err).Msg("Could not bind query parameters to request")
-		c.JSON(400, gin.H{"message": "Invalid query parameters"})
 		return err
 	} else {
 		log.Debug().Msgf("Got request for:\n\tdepartureAirports: %v, "+
@@ -86,6 +86,11 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 			request.LatestReturnDate, request.CountAdults, request.CountChildren, request.Duration,
 			request.Site)
 	}
+
+	if !hotelQueryParamsAreValid(c, request) {
+		return errors.New("invalid hotel query parameters")
+	}
+
 	if !request.EarliestDepartureDate.IsZero() {
 		params.EarliestDepartureDate = request.EarliestDepartureDate
 	}
@@ -105,7 +110,6 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 	airports, err := parseAirportsToArray(request.DepartureAirports)
 	if err != nil {
 		log.Error().Err(err).Msg("Could not parse airports from request")
-		return err
 	}
 	if airports != nil && len(airports) > 0 {
 		params.DepartureAirports = append(params.DepartureAirports, airports...)
@@ -117,6 +121,14 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 		log.Warn().Msgf("Site not provided, defaulting to site 1")
 	}
 	return nil
+}
+
+func hotelQueryParamsAreValid(c *gin.Context, request data.RequestQuerryParams) bool {
+	if request.CountAdults < 0 || request.CountChildren < 0 || request.Duration < 1 || request.Site < 1 {
+		log.Error().Msg("received invalid query range")
+		return false
+	}
+	return true
 }
 
 // parseHotelID extracts and validates hotel ID and site from the request context
