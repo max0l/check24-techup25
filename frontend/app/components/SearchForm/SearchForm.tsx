@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useEffect, useState} from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import './SearchForm.css';
 import {
     Box, Button,
@@ -11,14 +11,14 @@ import {
     SelectChangeEvent, Stack,
     TextField, Typography,
 } from "@mui/material";
-import {DatePicker} from "@mui/x-date-pickers";
+import { DatePicker } from "@mui/x-date-pickers";
 import Counter from "@/app/components/Counter/Counter";
 import { useSearchParams } from 'next/navigation';
 import { GetBestOffersByHotelFromQuery } from '@/app/types/converter';
 import dayjs, { Dayjs } from 'dayjs';
 
 type Properties = {
-    submitCallback: (departureAirports: string[], countAdults: number, countChildren: number, duration: number, earliestDeparture: string, latestReturn: string) => Promise<void>
+    submitCallback: (departureAirports: string[], countAdults: number, countChildren: number, duration: number, earliestDeparture: string, latestReturn: string, site: number) => Promise<void>
 }
 
 interface Airport {
@@ -27,54 +27,54 @@ interface Airport {
 }
 
 const availableDepartureAirports: Airport[] = [
-  { code: "AMS", name: "Amsterdam" },
-  { code: "BER", name: "Berlin" },
-  { code: "BLL", name: "Billund" },
-  { code: "BRE", name: "Bremen" },
-  { code: "BRN", name: "Bern" },
-  { code: "BRU", name: "Brussels" },
-  { code: "BSL", name: "Basel" },
-  { code: "CGN", name: "Cologne Bonn" },
-  { code: "CRL", name: "Brussels Charleroi" },
-  { code: "CSO", name: "Magdeburg–Cochstedt" },
-  { code: "DRS", name: "Dresden" },
-  { code: "DTM", name: "Dortmund" },
-  { code: "DUS", name: "Düsseldorf" },
-  { code: "EIN", name: "Eindhoven" },
-  { code: "ERF", name: "Erfurt–Weimar" },
-  { code: "FDH", name: "Friedrichshafen" },
-  { code: "FKB", name: "Karlsruhe/Baden-Baden" },
-  { code: "FMM", name: "Memmingen" },
-  { code: "FMO", name: "Münster Osnabrück" },
-  { code: "FRA", name: "Frankfurt" },
-  { code: "GRZ", name: "Graz" },
-  { code: "GVA", name: "Geneva" },
-  { code: "GWT", name: "Sylt (Westerland)" },
-  { code: "HAJ", name: "Hanover" },
-  { code: "HAM", name: "Hamburg" },
-  { code: "HHN", name: "Frankfurt Hahn" },
-  { code: "INN", name: "Innsbruck" },
-  { code: "KLU", name: "Klagenfurt" },
-  { code: "KRK", name: "Kraków" },
-  { code: "KSF", name: "Kassel" },
-  { code: "LBC", name: "Lübeck" },
-  { code: "LEJ", name: "Leipzig/Halle" },
-  { code: "LGG", name: "Liège" },
-  { code: "LNZ", name: "Linz" },
-  { code: "LUX", name: "Luxembourg" },
-  { code: "MUC", name: "Munich" },
-  { code: "NRN", name: "Weeze (Niederrhein)" },
-  { code: "NUE", name: "Nuremberg" },
-  { code: "PAD", name: "Paderborn/Lippstadt" },
-  { code: "PRG", name: "Prague" },
-  { code: "RLG", name: "Rostock–Laage" },
-  { code: "SCN", name: "Saarbrücken" },
-  { code: "STR", name: "Stuttgart" },
-  { code: "SXB", name: "Strasbourg" },
-  { code: "SZG", name: "Salzburg" },
-  { code: "VIE", name: "Vienna" },
-  { code: "WAW", name: "Warsaw" },
-  { code: "ZRH", name: "Zurich" }
+    { code: "AMS", name: "Amsterdam" },
+    { code: "BER", name: "Berlin" },
+    { code: "BLL", name: "Billund" },
+    { code: "BRE", name: "Bremen" },
+    { code: "BRN", name: "Bern" },
+    { code: "BRU", name: "Brussels" },
+    { code: "BSL", name: "Basel" },
+    { code: "CGN", name: "Cologne Bonn" },
+    { code: "CRL", name: "Brussels Charleroi" },
+    { code: "CSO", name: "Magdeburg–Cochstedt" },
+    { code: "DRS", name: "Dresden" },
+    { code: "DTM", name: "Dortmund" },
+    { code: "DUS", name: "Düsseldorf" },
+    { code: "EIN", name: "Eindhoven" },
+    { code: "ERF", name: "Erfurt-Weimar" },
+    { code: "FDH", name: "Friedrichshafen" },
+    { code: "FKB", name: "Karlsruhe/Baden-Baden" },
+    { code: "FMM", name: "Memmingen" },
+    { code: "FMO", name: "Münster Osnabrück" },
+    { code: "FRA", name: "Frankfurt" },
+    { code: "GRZ", name: "Graz" },
+    { code: "GVA", name: "Geneva" },
+    { code: "GWT", name: "Sylt (Westerland)" },
+    { code: "HAJ", name: "Hanover" },
+    { code: "HAM", name: "Hamburg" },
+    { code: "HHN", name: "Frankfurt Hahn" },
+    { code: "INN", name: "Innsbruck" },
+    { code: "KLU", name: "Klagenfurt" },
+    { code: "KRK", name: "Kraków" },
+    { code: "KSF", name: "Kassel" },
+    { code: "LBC", name: "Lübeck" },
+    { code: "LEJ", name: "Leipzig/Halle" },
+    { code: "LGG", name: "Liège" },
+    { code: "LNZ", name: "Linz" },
+    { code: "LUX", name: "Luxembourg" },
+    { code: "MUC", name: "Munich" },
+    { code: "NRN", name: "Weeze (Niederrhein)" },
+    { code: "NUE", name: "Nuremberg" },
+    { code: "PAD", name: "Paderborn/Lippstadt" },
+    { code: "PRG", name: "Prague" },
+    { code: "RLG", name: "Rostock-Laage" },
+    { code: "SCN", name: "Saarbrücken" },
+    { code: "STR", name: "Stuttgart" },
+    { code: "SXB", name: "Strasbourg" },
+    { code: "SZG", name: "Salzburg" },
+    { code: "VIE", name: "Vienna" },
+    { code: "WAW", name: "Warsaw" },
+    { code: "ZRH", name: "Zurich" }
 ]
 
 const ITEM_HEIGHT = 48;
@@ -89,11 +89,12 @@ const MenuProps = {
 };
 
 
-export default function SearchForm({submitCallback}: Properties) {
+export default function SearchForm({ submitCallback }: Properties) {
     const [departureAirports, setDepartureAirports] = useState<string[]>([]);
     const [countChildren, setCountChildren] = useState<number>(0);
     const [countAdults, setCountAdults] = useState<number>(0);
     const [duration, setDuration] = useState<number>(0);
+    const [site, setSite] = useState<number>(0);
     const [durationInput, setDurationInput] = useState<string>("");
     const [earliestDepartureDate, setEarliestDepartureDate] = useState<Dayjs | null>(null);
     const [latestReturnDate, setLatestReturnDate] = useState<Dayjs | null>(null);
@@ -108,10 +109,11 @@ export default function SearchForm({submitCallback}: Properties) {
         setDurationInput(params.duration ? params.duration.toString() : "");
         setEarliestDepartureDate(params.earliestDepartureDate ? dayjs(params.earliestDepartureDate) : null);
         setLatestReturnDate(params.latestReturnDate ? dayjs(params.latestReturnDate) : null);
+        setSite(Number(params.site) || 1);
     }, [query])
 
     const handleAirportChange = (event: SelectChangeEvent<typeof departureAirports>) => {
-        const {target: {value}} = event;
+        const { target: { value } } = event;
         setDepartureAirports(
             typeof value === 'string' ? value.split(',') : value,
         );
@@ -122,7 +124,7 @@ export default function SearchForm({submitCallback}: Properties) {
         setDurationInput(value);
 
         const duration = parseInt(value);
-        if(isNaN(duration)) {
+        if (isNaN(duration)) {
             return;
         }
         setDuration(duration);
@@ -131,47 +133,48 @@ export default function SearchForm({submitCallback}: Properties) {
     return (
         <FormControl>
             <Stack gap={2}>
-                <Stack direction="row" gap={2} sx={{alignItems: "center"}}>
+                <Stack direction="row" gap={2} sx={{ alignItems: "center" }}>
                     <InputLabel id="departure-airport-label">Departure Airport</InputLabel>
                     <Select id="departure-airport" multiple label="Departure airport"
-                            label-id="departure-airport-label"
-                            sx={{width: "100%"}}
-                            value={departureAirports} onChange={handleAirportChange} MenuProps={MenuProps}
-                            renderValue={(selected) => (
-                                <Box sx={{display: 'flex', height: '90%', flexWrap: 'wrap', gap: 0.5}}>
-                                    {selected.map((value) => (
-                                        <Chip key={value} label={value}/>
-                                    ))}
-                                </Box>
-                            )}>
+                        label-id="departure-airport-label"
+                        sx={{ width: "100%" }}
+                        value={departureAirports} onChange={handleAirportChange} MenuProps={MenuProps}
+                        renderValue={(selected) => (
+                            <Box sx={{ display: 'flex', height: '90%', flexWrap: 'wrap', gap: 0.5 }}>
+                                {selected.map((value) => (
+                                    <Chip key={value} label={value} />
+                                ))}
+                            </Box>
+                        )}>
                         {availableDepartureAirports.map((airport) => (
                             <MenuItem key={airport.code} value={airport.code}>
-                                <Checkbox checked={departureAirports.indexOf(airport.code) > -1}/>
-                                <ListItemText primary={airport.code}/>
+                                <Checkbox checked={departureAirports.indexOf(airport.code) > -1} />
+                                <ListItemText primary={airport.code} />
                             </MenuItem>
                         ))}
                     </Select>
-                    <Counter label="Children" value={countChildren} setValue={setCountChildren}/>
-                    <Counter label="Adults" value={countAdults} setValue={setCountAdults}/>
+                    <Counter label="Children" value={countChildren} setValue={setCountChildren} />
+                    <Counter label="Adults" value={countAdults} setValue={setCountAdults} />
                 </Stack>
-                <Stack direction="row" gap={2} sx={{alignItems: "center"}}>
-                    <TextField sx={{width: "100%"}} label="Duration (days)" value={durationInput} onChange={handleDurationChange}
-                               type="number" variant="outlined"/>
+                <Stack direction="row" gap={2} sx={{ alignItems: "center" }}>
+                    <TextField sx={{ width: "100%" }} label="Duration (days)" value={durationInput} onChange={handleDurationChange}
+                        type="number" variant="outlined" />
                     <Typography>between</Typography>
-                    <DatePicker sx={{width: "100%"}} value={earliestDepartureDate} onChange={(value) => setEarliestDepartureDate(value)} label="Earliest departure"/>
+                    <DatePicker sx={{ width: "100%" }} value={earliestDepartureDate} onChange={(value) => setEarliestDepartureDate(value)} label="Earliest departure" />
                     <Typography>and</Typography>
-                    <DatePicker sx={{width: "100%"}} value={latestReturnDate} onChange={(value) => setLatestReturnDate(value)} label="Latest return"/>
+                    <DatePicker sx={{ width: "100%" }} value={latestReturnDate} onChange={(value) => setLatestReturnDate(value)} label="Latest return" />
                 </Stack>
-                <Button 
-                    variant="contained" 
+                <Button
+                    variant="contained"
                     onClick={() =>
-                        // parameters should be validated here, but as this is a just a very simple implementation we skip this for now
+                        //TODO: parameters should be validated here, but as this is a just a very simple implementation we skip this for now
                         submitCallback(
-                            departureAirports, 
-                            countAdults, countChildren, 
-                            duration, 
-                            earliestDepartureDate ? earliestDepartureDate.toISOString() : "", 
+                            departureAirports,
+                            countAdults, countChildren,
+                            duration,
+                            earliestDepartureDate ? earliestDepartureDate.toISOString() : "",
                             latestReturnDate ? latestReturnDate.toISOString() : "",
+                            site,
                         )
                     }
                 >

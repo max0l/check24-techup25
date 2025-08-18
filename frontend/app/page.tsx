@@ -1,7 +1,7 @@
 "use client";
 
 import SearchForm from "@/app/components/SearchForm/SearchForm";
-import { Stack, Typography } from "@mui/material";
+import { Pagination, Stack, Typography } from "@mui/material";
 import Hotel from "@/app/components/Hotel/Hotel";
 import { OpenAPIClientAxios } from "openapi-client-axios";
 import { Client, Definitions, Paths } from "@/app/types/openapi";
@@ -39,7 +39,8 @@ export default function HomePage() {
         countChildren: number,
         duration: number,
         earliestDeparture: string,
-        latestReturn: string
+        latestReturn: string,
+        site: number
     ) {
         const { valid, params } = coerceAndValidate({
             earliestDepartureDate: earliestDeparture,
@@ -92,6 +93,17 @@ export default function HomePage() {
             <Typography variant="h4" sx={{ mt: "60px", mb: "30px" }}>
                 Hotels for your Mallorca-Trip:
             </Typography>
+            {(offers?.countOffers ?? 0) > 0 && (
+                <Pagination
+                    count={Math.ceil((offers?.countOffers ?? 1) / 50)}
+                    shape="rounded"
+                    page={queryParameters?.site ?? 1}   // controlled component
+                    onChange={(_, page) => {
+                        if (!queryParameters) return;
+                        load({ ...queryParameters, site: page });
+                    }}
+                />
+            )}
             <Stack gap={3}>
                 {offers?.offers?.map((offer) => (
                     <Link
