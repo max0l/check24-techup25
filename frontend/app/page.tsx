@@ -96,7 +96,6 @@ export default function HomePage() {
             {(offers?.countOffers ?? 0) > 0 && (
                 <Pagination
                     count={Math.ceil((offers?.countOffers ?? 1) / 50)}
-                    shape="rounded"
                     page={queryParameters?.site ?? 1}   // controlled component
                     onChange={(_, page) => {
                         if (!queryParameters) return;
