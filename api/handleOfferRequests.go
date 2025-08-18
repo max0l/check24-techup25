@@ -137,7 +137,7 @@ func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *data.OfferR
 		offerResult := uniqueOffers[i]
 		hotelResult := uniqueOffers[i].Edges.Hotel
 
-		log.Debug().Msgf("Processing offer: %v", i)
+		log.Trace().Msgf("Processing offer: %v", i)
 
 		offerWithHotel := parseOfferResult(hotelResult, offerResult)
 		responsesStore.Offers = append(responsesStore.Offers, offerWithHotel)
