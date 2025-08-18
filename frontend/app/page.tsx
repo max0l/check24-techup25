@@ -86,7 +86,7 @@ export default function HomePage() {
     return (
         <>
             <Typography sx={{ mb: "50px", mt: "40px" }} variant="h3">
-                CHECK24 Holiday Challenge
+                CHECK24 Techup 25
             </Typography>
             <SearchForm submitCallback={onSubmitSearchForm} />
             <Typography variant="h4" sx={{ mt: "60px", mb: "30px" }}>
