@@ -160,7 +160,7 @@ func querryAllHotelOffersFromDb(h *ent.Hotel, site int, hotelsOfferQuerry *ent.O
 
 	for i, singleOffer := range hotelOffers {
 		o := createOfferFromDb(h, singleOffer)
-		log.Debug().Msgf("Processing offer %d for hotel %d: %+v", i+1, h.ID, o)
+		log.Trace().Msgf("Processing offer %d for hotel %d: %+v", i+1, h.ID, o)
 		hotelResponse.Offers = append(hotelResponse.Offers, o)
 	}
 	return *hotelResponse, nil
