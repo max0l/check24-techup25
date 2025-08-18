@@ -22,8 +22,8 @@ export default function Hotel({offer}: Properties) {
                     <Typography sx={{mr: 2}} variant="h6">{offer.hotelname}</Typography>
 
                     <Stack>
-                        <Typography variant="body1">Halfboard</Typography>
-                        <Typography variant="body1">Apartment</Typography>
+                        <Typography variant="body1">{offer.rommtype}</Typography>
+                        <Typography variant="caption">Hotel ID: {offer.hotelid}</Typography>
                     </Stack>
 
                     {/*TODO: implement {offer.countAvailableOffers} feat*/}
