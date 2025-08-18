@@ -49,7 +49,7 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 
 	log.Debug().Msgf("Received request for hotel with ID: %d and params: %v", hotelID, request)
 
-	if cacheHitCheckHotel(c, hotelID, request, request.Site, err, redisClient, ctx) {
+	if cacheHitCheckHotel(c, hotelID, request, request.Site, redisClient, ctx) {
 		return
 	}
 
@@ -109,9 +109,9 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 
 	airports, err := parseAirportsToArray(request.DepartureAirports)
 	if err != nil {
-		log.Error().Err(err).Msg("Could not parse airports from request")
+		log.Warn().Err(err).Msg("Could not parse airports from request")
 	}
-	if len(airports) > 0 {
+	if err == nil && len(airports) > 0 {
 		params.DepartureAirports = append(params.DepartureAirports, airports...)
 	}
 	if request.Site > 0 {
@@ -169,7 +169,7 @@ func queryDbForHotel(c *gin.Context, client *ent.Client, err error, hotelID int,
 }
 
 func cacheHitCheckHotel(c *gin.Context, hotelID int, request data.RequestQuerryParams,
-	site int, err error, redisClient *redis.Client, ctx context.Context) bool {
+	site int, redisClient *redis.Client, ctx context.Context) bool {
 
 	cacheKey := CreateRedisCacheKeyHotel(hotelID, request, site)
 	log.Debug().Msgf("Checking Redis cache for key: %s", cacheKey)
@@ -188,7 +188,7 @@ func cacheHitCheckHotel(c *gin.Context, hotelID int, request data.RequestQuerryP
 			return false
 		}
 	} else {
-		log.Debug().Msgf("Error getting cached response for key: %s", cacheKey)
+		log.Debug().Msgf("Cache Key not found: %s", cacheKey)
 	}
 	return false
 }
