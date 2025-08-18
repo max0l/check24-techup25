@@ -5,6 +5,7 @@ import (
 	"check24-techup25/db/ent"
 	"context"
 	"errors"
+	"fmt"
 	"os"
 
 	"entgo.io/ent/dialect/sql"
@@ -57,7 +58,7 @@ func handleOfferHotel(ctx context.Context, client *ent.Client, offer *data.Offer
 		log.Trace().Msgf("Creating hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
 		err := client.Hotel.Create().
 			SetID(offer.Hotelid).
-			SetHotelname("Placeholder").
+			SetHotelname(fmt.Sprintf("Placeholder for %v", offer.Hotelid)).
 			SetHotelstars(0).
 			OnConflict(sql.ConflictColumns("id"), sql.ResolveWithNewValues()).
 			UpdateNewValues().
