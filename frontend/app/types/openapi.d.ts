@@ -17,7 +17,7 @@ declare namespace Definitions {
     export interface DataOffer {
         countadults?: number;
         countchildren?: number;
-        durationInDays?: number;
+        durationindays?: number;
         hotelid?: number;
         inboundarrivalairport?: string;
         inboundarrivaldatetime?: string;
@@ -30,7 +30,7 @@ declare namespace Definitions {
         outboundarrivaldatetime?: string;
         outbounddepartureairport?: string;
         outbounddeparturedatetime?: string;
-        price?: number; // float32
+        price?: number;
         roomtype?: string;
     }
     export interface DataOfferResponse {
