@@ -189,7 +189,7 @@
                 "countchildren": {
                     "type": "integer"
                 },
-                "durationInDays": {
+                "durationindays": {
                     "type": "integer"
                 },
                 "hotelid": {
@@ -229,8 +229,7 @@
                     "type": "string"
                 },
                 "price": {
-                    "type": "number",
-                    "format": "float32"
+                    "type": "number"
                 },
                 "roomtype": {
                     "type": "string"

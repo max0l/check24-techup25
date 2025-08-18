@@ -3,23 +3,23 @@ package data
 import "time"
 
 type Offer struct {
-	Offerid                   int
-	Hotelid                   int
-	Outbounddeparturedatetime time.Time
-	Inbounddeparturedatetime  time.Time
-	Countadults               int
-	Countchildren             int
-	Price                     float32
-	Inbounddepartureairport   string
-	Inboundarrivalairport     string
-	Inboundarrivaldatetime    time.Time
-	Outbounddepartureairport  string
-	Outboundarrivalairport    string
-	Outboundarrivaldatetime   time.Time
-	Mealtype                  string
-	Oceanview                 bool
-	Roomtype                  string
-	DurationInDays            int
+	Offerid                   int       `json:"offerid"`
+	Hotelid                   int       `json:"hotelid"`
+	Outbounddeparturedatetime time.Time `json:"outbounddeparturedatetime"`
+	Inbounddeparturedatetime  time.Time `json:"inbounddeparturedatetime"`
+	Countadults               int       `json:"countadults"`
+	Countchildren             int       `json:"countchildren"`
+	Price                     float32   `json:"price"`
+	Inbounddepartureairport   string    `json:"inbounddepartureairport"`
+	Inboundarrivalairport     string    `json:"inboundarrivalairport"`
+	Inboundarrivaldatetime    time.Time `json:"inboundarrivaldatetime"`
+	Outbounddepartureairport  string    `json:"outbounddepartureairport"`
+	Outboundarrivalairport    string    `json:"outboundarrivalairport"`
+	Outboundarrivaldatetime   time.Time `json:"outboundarrivaldatetime"`
+	Mealtype                  string    `json:"mealtype"`
+	Oceanview                 bool      `json:"oceanview"`
+	Roomtype                  string    `json:"roomtype"`
+	DurationInDays            int       `json:"durationindays"`
 }
 
 type RequestQuerryParams struct {

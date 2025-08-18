@@ -4,6 +4,11 @@
 
 ### Swag code gen
 
+Install swaggo:
+```
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+
 Run this command to (re-)generate the swag docs:
 ```
 swag init -g api/api.go --parseInternal=true -o api/docs/

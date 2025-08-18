@@ -198,7 +198,7 @@ const docTemplate = `{
                 "countchildren": {
                     "type": "integer"
                 },
-                "durationInDays": {
+                "durationindays": {
                     "type": "integer"
                 },
                 "hotelid": {
@@ -238,8 +238,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "price": {
-                    "type": "number",
-                    "format": "float32"
+                    "type": "number"
                 },
                 "roomtype": {
                     "type": "string"

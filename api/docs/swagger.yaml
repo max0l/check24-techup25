@@ -20,7 +20,7 @@ definitions:
         type: integer
       countchildren:
         type: integer
-      durationInDays:
+      durationindays:
         type: integer
       hotelid:
         type: integer
@@ -47,7 +47,6 @@ definitions:
       outbounddeparturedatetime:
         type: string
       price:
-        format: float32
         type: number
       roomtype:
         type: string
