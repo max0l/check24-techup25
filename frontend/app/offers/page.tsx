@@ -8,6 +8,7 @@ import {useEffect, useState} from "react";
 import {Box, Rating, Typography} from "@mui/material";
 import {Stack} from "@mui/system";
 import {GetHotelOffersFromQuery, GetHotelIdFromQuery} from "@/app/types/converter";
+import qs from "qs";
 
 
 type HotelOfferResp = Definitions.DataHotelResponse
@@ -22,8 +23,10 @@ export default function Page() {
         const parameters = GetHotelOffersFromQuery(query);
         const hotelid = GetHotelIdFromQuery(query)
         console.log(parameters);
-        const api = new OpenAPIClientAxios({definition: 'http://localhost:8080/swagger/doc.json', withServer: 0,  
-            axiosConfigDefaults: {baseURL: 'http://localhost:8080'}})
+        const api = new OpenAPIClientAxios({definition: 'http://localhost:8080/swagger/doc.json', withServer: 0,
+            axiosConfigDefaults: {baseURL: 'http://localhost:8080', 
+                paramsSerializer: {serialize: p => qs.stringify(p, {arrayFormat: "comma"})}}
+        })
         const client = await api.init<Client>()
         const response = await client.get<HotelOfferResp>(`/offers`, { params: parameters });
         setHotelOffer(response.data)

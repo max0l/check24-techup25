@@ -38,6 +38,7 @@ export default function HomePage() {
             countChildren: countChildren,
             departureAirports: departureAirports,
             duration: duration,
+            site: 1,
         };
 
         await load(parameters);
@@ -55,6 +56,9 @@ export default function HomePage() {
         setOffers(response.data);
     }
 
+    const href = (qp: Paths.Offers.Get.QueryParameters, hotelid?: number) =>
+  `/offers?${qs.stringify({ ...qp, hotelId: hotelid }, { arrayFormat: "comma" })}`;
+
     return (
         <>
             <Typography sx={{mb: "50px", mt: "40px"}} variant="h3">CHECK24 Holiday Challenge</Typography>
@@ -63,7 +67,7 @@ export default function HomePage() {
             <Stack gap={3}>
                 {offers?.offers?.map(offer =>
                     <Link key={offer.hotelid}
-                          href={{pathname: '/offers', query: {...queryParameters, hotelId: offer.hotelid}}}
+                          href={href(queryParameters!, offer.hotelid)}
                           style={{textDecoration: "none"}}>
                         <Hotel offer={offer}/>
                     </Link>
