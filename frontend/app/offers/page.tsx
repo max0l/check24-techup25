@@ -28,7 +28,7 @@ export default function Page() {
                 paramsSerializer: {serialize: p => qs.stringify(p, {arrayFormat: "comma"})}}
         })
         const client = await api.init<Client>()
-        const response = await client.get<HotelOfferResp>(`/offers`, { params: parameters });
+        const response = await client.get<HotelOfferResp>(`/hotel/${hotelid.hotelid}`, { params: parameters });
         setHotelOffer(response.data)
     }
 
@@ -43,7 +43,7 @@ export default function Page() {
     return (
         <>
             <Stack direction="row" pt={5} alignItems="center">
-                <Typography variant="h4" mr={2}>{hotelOffer.hotelname ?? "NaN"}</Typography>
+                <Typography variant="h4" mr={2}>{hotelOffer.hotelname ?? "NaN"}: {hotelOffer.hotelid}</Typography>
                 <Rating value={hotelOffer.hotelstars ?? 0} readOnly/>
             </Stack>
             <Stack direction="row" height="250px" pt={2}>

@@ -47,6 +47,6 @@ export function GetHotelOffersFromQuery(query: ReadonlyURLSearchParams): Paths.H
 
 export function GetHotelIdFromQuery(query: ReadonlyURLSearchParams): Paths.Hotel$Hotelid.Get.PathParameters {
     return {
-        hotelid: parseInt(query.get("hotelid") as string)
+        hotelid: parseInt(query.get("hotelId") as string)
     }
 }
