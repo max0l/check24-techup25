@@ -22,7 +22,6 @@ export default function Page() {
     async function fetchData() {
         const parameters = GetHotelOffersFromQuery(query);
         const hotelid = GetHotelIdFromQuery(query)
-        console.log(parameters);
         const api = new OpenAPIClientAxios({definition: 'http://localhost:8080/swagger/doc.json', withServer: 0,
             axiosConfigDefaults: {baseURL: 'http://localhost:8080', 
                 paramsSerializer: {serialize: p => qs.stringify(p, {arrayFormat: "comma"})}}

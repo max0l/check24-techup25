@@ -30,16 +30,15 @@ export function GetBestOffersByHotelFromQuery(query: ReadonlyURLSearchParams): P
 
 export function GetHotelOffersFromQuery(query: ReadonlyURLSearchParams): Paths.Hotel$Hotelid.Get.QueryParameters {
     return {
-        earliestDepartureDate: query.get("earliestDepartureDate") as string,
-        latestReturnDate: query.get("latestReturnDate") as string,
-        countAdults: parseInt(query.get("countAdults") as string),
-        countChildren: parseInt(query.get("countChildren") as string),
-        departureAirports: query.getAll("departureAirports"),
-        duration: parseInt(query.get("duration") as string),
-        site: parseInt(query.get("site") as string),
+        earliestDepartureDate: query.get("earliestDepartureDate") as string ?? "",
+        latestReturnDate: query.get("latestReturnDate") as string ?? "",
+        countAdults: parseInt(query.get("countAdults") as string) || 0,
+        countChildren: parseInt(query.get("countChildren") as string) || 0,
+        departureAirports: query.get("departureAirports")?.split(",") ?? [],
+        duration: parseInt(query.get("duration") as string) || 0,
+        site: parseInt(query.get("site") as string) || 1,
     }
 }
-
 export function GetHotelIdFromQuery(query: ReadonlyURLSearchParams): Paths.Hotel$Hotelid.Get.PathParameters {
     return {
         hotelid: parseInt(query.get("hotelId") as string)
