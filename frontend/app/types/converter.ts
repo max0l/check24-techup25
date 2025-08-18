@@ -3,21 +3,16 @@ import {ReadonlyURLSearchParams} from "next/navigation";
 
 export function GetBestOffersByHotelToQuery(input: Paths.Offers.Get.QueryParameters): string {
     const params = {
-        EarliestDepartureDate: input.earliestDepartureDate,
-        LatestReturnDate: input.latestReturnDate,
-        Duration: input.duration.toString(),
-        CountAdults: input.countAdults.toString(),
-        CountChildren: (input.countChildren ?? 0).toString(),
+        earliestDepartureDate: input.earliestDepartureDate,
+        latestReturnDate: input.latestReturnDate,
+        duration: input.duration.toString(),
+        countAdults: input.countAdults.toString(),
+        countChildren: (input.countChildren ?? 0).toString(),
         site: (input.site ?? 1).toString(),
+        departureAirports: input.departureAirports.join(",")
     };
 
     const searchParams = new URLSearchParams(params);
-    
-    // cant pass an object with an array to URLSearchParams --> append individually
-    input.departureAirports.forEach((airport) => {
-        searchParams.append("DepartureAirports", airport);
-    })
-
     return searchParams.toString();
 }
 
@@ -27,7 +22,7 @@ export function GetBestOffersByHotelFromQuery(query: ReadonlyURLSearchParams): P
         latestReturnDate: query.get("latestReturnDate") as string,
         countAdults: parseInt(query.get("countAdults") as string),
         countChildren: parseInt(query.get("countChildren") as string),
-        departureAirports: query.getAll("departureAirports"),
+        departureAirports: query.get("departureAirports")?.split(",") ?? [],
         duration: parseInt(query.get("duration") as string),
         site: parseInt(query.get("site") as string),
     };
