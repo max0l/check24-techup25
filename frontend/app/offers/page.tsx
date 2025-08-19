@@ -12,8 +12,6 @@ import qs from "qs";
 import PaginationBar from "@/app/components/Pagination/PaginationBar";
 
 type HotelOfferResp = Definitions.DataHotelResponse;
-//TODO: add request time
-//TODO: add dockerfile and add it to dockercompose
 export default function Page() {
     const query = useSearchParams();
     const router = useRouter();
