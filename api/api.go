@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
@@ -24,6 +25,8 @@ import (
 //	@host	localhost:8080
 func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
 	router := gin.Default()
+	//I know setting the cors to default is not the best idea, but for this project it is sufficient
+	router.Use(cors.Default())
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
