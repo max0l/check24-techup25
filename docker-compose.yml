@@ -26,7 +26,7 @@ services:
       DATABASE_DSN: host=${POSTGRES_HOST:-db} port=5432 user=${POSTGRES_USER:-user} dbname=${POSTGRES_DB:-check24} password=${POSTGRES_PASSWORD:-password} sslmode=disable
       LOG_LEVEL: ${LOG_LEVEL:-warn}
       SEED_DATA: ${SEED_DATA:-true}
-      SKIP_INVALID_HOTELS: ${SKIP_INVALID_HOTELS:-false}
+      SKIP_INVALID_HOTELS: ${SKIP_INVALID_HOTELS:-true}
     command: ["-hotel", "/hotels.csv", "-offer", "/offers.csv"]
     restart: "no"
     volumes:
