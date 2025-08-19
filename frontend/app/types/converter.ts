@@ -1,5 +1,5 @@
-import {Paths} from "@/app/types/openapi";
-import {ReadonlyURLSearchParams} from "next/navigation";
+import { Paths } from "@/app/types/openapi";
+import { ReadonlyURLSearchParams } from "next/navigation";
 
 export function GetBestOffersByHotelToQuery(input: Paths.Offers.Get.QueryParameters): string {
     const params = {
@@ -43,4 +43,21 @@ export function GetHotelIdFromQuery(query: ReadonlyURLSearchParams): Paths.Hotel
     return {
         hotelid: parseInt(query.get("hotelId") as string)
     }
+}
+
+export function GetHotelOffersToQuery(parameters: Paths.Hotel$Hotelid.Get.QueryParameters,
+    hotelid: Paths.Hotel$Hotelid.Get.PathParameters
+): string {
+    const params = {
+        earliestDepartureDate: parameters.earliestDepartureDate ?? "",
+        latestReturnDate: parameters.latestReturnDate ?? "",
+        countAdults: (parameters.countAdults ?? 0).toString(),
+        countChildren: (parameters.countChildren ?? 0).toString(),
+        duration: (parameters.duration ?? 0).toString(),
+        departureAirports: parameters.departureAirports?.join(",") ?? "",
+        site: (parameters.site ?? 1).toString(),
+        hotelId: hotelid.hotelid.toString()
+    };
+    const searchParams = new URLSearchParams(params);
+    return searchParams.toString();
 }
