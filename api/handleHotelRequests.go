@@ -66,6 +66,7 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 	log.Debug().Msgf("Found hotel: %v", hotelResponse)
 	c.JSON(200, hotelResponse)
 	//TODO: use the hotelResponse right away
+	//TODO: Check when store for key presence
 	go storeHotelRequestInRedis(redisClient, hotelID, request, request.Site, client, ctx)
 	return
 }
