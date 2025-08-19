@@ -77,6 +77,7 @@ export default function HomePage() {
         });
         if (!valid) {
             console.log("Form Parameter Error");
+            setIsLoading(false)
             return;
         }
         await load(params);
