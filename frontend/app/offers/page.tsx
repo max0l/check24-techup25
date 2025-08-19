@@ -25,7 +25,7 @@ export default function Page() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const PAGE_SIZE = 50;
-    const total = hotelOffer?.count_available_offers ?? 0;
+    const totalOfferAmount = hotelOffer?.count_available_offers ?? 0;
 
     const apiClient = useMemo(() => {
         const api = new OpenAPIClientAxios({
@@ -77,7 +77,7 @@ export default function Page() {
         return (
             <Box mt={6}>
                 <LinearProgress />
-                <Typography mt={2}>Loading offers…</Typography>
+                <Typography mt={2}>Loading offers...</Typography>
             </Box>
         );
     }
@@ -120,10 +120,10 @@ export default function Page() {
                 Found {hotelOffer.count_available_offers ?? 0} Offers:
             </Typography>
 
-            {total > 0 && (
+            {totalOfferAmount > 0 && (
                 <PaginationBar
                     page={displayPage}
-                    totalItems={total}
+                    totalItems={totalOfferAmount}
                     pageSize={PAGE_SIZE}
                     onChange={handlePageChange}
                     loading={isLoading}
