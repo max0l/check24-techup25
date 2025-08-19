@@ -29,6 +29,8 @@ export default function HomePage() {
     const PAGE_SIZE = 50;
     const totalOfferAmount = offers?.countOffers ?? 0;
 
+    const [lastRequestTime, setLastRequestTime] = useState<number>();
+
     const apiClient = useMemo(() => {
         const api = new OpenAPIClientAxios({
             definition: "http://localhost:8080/swagger/doc.json",
@@ -82,10 +84,16 @@ export default function HomePage() {
 
     async function load(parameters: Paths.Offers.Get.QueryParameters) {
         try {
+            const start = performance.now();
+
             const client = await apiClient.init<Client>();
             const response = await client.get<BestHotelOffer>(`/offers`, {
                 params: parameters,
             });
+
+            const end = performance.now();
+            const durationMs = end - start;
+            setLastRequestTime(durationMs);
 
             setOffers(response.data);
             setQueryParameters(parameters);
@@ -139,6 +147,12 @@ export default function HomePage() {
                 </>
             ) : (
                 <>
+                    {lastRequestTime && (
+                        <Typography variant="caption">
+                            Request took {lastRequestTime.toFixed(0)} ms
+                        </Typography>
+                    )}
+
                     {totalOfferAmount > 0 && (
                         <PaginationBar
                             page={displayPage}

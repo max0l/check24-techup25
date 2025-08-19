@@ -27,6 +27,8 @@ export default function Page() {
     const PAGE_SIZE = 50;
     const totalOfferAmount = hotelOffer?.count_available_offers ?? 0;
 
+    const [lastRequestTime, setLastRequestTime] = useState<number>();
+
     const apiClient = useMemo(() => {
         const api = new OpenAPIClientAxios({
             definition: "http://localhost:8080/swagger/doc.json",
@@ -42,12 +44,17 @@ export default function Page() {
     async function fetchData(parameters: Paths.Hotel$Hotelid.Get.QueryParameters) {
         try {
             setIsLoading(true);
+            const start = performance.now();
 
             const hotelid = GetHotelIdFromQuery(query);
             const client = await apiClient.init<Client>();
             const response = await client.get<HotelOfferResp>(`/hotel/${hotelid.hotelid}`, {
                 params: parameters,
             });
+
+            const end = performance.now();
+            const durationMs = end - start;
+            setLastRequestTime(durationMs);
 
             setHotelOffer(response.data);
             setQueryParameters(parameters);
@@ -85,13 +92,18 @@ export default function Page() {
     return (
         <>
             {isLoading && <LinearProgress />}
-
             <Stack direction="row" pt={5} alignItems="center">
                 <Typography variant="h4" mr={2}>
                     {hotelOffer.hotelname ?? "NaN"}: {hotelOffer.hotelid}
                 </Typography>
                 <Rating value={hotelOffer.hotelstars ?? 0} readOnly />
             </Stack>
+
+            {lastRequestTime && (
+                <Typography variant="caption">
+                    Request took {lastRequestTime.toFixed(0)} ms
+                </Typography>
+            )}
 
             <Stack direction="row" height="250px" pt={2}>
                 <Box
