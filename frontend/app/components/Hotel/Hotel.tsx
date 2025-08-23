@@ -26,9 +26,7 @@ export default function Hotel({offer}: Properties) {
                         <Typography variant="caption">Hotel ID: {offer.hotelid}</Typography>
                     </Stack>
 
-                    {/*TODO: implement {offer.countAvailableOffers} feat*/}
-                    <Button variant="contained">View other offers</Button>
-                    {/*<Button variant="contained">View {offer.countAvailableOffers} offers</Button>*/}
+                    <Button variant="contained">View {offer.offeramount} offers</Button>
                 </Stack>
                 <Stack direction="column" justifyContent="space-between" alignItems="flex-end">
                     <Rating value={offer.hotelstars} readOnly/>

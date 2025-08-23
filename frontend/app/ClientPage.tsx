@@ -108,7 +108,7 @@ export default function HomePage() {
 
     const href = (qp: Paths.Offers.Get.QueryParameters, hotelid?: number) =>
         `/offers?${qs.stringify(
-            { ...qp, hotelId: hotelid },
+            { ...qp, site: 1, hotelId: hotelid },
             { arrayFormat: "comma" }
         )}`;
 
