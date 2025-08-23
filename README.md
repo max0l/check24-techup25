@@ -2,24 +2,119 @@
 
 ## Development
 
-### Swag code gen
+### Backend
+
+Everything will be generated if you just run `docker compose up --build`
+
+#### Swag code gen
+
+If there are changes to the swago comments, please regenerate the generation of the swagger docs.
 
 Install swaggo:
+
 ```
 go install github.com/swaggo/swag/cmd/swag@latest
 ```
 
 Run this command to (re-)generate the swag docs:
+
 ```
 swag init -g api/api.go --parseInternal=true -o api/docs/
 ```
 
 And run this command to reformat the comments:
+
 ```
 swag fmt -g api/api.go
 ```
 
+#### GOENT (ORM) Generation
+
+If you are doing local development without the docker compose, you'll need to run the following to generate the 
+database defintions etc.
+
+```
+go install entgo.io/ent/cmd/ent@v0.14.5
+```
+
+```
+go run -mod=mod entgo.io/ent/cmd/ent --target=./db/ent --feature sql/upsert generate ./db/schema
+```
+
+### Frontend
+
+> [!IMPORTANT]
+> **Navigate into the frontend folder and run the follwing commands...**
+
+To install all dependencies:
+
+```
+npm i
+```
+
+To run the frontend just run:
+
+```
+npm run dev
+```
+
+#### (Re)Generate the Openapi Specs for the frontend
+
+to regenerate the `openapi.d.ts`
+
+```
+npx  openapi-client-axios-typegen ../api/docs/swagger.json > app/types/openapi.d.ts
+```
+
+
+
 ## Decisions I've Made
+
+### Postgresql
+
+I'm using postgresql because it is very scalable and i'm used to it.
+
+I also considered using bbolt (or even redis) with buckets. This would allow for an in memory db, that could be outsourced/loaded to 
+the hard drive (ssd/hdd). I have not implemented this, because I was using postgres first and there is not enough time 
+for the bbotl approach. 
+
+The data structure would be like this:
+- i would create a bucket for each hotel with the hotel id as the key
+- then in every hotel bucket i would create a bucket for each airport
+- in each airport i would then create more buckets for every (available) number of adults
+- in these buckets i would create buckets for every (available) number of children
+- in these buckets I would create more buckets with either the duration or the departure date
+
+The buckets would be created during the initial reading process.
+
+With those buckets I would have a relative great key to search for offers then. 
+
+For example:
+```
+/bbolt
+├── hotel:123
+│   ├── airport:BER
+│   │   ├── countAdults:1
+│   │   │   ├── countChildren:0
+│   │   │   │   ├── duration:5
+│   │   │   │   ├── duration:6
+│   │   │   │   └── duration:7
+│   │   │   ├── countChildren:1
+│   │   │   │   ├── duration:7
+│   │   │   │   └── duration:8
+│   │   │   └── countChildren:2
+│   │   │       └── duration:14
+│   │   ├── countAdults:2
+│   │   │   ├── countChildren:0
+│   │   │   └── countChildren:2
+│   │   └── countAdults:3
+│   │       └── countChildren:0
+│   ├── airport:MUC
+│   └── airport:FRA
+```
+
+This approach would have some issues tho, because at some point you have to search linear (but this would also be the
+case in the DB implementation) depending on the request. Also sorting is a bit more tricky, but doable.
 
 ### CSV to DB Migration
 
@@ -31,3 +126,15 @@ The entries of the Offers match the lines of the CSV file (minus one because I d
 `SELECT count(*) FROM offers;` returns 92783430
 and
 `grep -c ^ offer.csv` returns 92783431
+
+This will also migrate EVERY offer, even if the corresponding Hotel(id) is not present in the hotels.csv.
+
+To tweak this I introduced the `SKIP_INVALID_HOTELS` env. If set to `true`, it will skip offers, that reverence an hotel
+that is not in the hotels.csv. This will also reduce the offer amount by ~80%.
+
+#### Seeding the data only the first time
+
+I have implemented another env that can control whether you want to seed all the data when firing up the docker compose
+or not.
+
+By setting the env `SEED_DATA` to `true` or `false`, it will either read the CSV's and migrate/upsert the data or not.
