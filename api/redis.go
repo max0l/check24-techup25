@@ -191,7 +191,7 @@ func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQue
 			log.Warn().Err(err).Msg("redis store offer error")
 			continue
 		}
-		log.Debug().Msgf("store offer %s successfully", redisKey)
+		log.Debug().Msgf("cache: store offer %s successfully", redisKey)
 	}
 
 }
