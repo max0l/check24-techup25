@@ -59,72 +59,89 @@ func CloseRedisClient(client *redis.Client) {
 	}
 }
 
-func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams,
-	requestSite int, entClient *ent.Client, ctx context.Context, hotelResponse data.HotelResponse) {
-	site := requestSite
+func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams, requestSite int,
+	entClient *ent.Client, ctx context.Context, hotelResponse data.HotelResponse) {
 
-	createRequestedSiteKey := CreateRedisCacheKeyHotel(hotelId, request, request.Site)
+	storeInitialHotelResponseSite(redisClient, hotelId, request, requestSite, ctx, hotelResponse)
 
-	if !cacheKeyAlreadyExists(redisClient, createRequestedSiteKey, ctx) {
-		jsonHotel, err := json.Marshal(hotelResponse)
-		if err != nil {
-			log.Error().Err(err).Msg("Could not marshal hotel response to JSON")
-		}
-		err = redisClient.Set(ctx, createRequestedSiteKey, jsonHotel, time.Minute*20).Err()
-		if err != nil {
-			log.Warn().Err(err).Msg("redis store hotel error")
-		}
-		log.Debug().Msgf("Stored hotel %d for site %d successfully in Redis with key: %s", hotelId, request.Site, createRequestedSiteKey)
-	} else {
-		log.Debug().Msgf("Hotel %d for site %d already exists in Redis with key: %s", hotelId, request.Site, createRequestedSiteKey)
+	storeAdditionalHotelResponseSites(redisClient, hotelId, request, requestSite, entClient, ctx)
+}
+
+func storeInitialHotelResponseSite(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams, site int,
+	ctx context.Context, hotelResponse data.HotelResponse) {
+	cacheKey := CreateRedisCacheKeyHotel(hotelId, request, site)
+
+	if cacheKeyAlreadyExists(redisClient, cacheKey, ctx) {
+		log.Debug().Msgf("Hotel %d for site %d already exists in Redis with key: %s", hotelId,
+			request.Site, cacheKey)
+		return
 	}
-	site++
 
-	// Only cache 10 sites for each request because some results could contain over 100000 offers (which means 2000 sites)
-	for site < requestSite+10 {
-		redisKey := CreateRedisCacheKeyHotel(hotelId, request, site)
+	if err := saveHotelResponseToRedis(redisClient, cacheKey, hotelResponse, ctx); err != nil {
+		log.Warn().Err(err).Msg("redis store hotel error (initial site)")
+		return
+	}
 
-		if !cacheKeyAlreadyExists(redisClient, createRequestedSiteKey, ctx) {
-			log.Debug().Msgf("Cache key already exists: %s", redisKey)
-			site++
+	log.Debug().Msgf("Stored hotel %d for site %d successfully in Redis with key: %s", hotelId, request.Site, cacheKey)
+}
+
+func storeAdditionalHotelResponseSites(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams,
+	requestSite int, entClient *ent.Client, ctx context.Context) {
+
+	for site := requestSite + 1; site < requestSite+10; site++ {
+		cacheKey := CreateRedisCacheKeyHotel(hotelId, request, site)
+
+		if cacheKeyAlreadyExists(redisClient, cacheKey, ctx) {
+			log.Debug().Msgf("Cache key already exists: %s", cacheKey)
 			continue
 		}
 
-		hotelDb, err := db.QueryHotel(hotelId, entClient, ctx)
-		if err != nil {
-			if ent.IsNotFound(err) {
-				log.Debug().Msgf("Hotel with ID %d not found in DB", hotelId)
-				return
-			}
+		hotelResponse, ok := fetchHotelOffers(hotelId, request, site, entClient, ctx)
+		if !ok || len(hotelResponse.Offers) == 0 {
+			return
+		}
+
+		if err := saveHotelResponseToRedis(redisClient, cacheKey, hotelResponse, ctx); err != nil {
+			log.Warn().Err(err).Msg("redis store hotel error (additional sites)")
+			continue
+		}
+
+		log.Debug().Msgf("Stored hotel %d for site %d successfully in Redis with key: %s", hotelId, site, cacheKey)
+	}
+}
+
+func fetchHotelOffers(hotelId int, request data.RequestQuerryParams, site int, entClient *ent.Client,
+	ctx context.Context) (data.HotelResponse, bool) {
+
+	hotelDb, err := db.QueryHotel(hotelId, entClient, ctx)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			log.Debug().Msgf("Hotel with ID %d not found in DB", hotelId)
+		} else {
 			log.Error().Err(err).Msg("Error querying hotel from DB")
-			return
 		}
-
-		hotelResponse, err := db.QueryOffersOfAHotel(hotelDb, request, site, entClient, ctx)
-		if err != nil {
-			log.Error().Err(err).Msg("Error querying hotel offers from DB")
-			return
-		}
-
-		if len(hotelResponse.Offers) == 0 {
-			return
-		}
-
-		jsonHotel, err := json.Marshal(hotelResponse)
-		if err != nil {
-			log.Error().Err(err).Msg("Could not marshal hotel response to JSON")
-			site++
-			continue
-		}
-		err = redisClient.Set(ctx, redisKey, jsonHotel, time.Minute*20).Err()
-		if err != nil {
-			log.Warn().Err(err).Msg("redis store hotel error")
-			site++
-			continue
-		}
-		site++
-		log.Debug().Msgf("Stored hotel %d for site %d successfully in Redis with key: %s", hotelId, site, redisKey)
+		return data.HotelResponse{}, false
 	}
+
+	hotelResponse, err := db.QueryOffersOfAHotel(hotelDb, request, site, entClient, ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Error querying hotel offers from DB")
+		return data.HotelResponse{}, false
+	}
+
+	return hotelResponse, true
+}
+
+func saveHotelResponseToRedis(redisClient *redis.Client, cacheKey string, hotelResponse data.HotelResponse,
+	ctx context.Context) error {
+
+	jsonHotel, err := json.Marshal(hotelResponse)
+	if err != nil {
+		log.Error().Err(err).Msg("Could not marshal hotel response to JSON")
+		return err
+	}
+
+	return redisClient.Set(ctx, cacheKey, jsonHotel, time.Minute*20).Err()
 }
 
 func cacheKeyAlreadyExists(client *redis.Client, key string, ctx context.Context) bool {
@@ -132,6 +149,7 @@ func cacheKeyAlreadyExists(client *redis.Client, key string, ctx context.Context
 	if err != nil || result == 0 {
 		return false
 	}
+	_ = client.Expire(ctx, key, time.Minute*20).Val()
 	return true
 }
 
