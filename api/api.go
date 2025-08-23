@@ -3,6 +3,7 @@ package api
 import (
 	_ "check24-techup25/api/docs"
 	"check24-techup25/data"
+	"check24-techup25/db"
 	"check24-techup25/db/ent"
 	"context"
 	"fmt"
@@ -23,7 +24,7 @@ import (
 //
 //	@title	Techup25
 //	@host	localhost:8080
-func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
+func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.Context, queryQueue *db.QurryQueue) {
 	router := gin.Default()
 	//I know setting the cors to default is not the best idea, but for this project it is sufficient
 	router.Use(cors.Default())
@@ -34,11 +35,11 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 	})
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	router.GET("/offers", func(c *gin.Context) {
-		handleOfferRequest(c, client, redisClient, ctx)
+		handleOfferRequest(c, client, redisClient, ctx, queryQueue)
 	})
 
 	router.GET("/hotel/:hotelid", func(c *gin.Context) {
-		handleHotelRequest(c, client, redisClient, ctx)
+		handleHotelRequest(c, client, redisClient, ctx, queryQueue)
 	})
 
 	log.Info().Msgf("Starting Server on port %v", port)

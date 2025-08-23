@@ -27,7 +27,8 @@ import (
 //	@Success		200						{object}	data.OfferResponse	"List of offers matching the request"
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"No Offers Found"
-func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
+func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context,
+	queryQueue *db.QurryQueue) {
 	var request data.RequestQuerryParams
 	log.Trace().Msgf("Got request: %v", ginc.Request)
 	err := bindOfferRequest(ginc, &request)
@@ -61,7 +62,7 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 
 	parseOfferDbResponse(dbResponse, &offerResponse, request)
 
-	go storeOfferRequestInRedis(redisClient, request, dbResponse, ctx)
+	go storeOfferRequestInRedis(redisClient, request, dbResponse, ctx, queryQueue)
 
 	ginc.JSON(200, offerResponse)
 	log.Debug().Msgf("Response: %v", offerResponse)
@@ -69,7 +70,8 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 	return
 }
 
-func getOffersFromDB(ginc *gin.Context, client *ent.Client, request data.RequestQuerryParams, airports []string, ctx context.Context) ([]*ent.Offer, bool) {
+func getOffersFromDB(ginc *gin.Context, client *ent.Client, request data.RequestQuerryParams, airports []string,
+	ctx context.Context) ([]*ent.Offer, bool) {
 	//TODO: Introduce page size
 	log.Debug().Msg("Querying DB for offers")
 	response := db.QueryOffers(request, airports, client, ctx)

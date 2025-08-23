@@ -30,7 +30,8 @@ import (
 //	@Success		200						{object}	data.HotelResponse	"Hotel information"
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"Hotel Not Found"
-func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context) {
+func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context,
+	queryQueue *db.QurryQueue) {
 
 	hotelID, err := parseHotelID(c)
 	if err != nil {
@@ -66,7 +67,7 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 	log.Debug().Msgf("Found hotel: %v", hotelResponse)
 	c.JSON(200, hotelResponse)
 	//TODO: Check when store for key presence and if go routine with key already exists
-	go storeHotelRequestInRedis(redisClient, hotelID, request, request.Site, client, ctx, hotelResponse)
+	go storeHotelRequestInRedis(redisClient, hotelID, request, request.Site, client, ctx, hotelResponse, queryQueue)
 	return
 }
 

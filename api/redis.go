@@ -60,11 +60,11 @@ func CloseRedisClient(client *redis.Client) {
 }
 
 func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams, requestSite int,
-	entClient *ent.Client, ctx context.Context, hotelResponse data.HotelResponse) {
+	entClient *ent.Client, ctx context.Context, hotelResponse data.HotelResponse, queryQueue *db.QurryQueue) {
 
 	storeInitialHotelResponseSite(redisClient, hotelId, request, requestSite, ctx, hotelResponse)
 
-	storeAdditionalHotelResponseSites(redisClient, hotelId, request, requestSite, entClient, ctx)
+	storeAdditionalHotelResponseSites(redisClient, hotelId, request, requestSite, entClient, ctx, queryQueue)
 }
 
 func storeInitialHotelResponseSite(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams, site int,
@@ -86,7 +86,7 @@ func storeInitialHotelResponseSite(redisClient *redis.Client, hotelId int, reque
 }
 
 func storeAdditionalHotelResponseSites(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams,
-	requestSite int, entClient *ent.Client, ctx context.Context) {
+	requestSite int, entClient *ent.Client, ctx context.Context, queryQueue *db.QurryQueue) {
 
 	for site := requestSite + 1; site < requestSite+10; site++ {
 		cacheKey := CreateRedisCacheKeyHotel(hotelId, request, site)
@@ -94,6 +94,12 @@ func storeAdditionalHotelResponseSites(redisClient *redis.Client, hotelId int, r
 		if cacheKeyAlreadyExists(redisClient, cacheKey, ctx) {
 			log.Debug().Msgf("Cache key already exists: %s", cacheKey)
 			continue
+		}
+
+		if queryQueue.Contains(cacheKey) {
+			continue
+		} else {
+			queryQueue.Enqueue(cacheKey)
 		}
 
 		hotelResponse, ok := fetchHotelOffers(hotelId, request, site, entClient, ctx)
@@ -105,6 +111,8 @@ func storeAdditionalHotelResponseSites(redisClient *redis.Client, hotelId int, r
 			log.Warn().Err(err).Msg("redis store hotel error (additional sites)")
 			continue
 		}
+
+		queryQueue.Dequeue(cacheKey)
 
 		log.Debug().Msgf("Stored hotel %d for site %d successfully in Redis with key: %s", hotelId, site, cacheKey)
 	}
@@ -153,13 +161,19 @@ func cacheKeyAlreadyExists(client *redis.Client, key string, ctx context.Context
 	return true
 }
 
-func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQuerryParams, uniqueOffers []*ent.Offer, ctx context.Context) {
+func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQuerryParams,
+	uniqueOffers []*ent.Offer, ctx context.Context, queryQueue *db.QurryQueue) {
 	var modifiedRequest = request
 	if request.Site != 1 {
 		modifiedRequest.Site = 1
 	}
 	for {
 		redisKey := CreateRedisCacheKeyOffers(modifiedRequest, modifiedRequest.Site)
+
+		if cacheKeyAlreadyExists(redisClient, redisKey, ctx) {
+			log.Debug().Msgf("Cache key already exists: %s", redisKey)
+			continue
+		}
 
 		responseStore := data.OfferResponse{
 			Offers:      make([]data.OfferWithHotel, 0, 50),

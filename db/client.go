@@ -8,10 +8,42 @@ import (
 	"check24-techup25/db/ent/predicate"
 	"context"
 	"errors"
+	"sync"
 
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
+
+type QurryQueue struct {
+	sync.RWMutex
+	queue map[string]bool
+}
+
+func NewDbQueue() *QurryQueue {
+	return &QurryQueue{
+		queue: make(map[string]bool),
+	}
+}
+
+func (qq *QurryQueue) Enqueue(key string) {
+	qq.Lock()
+	defer qq.Unlock()
+	qq.queue[key] = true
+}
+
+func (qq *QurryQueue) Dequeue(key string) {
+	qq.Lock()
+	defer qq.Unlock()
+	if qq.queue[key] {
+		delete(qq.queue, key)
+	}
+}
+
+func (qq *QurryQueue) Contains(key string) bool {
+	qq.RLock()
+	defer qq.RUnlock()
+	return qq.queue[key]
+}
 
 type OfferWithHotel struct {
 	Offer *ent.Offer

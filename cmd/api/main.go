@@ -49,5 +49,7 @@ func main() {
 		log.Info().Msg("Ping to DB successful")
 	}
 
-	api.Start(*port, client, redisClient, ctx)
+	queryQueue := db.NewDbQueue()
+
+	api.Start(*port, client, redisClient, ctx, queryQueue)
 }
