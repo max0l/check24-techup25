@@ -7,41 +7,7 @@ import type {
 } from 'openapi-client-axios'; 
 
 declare namespace Definitions {
-    export interface DataHotelResponse {
-        count_available_offers?: number;
-        hotelid?: number;
-        hotelname?: string;
-        hotelstars?: number;
-        offers?: DataOffer[];
-    }
-    export interface DataOffer {
-        countadults?: number;
-        countchildren?: number;
-        durationindays?: number;
-        hotelid?: number;
-        inboundarrivalairport?: string;
-        inboundarrivaldatetime?: string;
-        inbounddepartureairport?: string;
-        inbounddeparturedatetime?: string;
-        mealtype?: string;
-        oceanview?: boolean;
-        offerid?: number;
-        outboundarrivalairport?: string;
-        outboundarrivaldatetime?: string;
-        outbounddepartureairport?: string;
-        outbounddeparturedatetime?: string;
-        price?: number;
-        roomtype?: string;
-    }
-    export interface DataOfferResponse {
-        /**
-         * example:
-         * 5
-         */
-        countOffers?: number;
-        offers?: DataOfferWithHotel[];
-    }
-    export interface DataOfferWithHotel {
+    export interface DataBestOfferPerHotel {
         /**
          * example:
          * 2
@@ -104,6 +70,11 @@ declare namespace Definitions {
         ocenview?: boolean;
         /**
          * example:
+         * 1
+         */
+        offeramount?: number;
+        /**
+         * example:
          * BER
          */
         outboundarrivalairport?: string;
@@ -132,6 +103,40 @@ declare namespace Definitions {
          * double
          */
         rommtype?: string;
+    }
+    export interface DataBestOfferPerHotelResponse {
+        /**
+         * example:
+         * 5
+         */
+        countOffers?: number;
+        offers?: DataBestOfferPerHotel[];
+    }
+    export interface DataHotelOffersResponse {
+        count_available_offers?: number;
+        hotelid?: number;
+        hotelname?: string;
+        hotelstars?: number;
+        offers?: DataOffer[];
+    }
+    export interface DataOffer {
+        countadults?: number;
+        countchildren?: number;
+        durationindays?: number;
+        hotelid?: number;
+        inboundarrivalairport?: string;
+        inboundarrivaldatetime?: string;
+        inbounddepartureairport?: string;
+        inbounddeparturedatetime?: string;
+        mealtype?: string;
+        oceanview?: boolean;
+        offerid?: number;
+        outboundarrivalairport?: string;
+        outboundarrivaldatetime?: string;
+        outbounddepartureairport?: string;
+        outbounddeparturedatetime?: string;
+        price?: number;
+        roomtype?: string;
     }
 }
 declare namespace Paths {
@@ -184,7 +189,7 @@ declare namespace Paths {
                 duration?: /* Duration of the trip in days */ Parameters.Duration;
             }
             namespace Responses {
-                export type $200 = Definitions.DataHotelResponse;
+                export type $200 = Definitions.DataHotelOffersResponse;
             }
         }
     }
@@ -230,7 +235,7 @@ declare namespace Paths {
                 site?: /* Site, e.g. 1 or 2 */ Parameters.Site;
             }
             namespace Responses {
-                export type $200 = Definitions.DataOfferResponse;
+                export type $200 = Definitions.DataBestOfferPerHotelResponse;
             }
         }
     }

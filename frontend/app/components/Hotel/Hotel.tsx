@@ -1,6 +1,6 @@
 import {Box, Button, Card, CardMedia, Divider, Rating, Stack, Typography} from "@mui/material";
 import {Definitions} from "@/app/types/openapi";
-import BestHotelOffer = Definitions.DataOfferWithHotel
+import BestHotelOffer = Definitions.DataBestOfferPerHotel
 
 interface Properties {
     offer: BestHotelOffer

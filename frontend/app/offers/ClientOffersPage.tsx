@@ -11,7 +11,7 @@ import { GetHotelOffersFromQuery, GetHotelIdFromQuery, GetHotelOffersToQuery } f
 import qs from "qs";
 import PaginationBar from "@/app/components/Pagination/PaginationBar";
 
-type HotelOfferResp = Definitions.DataHotelResponse;
+type HotelOfferResp = Definitions.DataHotelOffersResponse;
 export default function Page() {
     const query = useSearchParams();
     const router = useRouter();

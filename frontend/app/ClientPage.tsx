@@ -8,7 +8,7 @@ import { Client, Definitions, Paths } from "@/app/types/openapi";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import BestHotelOffer = Definitions.DataOfferResponse;
+import BestHotelOffer = Definitions.DataBestOfferPerHotelResponse;
 import {
     GetBestOffersByHotelFromQuery,
     GetBestOffersByHotelToQuery,
