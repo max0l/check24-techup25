@@ -79,7 +79,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Hotel information",
                         "schema": {
-                            "$ref": "#/definitions/data.HotelResponse"
+                            "$ref": "#/definitions/data.HotelOffersResponse"
                         }
                     },
                     "400": {
@@ -262,7 +262,7 @@ const docTemplate = `{
                 }
             }
         },
-        "data.HotelResponse": {
+        "data.HotelOffersResponse": {
             "type": "object",
             "properties": {
                 "count_available_offers": {

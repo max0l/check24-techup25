@@ -69,7 +69,7 @@ definitions:
           $ref: '#/definitions/data.BestOfferPerHotel'
         type: array
     type: object
-  data.HotelResponse:
+  data.HotelOffersResponse:
     properties:
       count_available_offers:
         type: integer
@@ -171,7 +171,7 @@ paths:
         "200":
           description: Hotel information
           schema:
-            $ref: '#/definitions/data.HotelResponse'
+            $ref: '#/definitions/data.HotelOffersResponse'
         "400":
           description: Bad Request
         "404":

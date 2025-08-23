@@ -20,15 +20,15 @@ import (
 //	@Summary		handles hotel requests
 //	@Description	handles hotel requests and returns the hotel information.
 //	@Router			/hotel/{hotelid} [get]
-//	@Param			hotelid					path		int					true	"ID of the hotel"
-//	@Param			site					query		int					true	"Site, e.g. 1 or 2"
-//	@Param			departureAirports		query		[]string			false	"List of departure airports, e.g. FRA, MUC"
-//	@Param			earliestDepartureDate	query		string				false	"Earliest departure date in format RFC3339"
-//	@Param			latestReturnDate		query		string				false	"Latest return date in format RFC3339"
-//	@Param			countAdults				query		int					false	"Number of adults"
-//	@Param			countChildren			query		int					false	"Number of children"
-//	@Param			duration				query		int					false	"Duration of the trip in days"
-//	@Success		200						{object}	data.HotelResponse	"Hotel information"
+//	@Param			hotelid					path		int							true	"ID of the hotel"
+//	@Param			site					query		int							true	"Site, e.g. 1 or 2"
+//	@Param			departureAirports		query		[]string					false	"List of departure airports, e.g. FRA, MUC"
+//	@Param			earliestDepartureDate	query		string						false	"Earliest departure date in format RFC3339"
+//	@Param			latestReturnDate		query		string						false	"Latest return date in format RFC3339"
+//	@Param			countAdults				query		int							false	"Number of adults"
+//	@Param			countChildren			query		int							false	"Number of children"
+//	@Param			duration				query		int							false	"Duration of the trip in days"
+//	@Success		200						{object}	data.HotelOffersResponse	"Hotel information"
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"Hotel Not Found"
 func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context,
@@ -154,13 +154,13 @@ func parseHotelID(c *gin.Context) (int, error) {
 }
 
 func getOffersOfHotel(c *gin.Context, client *ent.Client, err error, hotelDb *ent.Hotel,
-	request data.RequestQuerryParams, site int, ctx context.Context) (data.HotelResponse, error) {
+	request data.RequestQuerryParams, site int, ctx context.Context) (data.HotelOffersResponse, error) {
 
 	hotelResponse, err := db.QueryOffersOfAHotel(hotelDb, request, site, client, ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Error querying hotel offers from DB")
 		c.JSON(500, gin.H{"message": "Internal server error"})
-		return data.HotelResponse{}, err
+		return data.HotelOffersResponse{}, err
 	}
 	return hotelResponse, nil
 }
@@ -186,7 +186,7 @@ func cacheHitCheckHotel(c *gin.Context, cacheKey string, redisClient *redis.Clie
 	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
 	if err == nil {
 		log.Debug().Msgf("Found cached response for key: %s", cacheKey)
-		var cachedHotel data.HotelResponse
+		var cachedHotel data.HotelOffersResponse
 		err = json.Unmarshal(cachedResponse, &cachedHotel)
 		if err == nil {
 			log.Debug().Msgf("Returning cached hotel: %v", cachedHotel)

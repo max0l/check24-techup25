@@ -120,9 +120,9 @@ func queryOffersFromDb(request data.RequestQuerryParams, airports []string, clie
 }
 
 func QueryOffersOfAHotel(h *ent.Hotel, request data.RequestQuerryParams,
-	site int, client *ent.Client, ctx context.Context) (data.HotelResponse, error) {
+	site int, client *ent.Client, ctx context.Context) (data.HotelOffersResponse, error) {
 
-	var hotelResponse data.HotelResponse
+	var hotelResponse data.HotelOffersResponse
 
 	hotelResponse.Hotelid = h.ID
 
@@ -182,7 +182,7 @@ func makeHotelOfferPredicates(request data.RequestQuerryParams) ([]predicate.Off
 }
 
 func querryAllHotelOffersFromDb(h *ent.Hotel, site int, hotelsOfferQuerry *ent.OfferQuery, ctx context.Context,
-	hotelResponse *data.HotelResponse) (data.HotelResponse, error) {
+	hotelResponse *data.HotelOffersResponse) (data.HotelOffersResponse, error) {
 	hotelOffers, err := hotelsOfferQuerry.Order(offer.ByPrice()).Offset((site - 1) * ResponseSize).Limit(ResponseSize).All(ctx)
 
 	if err != nil {

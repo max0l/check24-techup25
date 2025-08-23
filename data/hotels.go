@@ -6,7 +6,7 @@ type Hotel struct {
 	Hotelstars float32
 }
 
-type HotelResponse struct {
+type HotelOffersResponse struct {
 	Hotelid              int     `json:"hotelid"`
 	Hotelname            string  `json:"hotelname"`
 	Hotelstars           float32 `json:"hotelstars"`

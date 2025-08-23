@@ -60,7 +60,7 @@ func CloseRedisClient(client *redis.Client) {
 }
 
 func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams, requestSite int,
-	entClient *ent.Client, ctx context.Context, hotelResponse data.HotelResponse, queryQueue *db.QurryQueue) {
+	entClient *ent.Client, ctx context.Context, hotelResponse data.HotelOffersResponse, queryQueue *db.QurryQueue) {
 
 	storeInitialHotelResponseSite(redisClient, hotelId, request, requestSite, ctx, hotelResponse)
 
@@ -68,7 +68,7 @@ func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, request da
 }
 
 func storeInitialHotelResponseSite(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams, site int,
-	ctx context.Context, hotelResponse data.HotelResponse) {
+	ctx context.Context, hotelResponse data.HotelOffersResponse) {
 	cacheKey := CreateRedisCacheKeyHotel(hotelId, request, site)
 
 	if cacheKeyAlreadyExists(redisClient, cacheKey, ctx) {
@@ -119,7 +119,7 @@ func storeAdditionalHotelResponseSites(redisClient *redis.Client, hotelId int, r
 }
 
 func fetchHotelOffers(hotelId int, request data.RequestQuerryParams, site int, entClient *ent.Client,
-	ctx context.Context) (data.HotelResponse, bool) {
+	ctx context.Context) (data.HotelOffersResponse, bool) {
 
 	hotelDb, err := db.QueryHotel(hotelId, entClient, ctx)
 	if err != nil {
@@ -128,19 +128,19 @@ func fetchHotelOffers(hotelId int, request data.RequestQuerryParams, site int, e
 		} else {
 			log.Error().Err(err).Msg("Error querying hotel from DB")
 		}
-		return data.HotelResponse{}, false
+		return data.HotelOffersResponse{}, false
 	}
 
 	hotelResponse, err := db.QueryOffersOfAHotel(hotelDb, request, site, entClient, ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Error querying hotel offers from DB")
-		return data.HotelResponse{}, false
+		return data.HotelOffersResponse{}, false
 	}
 
 	return hotelResponse, true
 }
 
-func saveHotelResponseToRedis(redisClient *redis.Client, cacheKey string, hotelResponse data.HotelResponse,
+func saveHotelResponseToRedis(redisClient *redis.Client, cacheKey string, hotelResponse data.HotelOffersResponse,
 	ctx context.Context) error {
 
 	jsonHotel, err := json.Marshal(hotelResponse)

@@ -81,7 +81,6 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 
 func getOffersFromDB(ginc *gin.Context, client *ent.Client, request data.RequestQuerryParams, airports []string,
 	ctx context.Context) ([]*ent.Offer, map[int]int, bool) {
-	//TODO: Introduce page size
 	log.Debug().Msg("Querying DB for offers")
 	response, amountMap, err := db.QueryOffers(request, airports, client, ctx)
 	if len(response) == 0 {
