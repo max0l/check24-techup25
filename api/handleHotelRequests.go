@@ -67,7 +67,7 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 	c.JSON(200, hotelResponse)
 	//TODO: use the hotelResponse right away
 	//TODO: Check when store for key presence and if go routine with key already exists
-	go storeHotelRequestInRedis(redisClient, hotelID, request, request.Site, client, ctx)
+	go storeHotelRequestInRedis(redisClient, hotelID, request, request.Site, client, ctx, hotelResponse)
 	return
 }
 
@@ -159,6 +159,7 @@ func queryDbForHotel(c *gin.Context, client *ent.Client, err error, hotelID int,
 	hotelDb, err := db.QueryHotel(hotelID, client, ctx)
 	if err != nil {
 		if ent.IsNotFound(err) {
+			log.Debug().Msgf("Hotel with ID %d not found in DB", hotelID)
 			c.JSON(404, gin.H{"message": "Hotel not found"})
 			return nil, err
 		}

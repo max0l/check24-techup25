@@ -59,12 +59,36 @@ func CloseRedisClient(client *redis.Client) {
 	}
 }
 
-func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams, requestSite int, entClient *ent.Client, ctx context.Context) {
+func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams,
+	requestSite int, entClient *ent.Client, ctx context.Context, hotelResponse data.HotelResponse) {
 	site := requestSite
+
+	createRequestedSiteKey := CreateRedisCacheKeyHotel(hotelId, request, request.Site)
+
+	if !cacheKeyAlreadyExists(redisClient, createRequestedSiteKey, ctx) {
+		jsonHotel, err := json.Marshal(hotelResponse)
+		if err != nil {
+			log.Error().Err(err).Msg("Could not marshal hotel response to JSON")
+		}
+		err = redisClient.Set(ctx, createRequestedSiteKey, jsonHotel, time.Minute*20).Err()
+		if err != nil {
+			log.Warn().Err(err).Msg("redis store hotel error")
+		}
+		log.Debug().Msgf("Stored hotel %d for site %d successfully in Redis with key: %s", hotelId, request.Site, createRequestedSiteKey)
+	} else {
+		log.Debug().Msgf("Hotel %d for site %d already exists in Redis with key: %s", hotelId, request.Site, createRequestedSiteKey)
+	}
+	site++
 
 	// Only cache 10 sites for each request because some results could contain over 100000 offers (which means 2000 sites)
 	for site < requestSite+10 {
 		redisKey := CreateRedisCacheKeyHotel(hotelId, request, site)
+
+		if !cacheKeyAlreadyExists(redisClient, createRequestedSiteKey, ctx) {
+			log.Debug().Msgf("Cache key already exists: %s", redisKey)
+			site++
+			continue
+		}
 
 		hotelDb, err := db.QueryHotel(hotelId, entClient, ctx)
 		if err != nil {
@@ -101,6 +125,14 @@ func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, request da
 		site++
 		log.Debug().Msgf("Stored hotel %d for site %d successfully in Redis with key: %s", hotelId, site, redisKey)
 	}
+}
+
+func cacheKeyAlreadyExists(client *redis.Client, key string, ctx context.Context) bool {
+	result, err := client.Exists(ctx, key).Result()
+	if err != nil || result == 0 {
+		return false
+	}
+	return true
 }
 
 func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQuerryParams, uniqueOffers []*ent.Offer, ctx context.Context) {
