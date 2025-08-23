@@ -69,21 +69,23 @@ func Migrate(client ent.Client) error {
 	return nil
 }
 
-// TODO: change edge name 'hotelid' of offer
-func QueryOffers(request data.RequestQuerryParams, airports []string, client *ent.Client, ctx context.Context) []*ent.Offer {
+func QueryOffers(request data.RequestQuerryParams, airports []string, client *ent.Client,
+	ctx context.Context) ([]*ent.Offer, map[int]int, error) {
 	results, err := queryOffersFromDb(request, airports, client, ctx)
 	if err != nil {
-		return results
+		return []*ent.Offer{}, nil, err
 	}
 
 	uniqueOffers := make([]*ent.Offer, 0, len(results))
-	seenHotels := make(map[int]bool)
+	seenHotels := make(map[int]int)
 
 	for _, result := range results {
 		offerHotelId := result.Edges.Hotel.ID
-		if !seenHotels[offerHotelId] {
+		if seenHotels[offerHotelId] == 0 {
 			uniqueOffers = append(uniqueOffers, result)
-			seenHotels[offerHotelId] = true
+			seenHotels[offerHotelId]++
+		} else {
+			seenHotels[offerHotelId]++
 		}
 	}
 
@@ -91,11 +93,11 @@ func QueryOffers(request data.RequestQuerryParams, airports []string, client *en
 
 	if ResponseSize*(request.Site-1) >= len(uniqueOffers) {
 		log.Warn().Msg("Response size limit is larger than available offers")
-		return []*ent.Offer{}
+		return []*ent.Offer{}, nil, errors.New("response size limit is larger than available offers")
 	}
 
 	log.Debug().Msg("Queried offers")
-	return uniqueOffers
+	return uniqueOffers, seenHotels, nil
 }
 
 func queryOffersFromDb(request data.RequestQuerryParams, airports []string, client *ent.Client, ctx context.Context) ([]*ent.Offer, error) {

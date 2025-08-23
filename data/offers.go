@@ -32,7 +32,7 @@ type RequestQuerryParams struct {
 	Site                  int       `form:"site"`
 }
 
-type OfferWithHotel struct {
+type BestOfferPerHotel struct {
 	HotelName                 string    `json:"hotelname" example:"Hotel Sunshine"`
 	HotelStars                float32   `json:"hotelstars" example:"4.5"`
 	HotelId                   int       `json:"hotelid" example:"123"`
@@ -51,9 +51,10 @@ type OfferWithHotel struct {
 	Mealtye                   string    `json:"mealtye" example:"allinclusive"`
 	Ocenview                  bool      `json:"ocenview" example:"true"`
 	Rommtype                  string    `json:"rommtype" example:"double"`
+	OfferAmount               int       `json:"offeramount" example:"1"`
 }
 
-type OfferResponse struct {
-	Offers      []OfferWithHotel `json:"offers"`
-	CountOffers int              `json:"countOffers" example:"5"`
+type BestOfferPerHotelResponse struct {
+	Offers      []BestOfferPerHotel `json:"offers"`
+	CountOffers int                 `json:"countOffers" example:"5"`
 }

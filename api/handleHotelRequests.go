@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -50,9 +51,16 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 
 	log.Debug().Msgf("Received request for hotel with ID: %d and params: %v", hotelID, request)
 
-	if cacheHitCheckHotel(c, hotelID, request, request.Site, redisClient, ctx) {
+	cacheKey := CreateRedisCacheKeyHotel(hotelID, request, request.Site)
+
+	for queryQueue.Contains(cacheKey) {
+		time.Sleep(1 * time.Second)
+	}
+
+	if cacheHitCheckHotel(c, cacheKey, redisClient, ctx) {
 		return
 	}
+	queryQueue.Enqueue(cacheKey)
 
 	hotelDb, err := queryDbForHotel(c, client, err, hotelID, ctx)
 	if err != nil {
@@ -66,7 +74,9 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 
 	log.Debug().Msgf("Found hotel: %v", hotelResponse)
 	c.JSON(200, hotelResponse)
-	//TODO: Check when store for key presence and if go routine with key already exists
+
+	queryQueue.Dequeue(cacheKey)
+
 	go storeHotelRequestInRedis(redisClient, hotelID, request, request.Site, client, ctx, hotelResponse, queryQueue)
 	return
 }
@@ -170,10 +180,8 @@ func queryDbForHotel(c *gin.Context, client *ent.Client, err error, hotelID int,
 	return hotelDb, nil
 }
 
-func cacheHitCheckHotel(c *gin.Context, hotelID int, request data.RequestQuerryParams,
-	site int, redisClient *redis.Client, ctx context.Context) bool {
+func cacheHitCheckHotel(c *gin.Context, cacheKey string, redisClient *redis.Client, ctx context.Context) bool {
 
-	cacheKey := CreateRedisCacheKeyHotel(hotelID, request, site)
 	log.Debug().Msgf("Checking Redis cache for key: %s", cacheKey)
 	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
 	if err == nil {

@@ -161,30 +161,26 @@ func cacheKeyAlreadyExists(client *redis.Client, key string, ctx context.Context
 	return true
 }
 
-func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQuerryParams,
-	uniqueOffers []*ent.Offer, ctx context.Context, queryQueue *db.QurryQueue) {
-	var modifiedRequest = request
-	if request.Site != 1 {
-		modifiedRequest.Site = 1
-	}
-	for {
-		redisKey := CreateRedisCacheKeyOffers(modifiedRequest, modifiedRequest.Site)
+func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQuerryParams, uniqueOffers []*ent.Offer,
+	amountMap map[int]int, ctx context.Context) {
+
+	for site := request.Site + 1; site < request.Site+10; site++ {
+		redisKey := CreateRedisCacheKeyOffers(request, site)
 
 		if cacheKeyAlreadyExists(redisClient, redisKey, ctx) {
 			log.Debug().Msgf("Cache key already exists: %s", redisKey)
 			continue
 		}
 
-		responseStore := data.OfferResponse{
-			Offers:      make([]data.OfferWithHotel, 0, 50),
+		responseStore := data.BestOfferPerHotelResponse{
+			Offers:      make([]data.BestOfferPerHotel, 0, 50),
 			CountOffers: len(uniqueOffers),
 		}
-		parseOfferDbResponse(uniqueOffers, &responseStore, modifiedRequest)
+		parseOfferDbResponse(uniqueOffers, amountMap, &responseStore, site)
 		if len(responseStore.Offers) == 0 {
 			return
 		}
 
-		modifiedRequest.Site++
 		jsonOffer, err := json.Marshal(responseStore)
 		if err != nil {
 			log.Error().Err(err).Msg("Could not marshal offers to JSON")

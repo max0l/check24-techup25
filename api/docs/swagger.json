@@ -143,7 +143,7 @@
                     "200": {
                         "description": "List of offers matching the request",
                         "schema": {
-                            "$ref": "#/definitions/data.OfferResponse"
+                            "$ref": "#/definitions/data.BestOfferPerHotelResponse"
                         }
                     },
                     "400": {
@@ -157,6 +157,102 @@
         }
     },
     "definitions": {
+        "data.BestOfferPerHotel": {
+            "type": "object",
+            "properties": {
+                "countadults": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "countchildren": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "durationindays": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "hotelid": {
+                    "type": "integer",
+                    "example": 123
+                },
+                "hotelname": {
+                    "type": "string",
+                    "example": "Hotel Sunshine"
+                },
+                "hotelstars": {
+                    "type": "number",
+                    "example": 4.5
+                },
+                "inboundarrivalairport": {
+                    "type": "string",
+                    "example": "PMI"
+                },
+                "inboundarrivaldatetime": {
+                    "type": "string",
+                    "example": "2025-12-31T00:00:00+02:00"
+                },
+                "inbounddepartureairport": {
+                    "type": "string",
+                    "example": "BER"
+                },
+                "inbounddeparturedatetime": {
+                    "type": "string",
+                    "example": "2025-12-31T00:00:00+02:00"
+                },
+                "mealtye": {
+                    "type": "string",
+                    "example": "allinclusive"
+                },
+                "ocenview": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "offeramount": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "outboundarrivalairport": {
+                    "type": "string",
+                    "example": "BER"
+                },
+                "outboundarrivaldatetime": {
+                    "type": "string",
+                    "example": "2025-01-01T00:00:00+02:00"
+                },
+                "outbounddepartureairport": {
+                    "type": "string",
+                    "example": "PMI"
+                },
+                "outbounddeparturedatetime": {
+                    "type": "string",
+                    "example": "2025-01-01T00:00:00+02:00"
+                },
+                "price": {
+                    "type": "number",
+                    "example": 299.99
+                },
+                "rommtype": {
+                    "type": "string",
+                    "example": "double"
+                }
+            }
+        },
+        "data.BestOfferPerHotelResponse": {
+            "type": "object",
+            "properties": {
+                "countOffers": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "offers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/data.BestOfferPerHotel"
+                    }
+                }
+            }
+        },
         "data.HotelResponse": {
             "type": "object",
             "properties": {
@@ -233,98 +329,6 @@
                 },
                 "roomtype": {
                     "type": "string"
-                }
-            }
-        },
-        "data.OfferResponse": {
-            "type": "object",
-            "properties": {
-                "countOffers": {
-                    "type": "integer",
-                    "example": 5
-                },
-                "offers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/data.OfferWithHotel"
-                    }
-                }
-            }
-        },
-        "data.OfferWithHotel": {
-            "type": "object",
-            "properties": {
-                "countadults": {
-                    "type": "integer",
-                    "example": 2
-                },
-                "countchildren": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "durationindays": {
-                    "type": "integer",
-                    "example": 7
-                },
-                "hotelid": {
-                    "type": "integer",
-                    "example": 123
-                },
-                "hotelname": {
-                    "type": "string",
-                    "example": "Hotel Sunshine"
-                },
-                "hotelstars": {
-                    "type": "number",
-                    "example": 4.5
-                },
-                "inboundarrivalairport": {
-                    "type": "string",
-                    "example": "PMI"
-                },
-                "inboundarrivaldatetime": {
-                    "type": "string",
-                    "example": "2025-12-31T00:00:00+02:00"
-                },
-                "inbounddepartureairport": {
-                    "type": "string",
-                    "example": "BER"
-                },
-                "inbounddeparturedatetime": {
-                    "type": "string",
-                    "example": "2025-12-31T00:00:00+02:00"
-                },
-                "mealtye": {
-                    "type": "string",
-                    "example": "allinclusive"
-                },
-                "ocenview": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "outboundarrivalairport": {
-                    "type": "string",
-                    "example": "BER"
-                },
-                "outboundarrivaldatetime": {
-                    "type": "string",
-                    "example": "2025-01-01T00:00:00+02:00"
-                },
-                "outbounddepartureairport": {
-                    "type": "string",
-                    "example": "PMI"
-                },
-                "outbounddeparturedatetime": {
-                    "type": "string",
-                    "example": "2025-01-01T00:00:00+02:00"
-                },
-                "price": {
-                    "type": "number",
-                    "example": 299.99
-                },
-                "rommtype": {
-                    "type": "string",
-                    "example": "double"
                 }
             }
         }

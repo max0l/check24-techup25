@@ -58,6 +58,7 @@ func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan []dataRecord, ch
 	// starting 10 workers
 	for i := 0; i < maxConcurrency; i++ {
 		wg.Add(1)
+		//TODO: use interface here
 		go batchFunc(processorChannel, resultsChannel, &wg)
 	}
 	var i int

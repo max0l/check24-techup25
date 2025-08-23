@@ -1,4 +1,74 @@
 definitions:
+  data.BestOfferPerHotel:
+    properties:
+      countadults:
+        example: 2
+        type: integer
+      countchildren:
+        example: 1
+        type: integer
+      durationindays:
+        example: 7
+        type: integer
+      hotelid:
+        example: 123
+        type: integer
+      hotelname:
+        example: Hotel Sunshine
+        type: string
+      hotelstars:
+        example: 4.5
+        type: number
+      inboundarrivalairport:
+        example: PMI
+        type: string
+      inboundarrivaldatetime:
+        example: "2025-12-31T00:00:00+02:00"
+        type: string
+      inbounddepartureairport:
+        example: BER
+        type: string
+      inbounddeparturedatetime:
+        example: "2025-12-31T00:00:00+02:00"
+        type: string
+      mealtye:
+        example: allinclusive
+        type: string
+      ocenview:
+        example: true
+        type: boolean
+      offeramount:
+        example: 1
+        type: integer
+      outboundarrivalairport:
+        example: BER
+        type: string
+      outboundarrivaldatetime:
+        example: "2025-01-01T00:00:00+02:00"
+        type: string
+      outbounddepartureairport:
+        example: PMI
+        type: string
+      outbounddeparturedatetime:
+        example: "2025-01-01T00:00:00+02:00"
+        type: string
+      price:
+        example: 299.99
+        type: number
+      rommtype:
+        example: double
+        type: string
+    type: object
+  data.BestOfferPerHotelResponse:
+    properties:
+      countOffers:
+        example: 5
+        type: integer
+      offers:
+        items:
+          $ref: '#/definitions/data.BestOfferPerHotel'
+        type: array
+    type: object
   data.HotelResponse:
     properties:
       count_available_offers:
@@ -49,73 +119,6 @@ definitions:
       price:
         type: number
       roomtype:
-        type: string
-    type: object
-  data.OfferResponse:
-    properties:
-      countOffers:
-        example: 5
-        type: integer
-      offers:
-        items:
-          $ref: '#/definitions/data.OfferWithHotel'
-        type: array
-    type: object
-  data.OfferWithHotel:
-    properties:
-      countadults:
-        example: 2
-        type: integer
-      countchildren:
-        example: 1
-        type: integer
-      durationindays:
-        example: 7
-        type: integer
-      hotelid:
-        example: 123
-        type: integer
-      hotelname:
-        example: Hotel Sunshine
-        type: string
-      hotelstars:
-        example: 4.5
-        type: number
-      inboundarrivalairport:
-        example: PMI
-        type: string
-      inboundarrivaldatetime:
-        example: "2025-12-31T00:00:00+02:00"
-        type: string
-      inbounddepartureairport:
-        example: BER
-        type: string
-      inbounddeparturedatetime:
-        example: "2025-12-31T00:00:00+02:00"
-        type: string
-      mealtye:
-        example: allinclusive
-        type: string
-      ocenview:
-        example: true
-        type: boolean
-      outboundarrivalairport:
-        example: BER
-        type: string
-      outboundarrivaldatetime:
-        example: "2025-01-01T00:00:00+02:00"
-        type: string
-      outbounddepartureairport:
-        example: PMI
-        type: string
-      outbounddeparturedatetime:
-        example: "2025-01-01T00:00:00+02:00"
-        type: string
-      price:
-        example: 299.99
-        type: number
-      rommtype:
-        example: double
         type: string
     type: object
 host: localhost:8080
@@ -218,7 +221,7 @@ paths:
         "200":
           description: List of offers matching the request
           schema:
-            $ref: '#/definitions/data.OfferResponse'
+            $ref: '#/definitions/data.BestOfferPerHotelResponse'
         "400":
           description: Bad Request
         "404":

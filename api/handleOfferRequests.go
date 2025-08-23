@@ -6,6 +6,7 @@ import (
 	"check24-techup25/db/ent"
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -17,14 +18,14 @@ import (
 //	@Summary		handles offer requests
 //	@Description	handles offer requests and returns a list of offers.
 //	@Router			/offers [get]
-//	@Param			departureAirports		query		[]string			true	"List of departure airports, e.g. FRA, MUC"
-//	@Param			earliestDepartureDate	query		string				true	"Earliest departure date in format RFC3339"
-//	@Param			latestReturnDate		query		string				true	"Latest return date in format RFC3339"
-//	@Param			countAdults				query		int					true	"Number of adults"
-//	@Param			countChildren			query		int					false	"Number of children"
-//	@Param			duration				query		int					true	"Duration of the trip in days"
-//	@Param			site					query		int					false	"Site, e.g. 1 or 2"
-//	@Success		200						{object}	data.OfferResponse	"List of offers matching the request"
+//	@Param			departureAirports		query		[]string						true	"List of departure airports, e.g. FRA, MUC"
+//	@Param			earliestDepartureDate	query		string							true	"Earliest departure date in format RFC3339"
+//	@Param			latestReturnDate		query		string							true	"Latest return date in format RFC3339"
+//	@Param			countAdults				query		int								true	"Number of adults"
+//	@Param			countChildren			query		int								false	"Number of children"
+//	@Param			duration				query		int								true	"Duration of the trip in days"
+//	@Param			site					query		int								false	"Site, e.g. 1 or 2"
+//	@Success		200						{object}	data.BestOfferPerHotelResponse	"List of offers matching the request"
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"No Offers Found"
 func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redis.Client, ctx context.Context,
@@ -47,50 +48,60 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 		return
 	}
 
-	if cacheHitCheckOffer(ginc, request, err, redisClient, ctx) {
+	cacheKey := CreateRedisCacheKeyOffers(request, request.Site)
+
+	for queryQueue.Contains(cacheKey) {
+		time.Sleep(1 * time.Second)
+	}
+
+	if cacheHitCheckOffer(ginc, cacheKey, err, redisClient, ctx) {
 		return
 	}
 
-	dbResponse, done := getOffersFromDB(ginc, client, request, airports, ctx)
+	queryQueue.Enqueue(cacheKey)
+
+	dbResponse, amountMap, done := getOffersFromDB(ginc, client, request, airports, ctx)
 	if done {
 		return
 	}
 
-	offerResponse := data.OfferResponse{
-		Offers: make([]data.OfferWithHotel, 0, 50),
+	offerResponse := data.BestOfferPerHotelResponse{
+		Offers: make([]data.BestOfferPerHotel, 0, 50),
 	}
 
-	parseOfferDbResponse(dbResponse, &offerResponse, request)
-
-	go storeOfferRequestInRedis(redisClient, request, dbResponse, ctx, queryQueue)
+	parseOfferDbResponse(dbResponse, amountMap, &offerResponse, request.Site)
 
 	ginc.JSON(200, offerResponse)
 	log.Debug().Msgf("Response: %v", offerResponse)
 	log.Info().Msg("Request handled successfully")
+	queryQueue.Dequeue(cacheKey)
+	go storeOfferRequestInRedis(redisClient, request, dbResponse, amountMap, ctx)
 	return
 }
 
 func getOffersFromDB(ginc *gin.Context, client *ent.Client, request data.RequestQuerryParams, airports []string,
-	ctx context.Context) ([]*ent.Offer, bool) {
+	ctx context.Context) ([]*ent.Offer, map[int]int, bool) {
 	//TODO: Introduce page size
 	log.Debug().Msg("Querying DB for offers")
-	response := db.QueryOffers(request, airports, client, ctx)
+	response, amountMap, err := db.QueryOffers(request, airports, client, ctx)
 	if len(response) == 0 {
 		log.Warn().Msg("No offers found for the given request")
 		ginc.JSON(404, gin.H{"message": "No offers found"})
-		return nil, true
+		return nil, nil, true
+	} else if err != nil {
+		log.Error().Err(err).Msg("Error querying DB")
+		ginc.JSON(500, gin.H{"message": "Error querying DB"})
 	}
 	log.Info().Msgf("Found %v offers for the given request", len(response))
-	return response, false
+	return response, amountMap, false
 }
 
-func cacheHitCheckOffer(ginc *gin.Context, request data.RequestQuerryParams, err error, redisClient *redis.Client, ctx context.Context) bool {
-	cacheKey := CreateRedisCacheKeyOffers(request, request.Site)
+func cacheHitCheckOffer(ginc *gin.Context, cacheKey string, err error, redisClient *redis.Client, ctx context.Context) bool {
 	log.Debug().Msgf("Checking Redis cache for key: %s", cacheKey)
 	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
 	if err == nil {
 		log.Debug().Msgf("Found cached response for key: %s", cacheKey)
-		var cachedOffers data.OfferResponse
+		var cachedOffers data.BestOfferPerHotelResponse
 		err = json.Unmarshal(cachedResponse, &cachedOffers)
 		if err == nil {
 			log.Debug().Msgf("Returning cached offers: %v", cachedOffers)
@@ -124,11 +135,11 @@ func bindOfferRequest(ginc *gin.Context, request *data.RequestQuerryParams) erro
 	return err
 }
 
-func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *data.OfferResponse, request data.RequestQuerryParams) {
+func parseOfferDbResponse(uniqueOffers []*ent.Offer, amountMap map[int]int, responseStore *data.BestOfferPerHotelResponse, site int) {
 
-	responsesStore.CountOffers = len(uniqueOffers)
+	responseStore.CountOffers = len(uniqueOffers)
 	processedResults := 0
-	for i := db.ResponseSize * (request.Site - 1); i < len(uniqueOffers); i++ {
+	for i := db.ResponseSize * (site - 1); i < len(uniqueOffers); i++ {
 
 		if processedResults >= db.ResponseSize {
 			log.Debug().Msg("Reached response size limit, stopping processing offers")
@@ -141,13 +152,13 @@ func parseOfferDbResponse(uniqueOffers []*ent.Offer, responsesStore *data.OfferR
 
 		log.Trace().Msgf("Processing offer: %v", i)
 
-		offerWithHotel := parseOfferResult(hotelResult, offerResult)
-		responsesStore.Offers = append(responsesStore.Offers, offerWithHotel)
+		offerWithHotel := parseOfferResult(hotelResult, offerResult, amountMap)
+		responseStore.Offers = append(responseStore.Offers, offerWithHotel)
 	}
 }
 
-func parseOfferResult(hotelResult *ent.Hotel, offerResult *ent.Offer) data.OfferWithHotel {
-	offerWithHotel := data.OfferWithHotel{
+func parseOfferResult(hotelResult *ent.Hotel, offerResult *ent.Offer, amountMap map[int]int) data.BestOfferPerHotel {
+	offerWithHotel := data.BestOfferPerHotel{
 		HotelName:                 hotelResult.Hotelname,
 		HotelStars:                hotelResult.Hotelstars,
 		HotelId:                   hotelResult.ID,
@@ -166,6 +177,7 @@ func parseOfferResult(hotelResult *ent.Hotel, offerResult *ent.Offer) data.Offer
 		Mealtye:                   offerResult.Mealtype,
 		Ocenview:                  offerResult.Oceanview,
 		Rommtype:                  offerResult.Roomtype,
+		OfferAmount:               amountMap[hotelResult.ID],
 	}
 	return offerWithHotel
 }
