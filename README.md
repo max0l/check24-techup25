@@ -7,7 +7,7 @@
 Everything will be generated if you just run `docker compose up --build`.
 
 > [!IMPORTANT]
-> **Set the path of the offers.csv volume in the docker-compose.yml to your offers.csv or to the provided test csv's in the testCSVs folder**
+> **Set the path of the offers.csv volume in the docker-compose.yml to your offers.csv or to the provided test CSV's in the testCSVs folder**
 
 #### ENV
 
@@ -163,4 +163,4 @@ That means there will be over 92 Million offers. If set to false it will be "onl
 Also, all the hotels, that are not in the CSV, will be inserted with a placeholder name.
 
 This is affecting the query time intensively If there are 92 Million, a larger timeframe request could take up to 14 seconds.
-If there are only 18 Million, it will be arround 1.1 seconds and after caching (same for the 92 Million) ~15 ms.
+If there are only 18 Million, it will be around 1.1 seconds and after caching (same for the 92 Million) ~15 ms.
