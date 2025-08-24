@@ -27,10 +27,8 @@ import (
 func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.Context, queryQueue *db.QurryQueue) {
 	router := gin.Default()
 
-	router.Use(cors.Default())
-
 	api := router.Group("/api")
-
+	api.Use(cors.Default())
 	//I know setting the cors to default is not the best idea, but for this project it is sufficient
 	api.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

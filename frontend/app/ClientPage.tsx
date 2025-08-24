@@ -17,6 +17,11 @@ import qs from "qs";
 import { coerceAndValidate } from "@/app/utils/validators";
 import PaginationBar from "@/app/components/Pagination/PaginationBar";
 
+const apiBase =
+  typeof window === "undefined"
+    ? process.env.INTERNAL_API_BASE_URL ?? "http://api:8080/api"
+    : process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
+
 export default function HomePage() {
     const [offers, setOffers] = useState<BestHotelOffer>();
     const [queryParameters, setQueryParameters] =
@@ -33,10 +38,10 @@ export default function HomePage() {
 
     const apiClient = useMemo(() => {
         const api = new OpenAPIClientAxios({
-            definition: "http://localhost:8080/swagger/doc.json",
-            withServer: 0,
+            definition: `${apiBase}/swagger/doc.json`,
+            withServer: {url: apiBase},
             axiosConfigDefaults: {
-                baseURL: "http://localhost:8080",
+                baseURL: apiBase,
                 paramsSerializer: {
                     serialize: (p) => qs.stringify(p, { arrayFormat: "comma" }),
                 },
@@ -88,7 +93,7 @@ export default function HomePage() {
             const start = performance.now();
 
             const client = await apiClient.init<Client>();
-            const response = await client.get<BestHotelOffer>(`/offers`, {
+            const response = await client.get<BestHotelOffer>(`/api/offers`, {
                 params: parameters,
             });
 

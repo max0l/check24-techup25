@@ -8,6 +8,14 @@ const nextConfig = {
     '@mui/material': {
       transform: '@mui/material/{{ member }}'
     }
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://api:8080/:path*'
+      }
+    ]
   }
 }
 

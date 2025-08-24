@@ -11,6 +11,11 @@ import { GetHotelOffersFromQuery, GetHotelIdFromQuery, GetHotelOffersToQuery } f
 import qs from "qs";
 import PaginationBar from "@/app/components/Pagination/PaginationBar";
 
+const apiBase =
+  typeof window === "undefined"
+    ? process.env.INTERNAL_API_BASE_URL ?? "http://api:8080/api"
+    : process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
+
 type HotelOfferResp = Definitions.DataHotelOffersResponse;
 export default function Page() {
     const query = useSearchParams();
@@ -29,10 +34,10 @@ export default function Page() {
 
     const apiClient = useMemo(() => {
         const api = new OpenAPIClientAxios({
-            definition: "http://localhost:8080/swagger/doc.json",
+            definition: `${apiBase}/swagger/doc.json`,
             withServer: 0,
             axiosConfigDefaults: {
-                baseURL: "http://localhost:8080",
+                baseURL: apiBase,
                 paramsSerializer: { serialize: (p) => qs.stringify(p, { arrayFormat: "comma" }) },
             },
         });
@@ -46,7 +51,7 @@ export default function Page() {
 
             const hotelid = GetHotelIdFromQuery(query);
             const client = await apiClient.init<Client>();
-            const response = await client.get<HotelOfferResp>(`/hotel/${hotelid.hotelid}`, {
+            const response = await client.get<HotelOfferResp>(`/api/hotel/${hotelid.hotelid}`, {
                 params: parameters,
             });
 
