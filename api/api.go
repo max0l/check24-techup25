@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/fvbock/endless"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -48,9 +49,9 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 	})
 
 	log.Info().Msgf("Starting Server on port %v", port)
-	err := router.Run(":" + strconv.Itoa(port))
+	err := endless.ListenAndServe(":"+strconv.Itoa(port), router)
 	if err != nil {
-		log.Error().Msgf("Could not start server on port %v", port)
+		log.Error().Msgf("Server stopped on port %v", port)
 		return
 	}
 }

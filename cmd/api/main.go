@@ -31,6 +31,7 @@ func main() {
 	}
 
 	defer func() {
+		log.Trace().Msg("Closing connection to DB")
 		if err := client.Close(); err != nil {
 			log.Warn().Err(err).Msg("Could not close Connection to DB client")
 		}
@@ -41,7 +42,12 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("Could not connect to Redis")
 	}
-	defer api.CloseRedisClient(redisClient)
+	defer func() {
+		log.Trace().Msg("Closing connection to Redis")
+		if err := redisClient.Close(); err != nil {
+			log.Warn().Err(err).Msg("Could not close Connection to Redis client")
+		}
+	}()
 
 	if err := client.Ping(ctx); err != nil {
 		log.Fatal().Err(err).Msg("Could not ping DB")
