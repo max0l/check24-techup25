@@ -1,8 +1,10 @@
+<!-- This was created on 2025-08-06T15:57:43.000Z and is somehow outdated, but it is still nice to include -->
+
 # Verteilung der Spalten
 
-Mit der berechnung der Verteilung der Spalteninhalten, kann man eine art baum Erstellen, um so schneller nach eintragen filtern zu können.
+Mit der Berechnung der Verteilung der Spalteninhalte, kann man eine Art Baum Erstellen, um so schneller nach eintragen filtern zu können.
 
-Allerdings ist nicht jede Spalte "suchbar". Es sind nur folgende Spalten suchbar:
+Allerdings ist nicht jede Spalte "Suchbar". Es sind nur folgende Spalten Suchbar:
 
 ```go
 type OfferQuerry struct {
@@ -19,13 +21,12 @@ Es ist aber nicht schlau nach den Dates zu filtern, da diese zu unterschiedlich 
 Diese sollten entweder nur nach Wochen getrennt werden oder durch die Dauer getrennt werden.
 
 Das Filtern/Suchen mithilfe der Dauer könnte aber länger dauern, es sei denn man kombiniert das auch noch. Wobei hier
-aber auch auf die Art des Filterns geachtet werden muss. Das beste wäre wohl, wenn man nach Woche filtert (also 1.1 bis
+aber auch auf die Art des Filterns geachtet werden muss. Das Beste wäre wohl, wenn man nach Woche filtert (also 1.1 bis
 7.1, 8.1 bis 14.1 usw.) und dann da noch die Dauer hat.
 
-Es wäre also Folgende Reihenfolge:
-
-1. countchildren
-2.
+<del>Es wäre also folgende Reihenfolge:</del></br>
+<del>1. countchildren</del></br>
+<del>2.</del>
 
 ## Wichtigste Spalten
 
