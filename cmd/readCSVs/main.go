@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// main function to read hotels and offers from CSV files.
 func main() {
 
 	hotelFilePath := flag.String("h", "./data/hotels.csv", "Path to the hotels CSV file")

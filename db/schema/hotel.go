@@ -7,6 +7,7 @@ import (
 	"entgo.io/ent/schema/index"
 )
 
+// Hotel represents the hotel entity in the database.
 type Hotel struct {
 	ent.Schema
 }

@@ -13,7 +13,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// handleOfferRequest will receive a query with different parameters and returns a list of offers
+// handleOfferRequest will receive a query with different parameters and returns a list of offers.
+// All Offers are from a different Hotel and are sorted after price.
 //
 //	@Summary		handles offer requests
 //	@Description	handles offer requests and returns a list of offers.
@@ -37,7 +38,7 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 		return
 	}
 
-	if checkIfParamsAreRight(ginc, request) {
+	if cancelIfParamsAreWrong(ginc, request) {
 		return
 	}
 
@@ -60,8 +61,8 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 
 	queryQueue.Enqueue(cacheKey)
 
-	dbResponse, amountMap, done := getOffersFromDB(ginc, client, request, airports, ctx)
-	if done {
+	dbResponse, amountMap, isFaulty := handleDbResponseIsFaulty(ginc, client, request, airports, ctx)
+	if isFaulty {
 		return
 	}
 
@@ -79,7 +80,10 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 	return
 }
 
-func getOffersFromDB(ginc *gin.Context, client *ent.Client, request data.RequestQuerryParams, airports []string,
+// handleDbResponseIsFaulty will handle the web request response with error codes, if the query result of the DB was faulty.
+// It will return the DB response and a map that holds a hotel id as a key, and the amount of offers as the value.
+// If the response was faulty or returns early, it returns a true and cancels the request.
+func handleDbResponseIsFaulty(ginc *gin.Context, client *ent.Client, request data.RequestQuerryParams, airports []string,
 	ctx context.Context) ([]*ent.Offer, map[int]int, bool) {
 	log.Debug().Msg("Querying DB for offers")
 	response, amountMap, err := db.QueryOffers(request, airports, client, ctx)
@@ -90,11 +94,14 @@ func getOffersFromDB(ginc *gin.Context, client *ent.Client, request data.Request
 	} else if err != nil {
 		log.Error().Err(err).Msg("Error querying DB")
 		ginc.JSON(500, gin.H{"message": "Error querying DB"})
+		return nil, nil, true
 	}
 	log.Info().Msgf("Found %v offers for the given request", len(response))
 	return response, amountMap, false
 }
 
+// cacheHitCheckOffer will check if a key in the redis cache exists and return the cached response if it does.
+// It returns true if a cached response was found and returns false if not.
 func cacheHitCheckOffer(ginc *gin.Context, cacheKey string, err error, redisClient *redis.Client, ctx context.Context) bool {
 	log.Debug().Msgf("Checking Redis cache for key: %s", cacheKey)
 	cachedResponse, err := redisClient.Get(ctx, cacheKey).Bytes()
@@ -114,6 +121,8 @@ func cacheHitCheckOffer(ginc *gin.Context, cacheKey string, err error, redisClie
 	return false
 }
 
+// bindOfferRequest binds the query parameters from the request to the data.RequestQuerryParams struct.
+// If it fails, it returns an error and cancels the request with a 400 error code.
 func bindOfferRequest(ginc *gin.Context, request *data.RequestQuerryParams) error {
 	err := ginc.BindQuery(&request)
 	if err != nil {
@@ -134,6 +143,8 @@ func bindOfferRequest(ginc *gin.Context, request *data.RequestQuerryParams) erro
 	return err
 }
 
+// parseOfferDbResponse will parse the DB response and fill the responseStore with the offers.
+// It will only parse the offers for the given site and will stop if the response size limit is reached.
 func parseOfferDbResponse(uniqueOffers []*ent.Offer, amountMap map[int]int, responseStore *data.BestOfferPerHotelResponse, site int) {
 
 	responseStore.CountOffers = len(uniqueOffers)
@@ -156,6 +167,7 @@ func parseOfferDbResponse(uniqueOffers []*ent.Offer, amountMap map[int]int, resp
 	}
 }
 
+// parseOfferResult will parse a single offer and hotel result into a data.BestOfferPerHotel struct.
 func parseOfferResult(hotelResult *ent.Hotel, offerResult *ent.Offer, amountMap map[int]int) data.BestOfferPerHotel {
 	offerWithHotel := data.BestOfferPerHotel{
 		HotelName:                 hotelResult.Hotelname,

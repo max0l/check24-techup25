@@ -15,7 +15,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// handleHotelRequest will receive a hotel ID and returns the hotel information
+// handleHotelRequest will receive a hotel ID, site and a list of other optional parameters
+// and returns the hotel information with its offers.
 //
 //	@Summary		handles hotel requests
 //	@Description	handles hotel requests and returns the hotel information.
@@ -81,6 +82,9 @@ func handleHotelRequest(c *gin.Context, client *ent.Client, redisClient *redis.C
 	return
 }
 
+// bindOptionalHotelParams binds the optional hotel params to the data.RequestQuerryParams struct.
+// Since there are also optional params in the request and binding them sets them to 0, we need to
+// create a new struct, which does only contain the sent params.
 func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) error {
 	var request data.RequestQuerryParams
 	err := c.ShouldBindQuery(&request)

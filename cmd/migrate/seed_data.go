@@ -14,6 +14,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// main function initializes the database connection and starts the migration process.
+// It reads the CSV file and upsert the database with the hotel and offer data.
 func main() {
 
 	logging.SetLogger()

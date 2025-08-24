@@ -7,6 +7,7 @@ import (
 	"entgo.io/ent/schema/index"
 )
 
+// Offer represents the offer entity in the database.
 type Offer struct {
 	ent.Schema
 }

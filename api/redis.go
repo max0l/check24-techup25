@@ -16,6 +16,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// GetRedisClient initializes and returns a Redis client using environment variables for configuration.
+// It also pings the Redis server to ensure the connection is successful. If the connection fails, it returns an error.
 func GetRedisClient(ctx context.Context) (*redis.Client, error) {
 	redisUrl, redisPassword, redisDB := GetRedisEnvs()
 	client := redis.NewClient(&redis.Options{
@@ -32,6 +34,7 @@ func GetRedisClient(ctx context.Context) (*redis.Client, error) {
 	return client, nil
 }
 
+// GetRedisEnvs returns Redis configuration from environment variables.
 func GetRedisEnvs() (string, string, int) {
 	redisUrl := "localhost:6379"
 	redisPassword := ""
@@ -50,6 +53,7 @@ func GetRedisEnvs() (string, string, int) {
 	return redisUrl, redisPassword, redisDB
 }
 
+// CloseRedisClient closes the given Redis client and logs any errors that occur during the process.
 func CloseRedisClient(client *redis.Client) {
 	err := client.Close()
 	if err != nil {
@@ -59,6 +63,9 @@ func CloseRedisClient(client *redis.Client) {
 	}
 }
 
+// storeHotelRequestInRedis stores hotel offers in Redis for the initial request site and 10 additional sites.
+// It will skip storing if the cache key already exists or if no offers are found for additional sites.
+// It uses a query queue to avoid duplicate queries for the same cache key.
 func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams, requestSite int,
 	entClient *ent.Client, ctx context.Context, hotelResponse data.HotelOffersResponse, queryQueue *db.QurryQueue) {
 
@@ -67,6 +74,8 @@ func storeHotelRequestInRedis(redisClient *redis.Client, hotelId int, request da
 	storeAdditionalHotelResponseSites(redisClient, hotelId, request, requestSite, entClient, ctx, queryQueue)
 }
 
+// storeInitialHotelResponseSite stores the response in the redis cache that is also served to the user.
+// It also checks if the cache key of the requests exists and skips it. If not it will be stored.
 func storeInitialHotelResponseSite(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams, site int,
 	ctx context.Context, hotelResponse data.HotelOffersResponse) {
 	cacheKey := CreateRedisCacheKeyHotel(hotelId, request, site)
@@ -85,6 +94,8 @@ func storeInitialHotelResponseSite(redisClient *redis.Client, hotelId int, reque
 	log.Debug().Msgf("Stored hotel %d for site %d successfully in Redis with key: %s", hotelId, request.Site, cacheKey)
 }
 
+// storeAdditionalHotelResponseSites goes through the next 10 sites and stores the hotel response for each site in Redis.
+// If the cache key already exists or if the query is already in the queue, it skips storing that site.
 func storeAdditionalHotelResponseSites(redisClient *redis.Client, hotelId int, request data.RequestQuerryParams,
 	requestSite int, entClient *ent.Client, ctx context.Context, queryQueue *db.QurryQueue) {
 
@@ -118,6 +129,8 @@ func storeAdditionalHotelResponseSites(redisClient *redis.Client, hotelId int, r
 	}
 }
 
+// fetchHotelOffers fetches hotel offers for a given hotel ID and request parameters to store them in Redis.
+// It returns the fetched offers and a boolean indicating success.
 func fetchHotelOffers(hotelId int, request data.RequestQuerryParams, site int, entClient *ent.Client,
 	ctx context.Context) (data.HotelOffersResponse, bool) {
 
@@ -140,6 +153,9 @@ func fetchHotelOffers(hotelId int, request data.RequestQuerryParams, site int, e
 	return hotelResponse, true
 }
 
+// saveHotelResponseToRedis saves the hotel response to Redis with a specified cache key.
+// It does that by marshalling the hotel response to JSON and then setting it in Redis.
+// It returns an error if there is a problem with the marshalling or setting of the data.
 func saveHotelResponseToRedis(redisClient *redis.Client, cacheKey string, hotelResponse data.HotelOffersResponse,
 	ctx context.Context) error {
 
@@ -152,6 +168,8 @@ func saveHotelResponseToRedis(redisClient *redis.Client, cacheKey string, hotelR
 	return redisClient.Set(ctx, cacheKey, jsonHotel, time.Minute*20).Err()
 }
 
+// cacheKeyAlreadyExists checks if a given key already exists in Redis.
+// If the key exists, it sets an expiration time of 20 minutes and returns true, otherwise it returns false.
 func cacheKeyAlreadyExists(client *redis.Client, key string, ctx context.Context) bool {
 	result, err := client.Exists(ctx, key).Result()
 	if err != nil || result == 0 {
@@ -161,6 +179,10 @@ func cacheKeyAlreadyExists(client *redis.Client, key string, ctx context.Context
 	return true
 }
 
+// storeOfferRequestInRedis stores the response of getting the best offer per hotel in redis.
+// It creates a unique key for each request and stores the response in Redis with an expiration time of 20 minutes.
+// If the key already exists, it sets an expiration time of 20 minutes and continues to the next iteration.
+// A queue is not necessary because all the offers are retrieved at once.
 func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQuerryParams, uniqueOffers []*ent.Offer,
 	amountMap map[int]int, ctx context.Context) {
 
@@ -196,12 +218,14 @@ func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQue
 
 }
 
+// CreateRedisCacheKeyOffers creates a Redis cache key for offers based on the request parameters and site.
 func CreateRedisCacheKeyOffers(request data.RequestQuerryParams, site int) string {
 	return fmt.Sprintf("offers:%s:%s:%s:%d:%d:%d:%d",
 		strings.Join(request.DepartureAirports, ","), request.EarliestDepartureDate.String(), request.LatestReturnDate.String(),
 		request.CountAdults, request.CountChildren, request.Duration, site)
 }
 
+// CreateRedisCacheKeyHotel creates a Redis cache key for hotels based on the hotel ID, request parameters, and site.
 func CreateRedisCacheKeyHotel(hotelId int, request data.RequestQuerryParams, site int) string {
 	// Airports
 	airports := "any"

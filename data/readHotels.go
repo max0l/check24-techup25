@@ -6,6 +6,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// ReadHotelsCSVFile opens and then reads the CSV file by passing the hotel reader function to the readCSVFile function.
+// After reading the file, it will be closed.
 func ReadHotelsCSVFile(hotelFilePath string, hotelResultsChannel chan<- *Hotel) {
 
 	hotelFile, err := openFile(hotelFilePath)
@@ -19,6 +21,7 @@ func ReadHotelsCSVFile(hotelFilePath string, hotelResultsChannel chan<- *Hotel) 
 	closeFile(hotelFile)
 }
 
+// hotelBatchWorker iterates over the dataRecords and processes them in batches.
 func hotelBatchWorker(workerChan <-chan []dataRecord, hotelResultsChannel chan<- *Hotel, wg *sync.WaitGroup) {
 	defer wg.Done()
 	defer log.Info().Msg("Stopped Hotel Batch Worker goroutine")
@@ -29,6 +32,8 @@ func hotelBatchWorker(workerChan <-chan []dataRecord, hotelResultsChannel chan<-
 	}
 }
 
+// processHotelBatch processes a batch of Hotel dataRecords and sends the processed hotels to the hotelResultsChannel.
+// It creates a new Hotel instance for each dataRecord and sends it to the hotelResultsChannel.
 func processHotelBatch(records []dataRecord, hotelResultsChannel chan<- *Hotel) {
 	for _, record := range records {
 		func(record dataRecord) {
@@ -47,6 +52,8 @@ func processHotelBatch(records []dataRecord, hotelResultsChannel chan<- *Hotel) 
 	}
 }
 
+// PrintHotelsResults receives the channel of processed hotels and logs each hotel's ID.
+// This is mostly for debugging purposes to ensure that the data is being read correctly.
 func PrintHotelsResults(channel <-chan *Hotel) {
 	for hotel := range channel {
 		log.Debug().Msgf("%v", hotel.Hotelid)

@@ -122,3 +122,19 @@ func createEntOffer(client *ent.Client, offer *data.Offer, hotel *ent.Hotel) *en
 		SetDurationInDays(offer.DurationInDays)
 	return offerDb
 }
+
+// sendBulkOffersToDb sends a batch of offers to the database.
+func sendBulkOffersToDb(ctx context.Context, client *ent.Client, err error, offerBatch []*ent.OfferCreate) {
+	err = client.Offer.CreateBulk(offerBatch...).
+		OnConflict(
+			sql.ConflictColumns("id"),
+			sql.ResolveWithNewValues(),
+		).
+		UpdateNewValues().
+		Exec(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Could not send offers")
+	} else {
+		log.Debug().Msgf("Sent %v offers to the DB", len(offerBatch))
+	}
+}

@@ -19,7 +19,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// Start starts the API
+// Start launches the HTTP Server/REST API in Gin Release mode, sets up Recovery, CORS and Logging.
 // Swagger UI will be available at: http://localhost:8080/api/swagger/index.html
 //
 //	@title	Techup25
@@ -55,7 +55,9 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 	}
 }
 
-func checkIfParamsAreRight(ginc *gin.Context, request data.RequestQuerryParams) bool {
+// cancelIfParamsAreWrong validates incoming query parameters for a request. If any of the parameters are invalid,
+// it will cancel the request with an error response code 400 and returns true.
+func cancelIfParamsAreWrong(ginc *gin.Context, request data.RequestQuerryParams) bool {
 	if request.EarliestDepartureDate.After(request.LatestReturnDate) {
 		log.Error().Msg("Earliest departure date is after latest return date")
 		ginc.JSON(400, gin.H{"message": "Earliest departure date cannot be after latest return date"})
@@ -80,6 +82,8 @@ func checkIfParamsAreRight(ginc *gin.Context, request data.RequestQuerryParams) 
 	return false
 }
 
+// parseAirportsToArray converts a slice containing a comma‑separated string of
+// airport codes into a slice of individual, validated airport codes.
 func parseAirportsToArray(airports []string) ([]string, error) {
 	if len(airports) == 0 || airports[0] == "" {
 		log.Warn().Msg("No airports provided, returning empty array")
@@ -103,6 +107,8 @@ func parseAirportsToArray(airports []string) ([]string, error) {
 	return apList, nil
 }
 
+// fitsAirPortNamingCon checks if a given string is an airport code.
+// This is done by checking if the string matches the regex pattern [A-Z][A-Z][A-Z]
 func fitsAirPortNamingCon(s string) bool {
 	re := regexp.MustCompile("(?i)[A-Z][A-Z][A-Z]")
 	return re.MatchString(s)

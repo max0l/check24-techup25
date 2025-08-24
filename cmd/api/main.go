@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// main function initializes the API server and connects to the database and redis.
 func main() {
 	logging.SetLogger()
 	port := flag.Int("port", 8080, "Set the port of the API")

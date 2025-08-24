@@ -8,6 +8,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// ReadOffersCSVFile opens and then reads the CSV file by passing the offer reader function to the readCSVFile function.
+// After reading the file, it will be closed.
 func ReadOffersCSVFile(offersFilePath string, offerResultsChannel chan<- *Offer) {
 	offersFile, err := openFile(offersFilePath)
 	if err != nil {
@@ -20,6 +22,7 @@ func ReadOffersCSVFile(offersFilePath string, offerResultsChannel chan<- *Offer)
 	closeFile(offersFile)
 }
 
+// offerBatchWorker sends a batch of records to the offer processing function from the channel.
 func offerBatchWorker(workerChan <-chan []dataRecord, offerResultsChannel chan<- *Offer, wg *sync.WaitGroup) {
 	defer wg.Done()
 	defer log.Info().Msg("Stopped Offer Batch Worker goroutine")
@@ -30,6 +33,8 @@ func offerBatchWorker(workerChan <-chan []dataRecord, offerResultsChannel chan<-
 	}
 }
 
+// processOfferBatch processes a batch of records and sends them to the offer results channel.
+// It creates the offer data object and calculates the duration in days.
 func processOfferBatch(records []dataRecord, offerResultsChannel chan<- *Offer) {
 	for _, record := range records {
 		func(record dataRecord) {
@@ -46,6 +51,8 @@ func processOfferBatch(records []dataRecord, offerResultsChannel chan<- *Offer) 
 	}
 }
 
+// parseOffer parses a dataRecord and returns an Offer object.
+// The calculation of the duration in days is done in a separate function.
 func parseOffer(record dataRecord) Offer {
 	offer := Offer{
 		Offerid:                   record.id,
@@ -68,12 +75,16 @@ func parseOffer(record dataRecord) Offer {
 	return offer
 }
 
+// PrintOffersResults reads the channel and prints each offer.
+// This is mostly used for debugging purposes.
 func PrintOffersResults(channel <-chan *Offer) {
 	for offer := range channel {
 		log.Debug().Msgf("Offer: %v", offer.Hotelid)
 	}
 }
 
+// calculateDurationInDays calculates the number of days between two dates.
+// It rounds the result so it will always be at least one day.
 func calculateDurationInDays(start, end time.Time) int {
 	duration := end.Sub(start)
 	days := int(math.Ceil(duration.Hours() / 24))

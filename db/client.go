@@ -14,23 +14,27 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// QurryQueue is a simple queue implementation for tracking database queries.
 type QurryQueue struct {
 	sync.RWMutex
 	queue map[string]bool
 }
 
+// NewDbQueue creates a new QurryQueue instance.
 func NewDbQueue() *QurryQueue {
 	return &QurryQueue{
 		queue: make(map[string]bool),
 	}
 }
 
+// Enqueue adds a new query to the queue.
 func (qq *QurryQueue) Enqueue(key string) {
 	qq.Lock()
 	defer qq.Unlock()
 	qq.queue[key] = true
 }
 
+// Dequeue removes a query from the queue.
 func (qq *QurryQueue) Dequeue(key string) {
 	qq.Lock()
 	defer qq.Unlock()
@@ -39,15 +43,11 @@ func (qq *QurryQueue) Dequeue(key string) {
 	}
 }
 
+// Contains checks if a query is in the queue.
 func (qq *QurryQueue) Contains(key string) bool {
 	qq.RLock()
 	defer qq.RUnlock()
 	return qq.queue[key]
-}
-
-type OfferWithHotel struct {
-	Offer *ent.Offer
-	Hotel *ent.Hotel
 }
 
 const ResponseSize = 50
@@ -62,6 +62,7 @@ func NewClient(dsn string) (*ent.Client, error) {
 	return client, nil
 }
 
+// Migrate applies the schema migrations to the database.
 func Migrate(client ent.Client) error {
 	if err := client.Schema.Create(context.Background()); err != nil {
 		return err
@@ -69,6 +70,8 @@ func Migrate(client ent.Client) error {
 	return nil
 }
 
+// QueryOffers retrieves offers based on the provided request parameters and airports.
+// It filters out duplicates based on hotel ID, counts the duplicates and returns the unique offers.
 func QueryOffers(request data.RequestQuerryParams, airports []string, client *ent.Client,
 	ctx context.Context) ([]*ent.Offer, map[int]int, error) {
 	results, err := queryOffersFromDb(request, airports, client, ctx)
@@ -91,6 +94,7 @@ func QueryOffers(request data.RequestQuerryParams, airports []string, client *en
 
 	log.Debug().Msgf("Found %v unique offers", len(uniqueOffers))
 
+	// this checks if the requested site is even possible to display (if there enough unique offers)
 	if ResponseSize*(request.Site-1) >= len(uniqueOffers) {
 		log.Warn().Msg("Response size limit is larger than available offers")
 		return []*ent.Offer{}, nil, errors.New("response size limit is larger than available offers")
@@ -100,6 +104,8 @@ func QueryOffers(request data.RequestQuerryParams, airports []string, client *en
 	return uniqueOffers, seenHotels, nil
 }
 
+// queryOffersFromDb queries offers from the database based on the given request parameters.
+// It does that by getting all offers that match the request parameters and airports ordered by price.
 func queryOffersFromDb(request data.RequestQuerryParams, airports []string, client *ent.Client, ctx context.Context) ([]*ent.Offer, error) {
 	results, err := client.Offer.Query().
 		Where(offer.OutbounddepartureairportIn(airports...),
@@ -119,6 +125,7 @@ func queryOffersFromDb(request data.RequestQuerryParams, airports []string, clie
 	return results, nil
 }
 
+// QueryOffersOfAHotel queries offers for a specific hotel.
 func QueryOffersOfAHotel(h *ent.Hotel, request data.RequestQuerryParams,
 	site int, client *ent.Client, ctx context.Context) (data.HotelOffersResponse, error) {
 
@@ -152,6 +159,9 @@ func QueryOffersOfAHotel(h *ent.Hotel, request data.RequestQuerryParams,
 	return hotelResponse, nil
 }
 
+// makeHotelOfferPredicates creates a slice of predicates based on the request parameters.
+// These predicates are used to filter the hotel offers in the database.
+// Most of them are optional and only added if the corresponding request parameter is not empty or zero.
 func makeHotelOfferPredicates(request data.RequestQuerryParams) ([]predicate.Offer, error) {
 	var predicates []predicate.Offer
 
@@ -181,6 +191,8 @@ func makeHotelOfferPredicates(request data.RequestQuerryParams) ([]predicate.Off
 	return predicates, nil
 }
 
+// querryAllHotelOffersFromDb queries all hotel offers from the database based on the provided predicates and site.
+// Other then QueryOffers, not all offers of a hotel are returned. Here the Limit and Site is used in the DB query right away.
 func querryAllHotelOffersFromDb(h *ent.Hotel, site int, hotelsOfferQuerry *ent.OfferQuery, ctx context.Context,
 	hotelResponse *data.HotelOffersResponse) (data.HotelOffersResponse, error) {
 	hotelOffers, err := hotelsOfferQuerry.Order(offer.ByPrice()).Offset((site - 1) * ResponseSize).Limit(ResponseSize).All(ctx)
@@ -200,6 +212,7 @@ func querryAllHotelOffersFromDb(h *ent.Hotel, site int, hotelsOfferQuerry *ent.O
 	return *hotelResponse, nil
 }
 
+// createOfferFromDb creates a data.Offer object from an ent.Offer.
 func createOfferFromDb(h *ent.Hotel, singleOffer *ent.Offer) data.Offer {
 	o := data.Offer{
 		Offerid:                   singleOffer.ID,
@@ -223,6 +236,7 @@ func createOfferFromDb(h *ent.Hotel, singleOffer *ent.Offer) data.Offer {
 	return o
 }
 
+// getOfferAmountOfOneHotel returns the number of offers for a given hotel.
 func getOfferAmountOfOneHotel(h *ent.Hotel, hotelsOfferQuerry *ent.OfferQuery, ctx context.Context) (int, error) {
 	amount, err := hotelsOfferQuerry.Count(ctx)
 	if err != nil {
@@ -237,6 +251,7 @@ func getOfferAmountOfOneHotel(h *ent.Hotel, hotelsOfferQuerry *ent.OfferQuery, c
 	return amount, nil
 }
 
+// QueryHotel queries the database for a hotel with a given ID.
 func QueryHotel(hotelID int, client *ent.Client, ctx context.Context) (*ent.Hotel, error) {
 	log.Debug().Msgf("Querying DB for hotel with ID: %d", hotelID)
 	h, err := client.Hotel.Query().

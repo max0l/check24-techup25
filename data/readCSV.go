@@ -11,6 +11,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// dataRecord represents a record in the CSV file.
+// The line number is used as the id.
 type dataRecord struct {
 	id   int
 	data []string
@@ -21,6 +23,7 @@ const (
 	BatchSize      = 1000000
 )
 
+// openFile opens the CSV file and returns a pointer to it. If there is an error, it logs the error and exits the program.
 func openFile(filePath string) (*os.File, error) {
 	csvFile, err := os.Open(filePath)
 	if err != nil {
@@ -31,6 +34,7 @@ func openFile(filePath string) (*os.File, error) {
 	return csvFile, nil
 }
 
+// closeFile closes the CSV file.
 func closeFile(csvFile *os.File) {
 	defer func(csvFile *os.File) {
 		err := csvFile.Close()
@@ -42,6 +46,12 @@ func closeFile(csvFile *os.File) {
 	}(csvFile)
 }
 
+// readCSVFile reads the CSV file and processes it in batches.
+// This is utilising the worker pattern to read the CSV file in batches, and processes each batch of records concurrently.
+// It takes a batch function, which is passed by other functions whether they want to read the offers or hotels.
+// It also passed a csvComma rune which is the delimiter of the csv file.
+// It then reads the file line by line and processes it.
+// This is done because the offer csv file is to large to fit into memory.
 func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan []dataRecord, chan<- *T, *sync.WaitGroup), csvComma rune, resultsChannel chan<- *T) {
 	defer close(resultsChannel)
 	defer log.Info().Msg("CSV file reading completed.")
@@ -99,6 +109,7 @@ func readCSVFile[T any](csvFile *os.File, batchFunc func(<-chan []dataRecord, ch
 	wg.Wait()
 }
 
+// readHeaders reads the headers from the CSV file and logs them.
 func readHeaders(csvReader *csv.Reader) {
 	headers, err := csvReader.Read()
 	if err != nil {
@@ -108,6 +119,7 @@ func readHeaders(csvReader *csv.Reader) {
 	log.Debug().Msgf("CSV Headers: %v", headers)
 }
 
+// parseInt converts a string to an integer.
 func parseInt(str string) int {
 	value, err := strconv.Atoi(str)
 	if err != nil {
@@ -117,6 +129,7 @@ func parseInt(str string) int {
 	return value
 }
 
+// parseFloat converts a string to a float32.
 func parseFloat(str string) float32 {
 	value, err := strconv.ParseFloat(str, 32)
 	if err != nil {
@@ -126,6 +139,7 @@ func parseFloat(str string) float32 {
 	return float32(value)
 }
 
+// parseTime parses a date string into a time.Time object after format RFC3339.
 func parseTime(dateStr string) time.Time {
 	parsedTime, err := time.Parse(time.RFC3339, dateStr)
 	if err != nil {

@@ -7,6 +7,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// SetLogger configures the logger to output to the console and sets the log level based on the environment variable LOG_LEVEL.
+// If the environment variable is not set, it defaults to "error".
+// Possible log levels are: trace, debug, info, warn, error, fatal, panic.
 func SetLogger() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
