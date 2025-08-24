@@ -25,10 +25,13 @@ import (
 //	@title	Techup25
 //	@host	localhost:8080
 func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.Context, queryQueue *db.QurryQueue) {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	api := router.Group("/api")
 	api.Use(cors.Default())
+	api.Use(gin.Recovery())
+	api.Use(gin.Logger())
 	//I know setting the cors to default is not the best idea, but for this project it is sufficient
 	api.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
