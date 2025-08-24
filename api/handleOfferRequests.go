@@ -17,7 +17,7 @@ import (
 //
 //	@Summary		handles offer requests
 //	@Description	handles offer requests and returns a list of offers.
-//	@Router			/offers [get]
+//	@Router			/api/offers [get]
 //	@Param			departureAirports		query		[]string						true	"List of departure airports, e.g. FRA, MUC"
 //	@Param			earliestDepartureDate	query		string							true	"Earliest departure date in format RFC3339"
 //	@Param			latestReturnDate		query		string							true	"Latest return date in format RFC3339"

@@ -20,25 +20,29 @@ import (
 )
 
 // Start starts the API
-// Swagger UI will be available at: http://localhost:8080/swagger/index.html
+// Swagger UI will be available at: http://localhost:8080/api/swagger/index.html
 //
 //	@title	Techup25
 //	@host	localhost:8080
 func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.Context, queryQueue *db.QurryQueue) {
 	router := gin.Default()
-	//I know setting the cors to default is not the best idea, but for this project it is sufficient
+
 	router.Use(cors.Default())
-	router.GET("/ping", func(c *gin.Context) {
+
+	api := router.Group("/api")
+
+	//I know setting the cors to default is not the best idea, but for this project it is sufficient
+	api.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})
 	})
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	router.GET("/offers", func(c *gin.Context) {
+	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	api.GET("/offers", func(c *gin.Context) {
 		handleOfferRequest(c, client, redisClient, ctx, queryQueue)
 	})
 
-	router.GET("/hotel/:hotelid", func(c *gin.Context) {
+	api.GET("/hotel/:hotelid", func(c *gin.Context) {
 		handleHotelRequest(c, client, redisClient, ctx, queryQueue)
 	})
 

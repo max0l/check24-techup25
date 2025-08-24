@@ -19,7 +19,7 @@ import (
 //
 //	@Summary		handles hotel requests
 //	@Description	handles hotel requests and returns the hotel information.
-//	@Router			/hotel/{hotelid} [get]
+//	@Router			/api/hotel/{hotelid} [get]
 //	@Param			hotelid					path		int							true	"ID of the hotel"
 //	@Param			site					query		int							true	"Site, e.g. 1 or 2"
 //	@Param			departureAirports		query		[]string					false	"List of departure airports, e.g. FRA, MUC"
