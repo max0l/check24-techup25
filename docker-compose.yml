@@ -50,6 +50,12 @@ services:
     ports:
       - "8080:8080"
     restart: always
+    healthcheck:
+      test: curl -f http://localhost:8080/api/ping
+      interval: 60s
+      timeout: 5s
+      retries: 5
+      start_period: 3s
 
   redis:
     image: redis:8-alpine

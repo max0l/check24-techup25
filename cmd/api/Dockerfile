@@ -16,7 +16,10 @@ RUN go run -mod=mod entgo.io/ent/cmd/ent --target=./db/ent --feature sql/upsert 
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /api ./cmd/api
 
-FROM scratch
+FROM alpine
+
+RUN apk add --no-cache curl
+
 COPY --from=BUILDER /api /api
 
 EXPOSE 8080
