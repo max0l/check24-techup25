@@ -1,7 +1,7 @@
 // validators.ts
 import {Paths} from "@/app/types/openapi";
 
-export function coerceAndValidate(q: Partial<Paths.Offers.Get.QueryParameters>) {
+export function coerceAndValidate(q: Partial<Paths.ApiOffers.Get.QueryParameters>) {
   const earliestDepartureDate = q.earliestDepartureDate ?? "";
   const latestReturnDate = q.latestReturnDate ?? "";
   const countAdults = Number(q.countAdults ?? 0);

@@ -140,7 +140,7 @@ declare namespace Definitions {
     }
 }
 declare namespace Paths {
-    namespace Hotel$Hotelid {
+    namespace ApiHotel$Hotelid {
         namespace Get {
             namespace Parameters {
                 /**
@@ -193,7 +193,7 @@ declare namespace Paths {
             }
         }
     }
-    namespace Offers {
+    namespace ApiOffers {
         namespace Get {
             namespace Parameters {
                 /**
@@ -245,9 +245,9 @@ export interface OperationMethods {
 }
 
 export interface PathsDictionary {
-  ['/hotel/{hotelid}']: {
+  ['/api/hotel/{hotelid}']: {
   }
-  ['/offers']: {
+  ['/api/offers']: {
   }
 }
 

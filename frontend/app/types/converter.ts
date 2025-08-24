@@ -1,7 +1,7 @@
 import { Paths } from "@/app/types/openapi";
 import { ReadonlyURLSearchParams } from "next/navigation";
 
-export function GetBestOffersByHotelToQuery(input: Paths.Offers.Get.QueryParameters): string {
+export function GetBestOffersByHotelToQuery(input: Paths.ApiOffers.Get.QueryParameters): string {
     const params = {
         earliestDepartureDate: input.earliestDepartureDate,
         latestReturnDate: input.latestReturnDate,
@@ -16,7 +16,7 @@ export function GetBestOffersByHotelToQuery(input: Paths.Offers.Get.QueryParamet
     return searchParams.toString();
 }
 
-export function GetBestOffersByHotelFromQuery(query: ReadonlyURLSearchParams): Paths.Offers.Get.QueryParameters {
+export function GetBestOffersByHotelFromQuery(query: ReadonlyURLSearchParams): Paths.ApiOffers.Get.QueryParameters {
     return {
         earliestDepartureDate: query.get("earliestDepartureDate") as string,
         latestReturnDate: query.get("latestReturnDate") as string,
@@ -28,7 +28,7 @@ export function GetBestOffersByHotelFromQuery(query: ReadonlyURLSearchParams): P
     };
 }
 
-export function GetHotelOffersFromQuery(query: ReadonlyURLSearchParams): Paths.Hotel$Hotelid.Get.QueryParameters {
+export function GetHotelOffersFromQuery(query: ReadonlyURLSearchParams): Paths.ApiHotel$Hotelid.Get.QueryParameters {
     return {
         earliestDepartureDate: query.get("earliestDepartureDate") as string ?? "",
         latestReturnDate: query.get("latestReturnDate") as string ?? "",
@@ -39,14 +39,14 @@ export function GetHotelOffersFromQuery(query: ReadonlyURLSearchParams): Paths.H
         site: parseInt(query.get("site") as string) || 1,
     }
 }
-export function GetHotelIdFromQuery(query: ReadonlyURLSearchParams): Paths.Hotel$Hotelid.Get.PathParameters {
+export function GetHotelIdFromQuery(query: ReadonlyURLSearchParams): Paths.ApiHotel$Hotelid.Get.PathParameters {
     return {
         hotelid: parseInt(query.get("hotelId") as string)
     }
 }
 
-export function GetHotelOffersToQuery(parameters: Paths.Hotel$Hotelid.Get.QueryParameters,
-    hotelid: Paths.Hotel$Hotelid.Get.PathParameters
+export function GetHotelOffersToQuery(parameters: Paths.ApiHotel$Hotelid.Get.QueryParameters,
+    hotelid: Paths.ApiHotel$Hotelid.Get.PathParameters
 ): string {
     const params = {
         earliestDepartureDate: parameters.earliestDepartureDate ?? "",

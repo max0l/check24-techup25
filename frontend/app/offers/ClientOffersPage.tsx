@@ -23,7 +23,7 @@ export default function Page() {
 
     const [hotelOffer, setHotelOffer] = useState<HotelOfferResp>();
     const [queryParameters, setQueryParameters] =
-        useState<Paths.Hotel$Hotelid.Get.QueryParameters>();
+        useState<Paths.ApiHotel$Hotelid.Get.QueryParameters>();
     const [displayPage, setDisplayPage] = useState<number>(1);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -44,7 +44,7 @@ export default function Page() {
         return api;
     }, []);
 
-    async function fetchData(parameters: Paths.Hotel$Hotelid.Get.QueryParameters) {
+    async function fetchData(parameters: Paths.ApiHotel$Hotelid.Get.QueryParameters) {
         try {
             setIsLoading(true);
             const start = performance.now();

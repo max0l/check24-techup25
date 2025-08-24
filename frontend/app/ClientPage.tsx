@@ -25,7 +25,7 @@ const apiBase =
 export default function HomePage() {
     const [offers, setOffers] = useState<BestHotelOffer>();
     const [queryParameters, setQueryParameters] =
-        useState<Paths.Offers.Get.QueryParameters>();
+        useState<Paths.ApiOffers.Get.QueryParameters>();
     const router = useRouter();
     const query = useSearchParams();
 
@@ -88,7 +88,7 @@ export default function HomePage() {
         await load(params);
     }
 
-    async function load(parameters: Paths.Offers.Get.QueryParameters) {
+    async function load(parameters: Paths.ApiOffers.Get.QueryParameters) {
         try {
             const start = performance.now();
 
@@ -111,7 +111,7 @@ export default function HomePage() {
         }
     }
 
-    const href = (qp: Paths.Offers.Get.QueryParameters, hotelid?: number) =>
+    const href = (qp: Paths.ApiOffers.Get.QueryParameters, hotelid?: number) =>
         `/offers?${qs.stringify(
             { ...qp, site: 1, hotelId: hotelid },
             { arrayFormat: "comma" }
