@@ -57,7 +57,7 @@ go install entgo.io/ent/cmd/ent@v0.14.5
 ```
 
 ```bash
-go run -mod=mod entgo.io/ent/cmd/ent --target=./db/ent --feature sql/upsert generate ./db/schema
+go run -mod=mod entgo.io/ent/cmd/ent --target=./db/ent --feature sql/upsert,sql/modifier generate ./db/schema
 ```
 
 ### Frontend

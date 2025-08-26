@@ -7,6 +7,7 @@ import (
 	"check24-techup25/db/ent/offer"
 	"check24-techup25/db/ent/predicate"
 	"context"
+	"entgo.io/ent/dialect/sql"
 	"errors"
 	"sync"
 
@@ -107,14 +108,38 @@ func QueryOffers(request data.RequestQuerryParams, airports []string, client *en
 // queryOffersFromDb queries offers from the database based on the given request parameters.
 // It does that by getting all offers that match the request parameters and airports ordered by price.
 func queryOffersFromDb(request data.RequestQuerryParams, airports []string, client *ent.Client, ctx context.Context) ([]*ent.Offer, error) {
-	results, err := client.Offer.Query().
-		Where(offer.OutbounddepartureairportIn(airports...),
+	results, err := client.Debug().Offer.
+		Query().
+		Where(
+			offer.OutbounddepartureairportIn(airports...),
 			offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate),
 			offer.InboundarrivaldatetimeLTE(request.LatestReturnDate),
 			offer.CountadultsEQ(request.CountAdults),
 			offer.CountchildrenEQ(request.CountChildren),
-			offer.DurationInDaysEQ(request.Duration)).
-		Order(offer.ByPrice()).WithHotel().
+			offer.DurationInDaysEQ(request.Duration),
+		).
+		Modify(func(s *sql.Selector) {
+
+			t := offer.Table        // "offers"
+			hk := offer.HotelColumn // e.g. "hotelid" (inverse edge FK)
+			pk := offer.FieldPrice  // "price"
+
+			qTbl := `"` + t + `"`            // "offers"
+			qHotel := qTbl + `."` + hk + `"` // "offers"."hotelid"
+			qPrice := qTbl + `."` + pk + `"` // "offers"."price"
+
+			s.SelectExpr(sql.Expr(
+				`DISTINCT ON (` + qHotel + `) ` + qTbl + `.*`,
+			))
+
+			s.OrderBy(
+				qHotel,
+				qPrice+` ASC`,
+			)
+
+			s.Limit(100)
+		}).
+		WithHotel().
 		All(ctx)
 
 	log.Debug().Msgf("Querying DB for offers done, got %v results", len(results))

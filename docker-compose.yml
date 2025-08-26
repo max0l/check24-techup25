@@ -30,7 +30,7 @@ services:
     command: ["-hotel", "/hotels.csv", "-offer", "/offers.csv"]
     restart: "no"
     volumes:
-      - ../offers/offer.csv:/offers.csv
+      - ./testCSVs/medium/offer.csv:/offers.csv
       - ./data/hotels.csv:/hotels.csv
   api:
     build:

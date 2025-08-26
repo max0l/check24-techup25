@@ -12,7 +12,7 @@ RUN go install entgo.io/ent/cmd/ent@v0.14.5
 COPY . .
 
 RUN swag init -g api/api.go --parseInternal=true -o api/docs/
-RUN go run -mod=mod entgo.io/ent/cmd/ent --target=./db/ent --feature sql/upsert generate ./db/schema
+RUN go run -mod=mod entgo.io/ent/cmd/ent --target=./db/ent --feature sql/upsert,sql/modifier generate ./db/schema
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /api ./cmd/api
 
