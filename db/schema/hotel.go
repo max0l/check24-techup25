@@ -22,7 +22,7 @@ func (Hotel) Fields() []ent.Field {
 
 func (Hotel) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("offers", Offer.Type).StorageKey(edge.Column("hotelid")),
+		edge.To("offers", Offer.Type),
 	}
 }
 

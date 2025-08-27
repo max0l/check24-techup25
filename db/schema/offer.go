@@ -30,6 +30,7 @@ func (Offer) Fields() []ent.Field {
 		field.Bool("oceanview"),
 		field.String("roomtype"),
 		field.Int("durationInDays"),
+		field.Int("hotelid"),
 	}
 }
 
@@ -37,13 +38,22 @@ func (Offer) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("hotel", Hotel.Type).
 			Ref("offers").
-			Unique(),
+			Field("hotelid").
+			Unique().
+			Required(),
 	}
 }
 
 func (Offer) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("price", "outbounddepartureairport", "durationInDays", "countadults", "countchildren"),
-		index.Fields("id").Edges("hotel").Unique(),
+		index.Fields(
+			"outbounddepartureairport",
+			"durationInDays",
+			"countadults",
+			"countchildren",
+			"price",
+		),
+
+		index.Fields("outbounddeparturedatetime", "inboundarrivaldatetime"),
 	}
 }

@@ -21,6 +21,7 @@ Here is the list of all ENV (you can copy the `.env.sample` file to `.env`):
 - `REDIS_DB` sets the default redis DB (default is 0)
 - `SEED_DATA` can be set to false (default is true), if you don't want to seed the CSV into the DB
 - `SKIP_INVALID_HOTELS` can be set to false (default is true), if you want to skip offers from the offers.csv during seeding if they reference a hotel that is **not** in the hotels.csv
+- `OFFERS_CSV_PATH` sets the path of the offers.csv file
 - `POSTGRES_HOST` sets the postgres host (the port is 5432)
 - `POSTGRES_USER` sets the postgres user
 - `POSTGRES_DB` sets the postgres DB
