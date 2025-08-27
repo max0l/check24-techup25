@@ -35,9 +35,7 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 	api.Use(gin.Logger())
 	//I know setting the cors to default is not the best idea, but for this project it is sufficient
 	api.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
+		c.String(200, "pong")
 	})
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	api.GET("/offers", func(c *gin.Context) {
