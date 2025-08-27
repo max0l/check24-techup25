@@ -39,10 +39,6 @@ func changeComposeFileForTesting(newComposePath string, projectRoot string) {
 
 	newComposeContext := fmt.Sprintf("context: %v", projectRoot)
 	hotelCSVPath := filepath.Join(projectRoot, "data/hotels.csv")
-	err = os.Setenv("OFFERS_CSV_PATH", filepath.Join(projectRoot, "testCSVs/small/offer.csv"))
-	if err != nil {
-		panic(err)
-	}
 
 	replacements := map[string]string{
 		"./data/hotels.csv":            hotelCSVPath,

@@ -56,7 +56,7 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 		t.Fatalf("failed to get mapped port: %v", err)
 	}
 
-	requestPramsStruct := data.RequestQuerryParams{
+	baseParams := data.RequestQuerryParams{
 		DepartureAirports:     []string{"BER", "FRA", "MUC", "DUS"},
 		EarliestDepartureDate: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 		LatestReturnDate:      time.Date(2025, 12, 31, 23, 59, 59, 0, time.UTC),
@@ -66,45 +66,173 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 		Site:                  1,
 	}
 
-	parameters, err := query.Values(requestPramsStruct)
-	if err != nil {
-		t.Fatalf("failed to build query parameters: %v", err)
+	type expectations struct {
+		status             int
+		countOverallOffers *int
+		countOffers        *int
+		expectSortedAsc    bool
+		expectCheapest     *float32
+		expectFirstHotel   *string
 	}
 
-	fmt.Printf("Parameters: %+v\n", parameters.Encode())
-
-	url := fmt.Sprintf("http://%s:%s/api/offers?%v", host, mapped.Port(), parameters.Encode())
-
-	fmt.Println(url)
-
-	resp, err := http.Get(url)
-	if err != nil {
-		t.Fatalf("http get failed: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("unexpected status: %d", resp.StatusCode)
+	type testCases struct {
+		name   string
+		tweak  func(p *data.RequestQuerryParams)
+		expect expectations
 	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("reading body failed: %v", err)
+	wantOverallOffers := 67
+	wantCountSite1 := 50
+	wantCountSite2 := 17
+	cheapestOnSite2 := float32(2292.0)
+
+	tests := []testCases{
+		{
+			name:  "site=1 baseline returns 67 and sorted by price asc",
+			tweak: func(p *data.RequestQuerryParams) {}, // use base
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: &wantOverallOffers,
+				countOffers:        &wantCountSite1,
+				expectSortedAsc:    true,
+			},
+		},
+		{
+			name: "site=2 returns 17, sorted asc, cheapest = 963",
+			tweak: func(p *data.RequestQuerryParams) {
+				p.Site = 2
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: &wantOverallOffers,
+				countOffers:        &wantCountSite2,
+				expectSortedAsc:    true,
+				expectCheapest:     &cheapestOnSite2,
+			},
+		},
+		{
+			name: "400 when a required param is zero (CountAdults=0)",
+			tweak: func(p *data.RequestQuerryParams) {
+				p.CountAdults = 0
+			},
+			expect: expectations{
+				status: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "400 when Duration=0",
+			tweak: func(p *data.RequestQuerryParams) {
+				p.Duration = 0
+			},
+			expect: expectations{
+				status: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "404 when no offer exists (unknown airport)",
+			tweak: func(p *data.RequestQuerryParams) {
+				p.DepartureAirports = []string{"XXX"}
+			},
+			expect: expectations{
+				status: http.StatusNotFound,
+			},
+		},
+		{
+			name: "404 when date window impossible (LatestReturnDate before EarliestDepartureDate)",
+			tweak: func(p *data.RequestQuerryParams) {
+				p.LatestReturnDate = time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+				p.EarliestDepartureDate = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+				p.Duration = 100
+				p.CountChildren = 100
+				p.CountAdults = 100
+			},
+			expect: expectations{
+				status: http.StatusNotFound,
+			},
+		},
 	}
 
-	var result data.BestOfferPerHotelResponse
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		t.Fatalf("failed to unmarshal response: %v", err)
+			params := baseParams
+			tt.tweak(&params)
+
+			values, err := query.Values(params)
+			if err != nil {
+				t.Fatalf("failed to build query parameters: %v", err)
+			}
+
+			url := fmt.Sprintf("http://%s:%s/api/offers?%s", host, mapped.Port(), values.Encode())
+
+			resp, err := http.Get(url)
+			if err != nil {
+				t.Fatalf("http get failed: %v", err)
+			}
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatalf("reading body failed: %v", err)
+			}
+
+			if resp.StatusCode != tt.expect.status {
+				t.Fatalf("unexpected status: got %d, want %d. "+
+					"Body: %s", resp.StatusCode, tt.expect.status, string(body))
+			}
+
+			// If not 200, nothing else to assert on this case.
+			if resp.StatusCode != http.StatusOK {
+				return
+			}
+
+			var result data.BestOfferPerHotelResponse
+			if err := json.Unmarshal(body, &result); err != nil {
+				t.Fatalf("failed to unmarshal response: %v\nBody: %s", err, string(body))
+			}
+
+			if tt.expect.countOverallOffers != nil {
+				if result.CountOffers != *tt.expect.countOverallOffers {
+					t.Fatalf("unexpected Overall CountOffers: got %d, "+
+						"want %d", result.CountOffers, *tt.expect.countOverallOffers)
+				}
+			}
+
+			if tt.expect.countOffers != nil {
+				if len(result.Offers) != *tt.expect.countOffers {
+					t.Fatalf("offers length mismatch: len=%d "+
+						"CountOffers=%d", len(result.Offers), result.CountOffers)
+				}
+			}
+
+			if tt.expect.expectSortedAsc {
+				if !isPriceSortedAsc(result.Offers) {
+					t.Fatalf("offers are not sorted ascending by price")
+				}
+			}
+
+			if tt.expect.expectCheapest != nil {
+				if len(result.Offers) == 0 {
+					t.Fatalf("expected offers but got none")
+				}
+				got := result.Offers[0].Price
+				if got != *tt.expect.expectCheapest {
+					t.Fatalf("unexpected cheapest price: got %.2f, want %.2f", got, *tt.expect.expectCheapest)
+				}
+			}
+		})
 	}
+}
 
-	got := result.CountOffers
-	want := 67
-	if got != want {
-		t.Fatalf("unexpected body: got %d, want %d", got, want)
+func isPriceSortedAsc(offers []data.BestOfferPerHotel) bool {
+	if len(offers) < 2 {
+		return true
 	}
-
-	//when requesting site 2, it should be 17 results
-	//cheapest should be 963
+	for i := 1; i < len(offers); i++ {
+		if offers[i-1].Price > offers[i].Price {
+			return false
+		}
+	}
+	return true
 }

@@ -74,6 +74,13 @@ func cancelIfParamsAreWrong(ginc *gin.Context, request data.RequestQuerryParams)
 		ginc.JSON(400, gin.H{"message": "Duration must be at least 1 day"})
 		return true
 	}
+
+	if request.LatestReturnDate.Sub(request.EarliestDepartureDate).Hours() < float64(24*request.Duration) {
+		log.Warn().Msgf("Selected dates are smaller than the duration")
+		ginc.JSON(400, gin.H{"message": "Selected dates are smaller than the duration"})
+		return true
+	}
+
 	if request.Site < 1 {
 		log.Warn().Msgf("Site cant be less than 1, but it was %v", request.Site)
 		ginc.JSON(400, gin.H{"message": "Site must be at least 1"})

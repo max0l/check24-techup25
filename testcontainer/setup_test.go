@@ -1,6 +1,7 @@
 package testcontainer
 
 import (
+	"check24-techup25/logging"
 	"context"
 	"os"
 	"path/filepath"
@@ -22,6 +23,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	logging.SetLogger()
 
 	tempComposeFileLocation := filepath.Join(os.TempDir(), "docker-compose-test.yml")
 
@@ -49,6 +51,9 @@ func TestMain(m *testing.M) {
 
 	if err := dc.WaitForService("api", wait.ForHealthCheck()).
 		WaitForService("seed_data", wait.ForExit().WithExitTimeout(10*time.Second)).
+		WithEnv(map[string]string{
+			"OFFERS_CSV_PATH": filepath.Join(projectRoot, "testCSVs/small/offer.csv"),
+		}).
 		Up(ctx, compose.Wait(true)); err != nil {
 		CleanUpCompose(dc, ctx, tempComposeFileLocation)
 		panic(err)
