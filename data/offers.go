@@ -23,13 +23,13 @@ type Offer struct {
 }
 
 type RequestQuerryParams struct {
-	DepartureAirports     []string  `form:"departureAirports"`
-	EarliestDepartureDate time.Time `form:"earliestDepartureDate"`
-	LatestReturnDate      time.Time `form:"latestReturnDate"`
-	CountAdults           int       `form:"countAdults"`
-	CountChildren         int       `form:"countChildren"`
-	Duration              int       `form:"duration"`
-	Site                  int       `form:"site"`
+	DepartureAirports     []string  `form:"departureAirports" url:"departureAirports,omitempty" del:","`
+	EarliestDepartureDate time.Time `form:"earliestDepartureDate" url:"earliestDepartureDate,omitempty"`
+	LatestReturnDate      time.Time `form:"latestReturnDate" url:"latestReturnDate,omitempty"`
+	CountAdults           int       `form:"countAdults" url:"countAdults,omitempty"`
+	CountChildren         int       `form:"countChildren" url:"countChildren,omitempty"`
+	Duration              int       `form:"duration" url:"duration,omitempty"`
+	Site                  int       `form:"site" url:"site,omitempty"`
 }
 
 type BestOfferPerHotel struct {

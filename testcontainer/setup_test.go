@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	"github.com/testcontainers/testcontainers-go"
@@ -46,7 +47,9 @@ func TestMain(m *testing.M) {
 
 	dc, err = compose.NewDockerCompose(newComposeFile)
 
-	if err := dc.WaitForService("api", wait.ForHealthCheck()).Up(ctx, compose.Wait(true)); err != nil {
+	if err := dc.WaitForService("api", wait.ForHealthCheck()).
+		WaitForService("seed_data", wait.ForExit().WithExitTimeout(10*time.Second)).
+		Up(ctx, compose.Wait(true)); err != nil {
 		CleanUpCompose(dc, ctx, tempComposeFileLocation)
 		panic(err)
 	}

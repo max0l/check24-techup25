@@ -7,12 +7,14 @@ require (
 	github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
+	github.com/google/go-querystring v1.1.0
 	github.com/lib/pq v1.10.9
 	github.com/redis/go-redis/v9 v9.12.0
 	github.com/rs/zerolog v1.34.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.6
+	github.com/testcontainers/testcontainers-go v0.38.0
 	github.com/testcontainers/testcontainers-go/modules/compose v0.38.0
 )
 
@@ -182,7 +184,6 @@ require (
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
-	github.com/testcontainers/testcontainers-go v0.38.0 // indirect
 	github.com/theupdateframework/notary v0.7.0 // indirect
 	github.com/tilt-dev/fsnotify v1.4.8-0.20220602155310-fff9c274a375 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect

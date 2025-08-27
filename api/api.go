@@ -57,6 +57,12 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 // cancelIfParamsAreWrong validates incoming query parameters for a request. If any of the parameters are invalid,
 // it will cancel the request with an error response code 400 and returns true.
 func cancelIfParamsAreWrong(ginc *gin.Context, request data.RequestQuerryParams) bool {
+	if request.EarliestDepartureDate.IsZero() || request.LatestReturnDate.IsZero() {
+		log.Error().Msg("Dates cannot be empty")
+		ginc.JSON(400, gin.H{"message": "Date(s) cannot be empty"})
+		return true
+	}
+
 	if request.EarliestDepartureDate.After(request.LatestReturnDate) {
 		log.Error().Msg("Earliest departure date is after latest return date")
 		ginc.JSON(400, gin.H{"message": "Earliest departure date cannot be after latest return date"})
