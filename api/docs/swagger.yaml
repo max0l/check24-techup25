@@ -126,7 +126,7 @@ info:
   contact: {}
   title: Techup25
 paths:
-  /api/hotel/{hotelid}:
+  /hotel/{hotelid}:
     get:
       description: handles hotel requests and returns the hotel information.
       parameters:
@@ -178,7 +178,7 @@ paths:
         "404":
           description: Hotel Not Found
       summary: handles hotel requests
-  /api/offers:
+  /offers:
     get:
       description: handles offer requests and returns a list of offers.
       parameters:

@@ -140,7 +140,7 @@ declare namespace Definitions {
     }
 }
 declare namespace Paths {
-    namespace ApiHotel$Hotelid {
+    namespace Hotel$Hotelid {
         namespace Get {
             namespace Parameters {
                 /**
@@ -156,7 +156,7 @@ declare namespace Paths {
                  */
                 export type DepartureAirports = string[];
                 /**
-                 * Duration of the trip in days
+                 * Duration of the trip in nights
                  */
                 export type Duration = number;
                 /**
@@ -184,16 +184,16 @@ declare namespace Paths {
                 departureAirports?: /* List of departure airports, e.g. FRA, MUC */ Parameters.DepartureAirports;
                 earliestDepartureDate?: /* Earliest departure date in format RFC3339 */ Parameters.EarliestDepartureDate;
                 latestReturnDate?: /* Latest return date in format RFC3339 */ Parameters.LatestReturnDate;
-                countAdults?: /* Number of adults */ Parameters.CountAdults;
+                countAdults: /* Number of adults */ Parameters.CountAdults;
                 countChildren?: /* Number of children */ Parameters.CountChildren;
-                duration?: /* Duration of the trip in days */ Parameters.Duration;
+                duration?: /* Duration of the trip in nights */ Parameters.Duration;
             }
             namespace Responses {
                 export type $200 = Definitions.DataHotelOffersResponse;
             }
         }
     }
-    namespace ApiOffers {
+    namespace Offers {
         namespace Get {
             namespace Parameters {
                 /**
@@ -209,7 +209,7 @@ declare namespace Paths {
                  */
                 export type DepartureAirports = string[];
                 /**
-                 * Duration of the trip in days
+                 * Duration of the trip in nights
                  */
                 export type Duration = number;
                 /**
@@ -231,7 +231,7 @@ declare namespace Paths {
                 latestReturnDate: /* Latest return date in format RFC3339 */ Parameters.LatestReturnDate;
                 countAdults: /* Number of adults */ Parameters.CountAdults;
                 countChildren?: /* Number of children */ Parameters.CountChildren;
-                duration: /* Duration of the trip in days */ Parameters.Duration;
+                duration: /* Duration of the trip in nights */ Parameters.Duration;
                 site?: /* Site, e.g. 1 or 2 */ Parameters.Site;
             }
             namespace Responses {
@@ -245,9 +245,9 @@ export interface OperationMethods {
 }
 
 export interface PathsDictionary {
-  ['/api/hotel/{hotelid}']: {
+  ['/hotel/{hotelid}']: {
   }
-  ['/api/offers']: {
+  ['/offers']: {
   }
 }
 

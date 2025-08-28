@@ -37,7 +37,7 @@ func TestBestOfferCacheRequest(t *testing.T) {
 		t.Fatalf("failed to build query parameters: %v", err)
 	}
 
-	url := fmt.Sprintf("http://%s:%s/api/offers?%s", apiHost, apiPortMapped.Port(), values.Encode())
+	url := fmt.Sprintf("http://%s:%s/offers?%s", apiHost, apiPortMapped.Port(), values.Encode())
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -91,7 +91,7 @@ func TestHotelCacheRequest(t *testing.T) {
 		t.Fatalf("failed to build query parameters: %v", err)
 	}
 
-	url := fmt.Sprintf("http://%s:%s/api/hotel/%d?%s", apiHost, apiPortMapped.Port(), hotelid, values.Encode())
+	url := fmt.Sprintf("http://%s:%s/hotel/%d?%s", apiHost, apiPortMapped.Port(), hotelid, values.Encode())
 
 	resp, err := http.Get(url)
 	if err != nil {

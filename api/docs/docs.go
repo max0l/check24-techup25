@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/hotel/{hotelid}": {
+        "/hotel/{hotelid}": {
             "get": {
                 "description": "handles hotel requests and returns the hotel information.",
                 "summary": "handles hotel requests",
@@ -92,7 +92,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/offers": {
+        "/offers": {
             "get": {
                 "description": "handles offer requests and returns a list of offers.",
                 "summary": "handles offer requests",

@@ -10,11 +10,12 @@ import { Stack } from "@mui/system";
 import { GetHotelOffersFromQuery, GetHotelIdFromQuery, GetHotelOffersToQuery } from "@/app/types/converter";
 import qs from "qs";
 import PaginationBar from "@/app/components/Pagination/PaginationBar";
+import {extractAxiosErrorMessage} from "@/app/utils/axiosExtractor"
 
 const apiBase =
-  typeof window === "undefined"
-    ? process.env.INTERNAL_API_BASE_URL ?? "http://api:8080/api"
-    : process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
+    typeof window === "undefined"
+        ? process.env.INTERNAL_API_BASE_URL ?? "http://api:8080"
+        : process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
 
 type HotelOfferResp = Definitions.DataHotelOffersResponse;
 export default function Page() {
@@ -23,9 +24,10 @@ export default function Page() {
 
     const [hotelOffer, setHotelOffer] = useState<HotelOfferResp>();
     const [queryParameters, setQueryParameters] =
-        useState<Paths.ApiHotel$Hotelid.Get.QueryParameters>();
+        useState<Paths.Hotel$Hotelid.Get.QueryParameters>();
     const [displayPage, setDisplayPage] = useState<number>(1);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [requestError, setRequestError] = useState<string>();
 
     const PAGE_SIZE = 50;
     const totalOfferAmount = hotelOffer?.count_available_offers ?? 0;
@@ -34,7 +36,7 @@ export default function Page() {
 
     const apiClient = useMemo(() => {
         const api = new OpenAPIClientAxios({
-            definition: `${apiBase}/swagger/doc.json`,
+            definition: `/swagger/doc.json`,
             withServer: 0,
             axiosConfigDefaults: {
                 baseURL: apiBase,
@@ -44,14 +46,15 @@ export default function Page() {
         return api;
     }, []);
 
-    async function fetchData(parameters: Paths.ApiHotel$Hotelid.Get.QueryParameters) {
+    async function fetchData(parameters: Paths.Hotel$Hotelid.Get.QueryParameters) {
+        setRequestError(undefined)
         try {
             setIsLoading(true);
             const start = performance.now();
 
             const hotelid = GetHotelIdFromQuery(query);
             const client = await apiClient.init<Client>();
-            const response = await client.get<HotelOfferResp>(`/api/hotel/${hotelid.hotelid}`, {
+            const response = await client.get<HotelOfferResp>(`/hotel/${hotelid.hotelid}`, {
                 params: parameters,
             });
 
@@ -64,6 +67,10 @@ export default function Page() {
             setDisplayPage(parameters.site ?? 1);
 
             router.push("/offers?" + GetHotelOffersToQuery(parameters, hotelid));
+        } catch (err) {
+            setHotelOffer(undefined)
+            setLastRequestTime(undefined);
+            setRequestError(extractAxiosErrorMessage(err));
         } finally {
             setIsLoading(false);
         }
@@ -95,6 +102,13 @@ export default function Page() {
     return (
         <>
             {isLoading && <LinearProgress />}
+
+            {!isLoading && requestError && (
+                <Typography color="error" sx={{ mt: 2 }}>
+                    Something went wrong: {requestError}
+                </Typography>
+            )}
+
             <Stack direction="row" pt={5} alignItems="center">
                 <Typography variant="h4" mr={2}>
                     {hotelOffer.hotelname ?? "NaN"}: {hotelOffer.hotelid}

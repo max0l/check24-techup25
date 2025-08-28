@@ -15,22 +15,24 @@ import {
 } from "@/app/types/converter";
 import qs from "qs";
 import { coerceAndValidate } from "@/app/utils/validators";
+import {extractAxiosErrorMessage} from "@/app/utils/axiosExtractor"
 import PaginationBar from "@/app/components/Pagination/PaginationBar";
 
 const apiBase =
-  typeof window === "undefined"
-    ? process.env.INTERNAL_API_BASE_URL ?? "http://api:8080/api"
-    : process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
+    typeof window === "undefined"
+        ? process.env.INTERNAL_API_BASE_URL ?? "http://api:8080"
+        : process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
 
 export default function HomePage() {
     const [offers, setOffers] = useState<BestHotelOffer>();
     const [queryParameters, setQueryParameters] =
-        useState<Paths.ApiOffers.Get.QueryParameters>();
+        useState<Paths.Offers.Get.QueryParameters>();
     const router = useRouter();
     const query = useSearchParams();
 
     const [displayPage, setDisplayPage] = useState<number>(1);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [requestError, setRequestError] = useState<string>();
     const PAGE_SIZE = 50;
     const totalOfferAmount = offers?.countOffers ?? 0;
 
@@ -38,8 +40,8 @@ export default function HomePage() {
 
     const apiClient = useMemo(() => {
         const api = new OpenAPIClientAxios({
-            definition: `${apiBase}/swagger/doc.json`,
-            withServer: {url: apiBase},
+            definition: `/swagger/doc.json`,
+            withServer: { url: apiBase },
             axiosConfigDefaults: {
                 baseURL: apiBase,
                 paramsSerializer: {
@@ -70,7 +72,9 @@ export default function HomePage() {
         latestReturn: string,
         site: number
     ) {
+        if (isLoading) return;
         setIsLoading(true);
+        setRequestError(undefined)
         const { valid, params } = coerceAndValidate({
             earliestDepartureDate: earliestDeparture,
             latestReturnDate: latestReturn,
@@ -88,12 +92,13 @@ export default function HomePage() {
         await load(params);
     }
 
-    async function load(parameters: Paths.ApiOffers.Get.QueryParameters) {
+    async function load(parameters: Paths.Offers.Get.QueryParameters) {
+        setRequestError(undefined)
         try {
             const start = performance.now();
 
             const client = await apiClient.init<Client>();
-            const response = await client.get<BestHotelOffer>(`/api/offers`, {
+            const response = await client.get<BestHotelOffer>(`/offers`, {
                 params: parameters,
             });
 
@@ -106,12 +111,16 @@ export default function HomePage() {
             setDisplayPage(parameters.site ?? 1);
 
             router.push("/?" + GetBestOffersByHotelToQuery(parameters));
+        } catch (err) {
+            setOffers(undefined);
+            setLastRequestTime(undefined);
+            setRequestError(extractAxiosErrorMessage(err));
         } finally {
             setIsLoading(false);
         }
     }
 
-    const href = (qp: Paths.ApiOffers.Get.QueryParameters, hotelid?: number) =>
+    const href = (qp: Paths.Offers.Get.QueryParameters, hotelid?: number) =>
         `/offers?${qs.stringify(
             { ...qp, site: 1, hotelId: hotelid },
             { arrayFormat: "comma" }
@@ -135,6 +144,12 @@ export default function HomePage() {
             <Typography variant="h4" sx={{ mt: "40px", mb: "10px" }}>
                 Hotels for your Mallorca-Trip:
             </Typography>
+
+            {!isLoading && requestError && (
+                <Typography color="error" sx={{ mt: 2 }}>
+                    Something went wrong: {requestError}
+                </Typography>
+            )}
 
             {isLoading ? (
                 <>

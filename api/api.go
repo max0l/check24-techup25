@@ -20,7 +20,7 @@ import (
 )
 
 // Start launches the HTTP Server/REST API in Gin Release mode, sets up Recovery, CORS and Logging.
-// Swagger UI will be available at: http://localhost:8080/api/swagger/index.html
+// Swagger UI will be available at: http://localhost:8080/swagger/index.html
 //
 //	@title	Techup25
 //	@host	localhost:8080
@@ -28,20 +28,17 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
-	api := router.Group("/api")
-	api.Use(cors.Default())
-	api.Use(gin.Recovery())
-	api.Use(gin.Logger())
+	router.Use(cors.Default())
 	//I know setting the cors to default is not the best idea, but for this project it is sufficient
-	api.GET("/ping", func(c *gin.Context) {
+	router.GET("/ping", func(c *gin.Context) {
 		c.String(200, "pong")
 	})
-	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	api.GET("/offers", func(c *gin.Context) {
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	router.GET("/offers", func(c *gin.Context) {
 		handleOfferRequest(c, client, redisClient, ctx, queryQueue)
 	})
 
-	api.GET("/hotel/:hotelid", func(c *gin.Context) {
+	router.GET("/hotel/:hotelid", func(c *gin.Context) {
 		handleHotelRequest(c, client, redisClient, ctx, queryQueue)
 	})
 

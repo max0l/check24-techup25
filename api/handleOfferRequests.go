@@ -18,7 +18,7 @@ import (
 //
 //	@Summary		handles offer requests
 //	@Description	handles offer requests and returns a list of offers.
-//	@Router			/api/offers [get]
+//	@Router			/offers [get]
 //	@Param			departureAirports		query		[]string						true	"List of departure airports, e.g. FRA, MUC"
 //	@Param			earliestDepartureDate	query		string							true	"Earliest departure date in format RFC3339"
 //	@Param			latestReturnDate		query		string							true	"Latest return date in format RFC3339"
@@ -52,7 +52,8 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 	cacheKey := CreateRedisCacheKeyOffers(request, request.Site)
 
 	for queryQueue.Contains(cacheKey) {
-		time.Sleep(1 * time.Second)
+		time.Sleep(100 * time.Millisecond)
+		log.Debug().Msg("Waiting for queue to clear")
 	}
 
 	if cacheHitCheckOffer(ginc, cacheKey, err, redisClient, ctx) {
@@ -63,6 +64,7 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 
 	dbResponse, amountMap, isFaulty := handleDbResponseIsFaulty(ginc, client, request, airports, ctx)
 	if isFaulty {
+		queryQueue.Dequeue(cacheKey)
 		return
 	}
 

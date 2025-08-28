@@ -22,7 +22,7 @@ func TestApiPing(t *testing.T) {
 		t.Fatalf("failed to get mapped port: %v", err)
 	}
 
-	url := fmt.Sprintf("http://%s:%s/api/ping", host, mapped.Port())
+	url := fmt.Sprintf("http://%s:%s/ping", host, mapped.Port())
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -218,7 +218,7 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 				t.Fatalf("failed to build query parameters: %v", err)
 			}
 
-			url := fmt.Sprintf("http://%s:%s/api/offers?%s", host, mapped.Port(), values.Encode())
+			url := fmt.Sprintf("http://%s:%s/offers?%s", host, mapped.Port(), values.Encode())
 
 			resp, err := http.Get(url)
 			if err != nil {
@@ -589,7 +589,7 @@ func TestApiHotelOffers(t *testing.T) {
 				t.Fatalf("failed to build query parameters: %v", err)
 			}
 
-			url := fmt.Sprintf("http://%s:%s/api/hotel/%d?%v", host, mapped.Port(), params.hotelid, values.Encode())
+			url := fmt.Sprintf("http://%s:%s/hotel/%d?%v", host, mapped.Port(), params.hotelid, values.Encode())
 			t.Logf("Request url for test %v is: %v", tt.name, url)
 
 			resp, err := http.Get(url)
