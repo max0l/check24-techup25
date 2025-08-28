@@ -164,7 +164,11 @@ func getOffersOfHotel(c *gin.Context, client *ent.Client, err error, hotelDb *en
 	hotelResponse, err := db.QueryOffersOfAHotel(hotelDb, request, site, client, ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Error querying hotel offers from DB")
-		c.JSON(500, gin.H{"message": "Internal server error"})
+		if errors.Is(err, data.ErrNoOffersFound) {
+			c.JSON(400, gin.H{"message": "no offers found"})
+		} else {
+			c.JSON(500, gin.H{"message": "Internal server error"})
+		}
 		return data.HotelOffersResponse{}, err
 	}
 	return hotelResponse, nil

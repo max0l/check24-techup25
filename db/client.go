@@ -139,6 +139,10 @@ func QueryOffersOfAHotel(h *ent.Hotel, request data.RequestQuerryParams,
 	hotelResponse.Hotelstars = h.Hotelstars
 
 	predicates, err := makeHotelOfferPredicates(request)
+	if err != nil {
+		log.Error().Err(err).Msg("There was an error generating the predicates")
+		return hotelResponse, err
+	}
 
 	hotelsOfferQuerry := client.Hotel.QueryOffers(h).Where(predicates...)
 
@@ -169,19 +173,20 @@ func makeHotelOfferPredicates(request data.RequestQuerryParams) ([]predicate.Off
 		predicates = append(predicates, offer.OutbounddepartureairportIn(request.DepartureAirports...))
 	}
 
-	if !request.EarliestDepartureDate.IsZero() {
+	if &request.EarliestDepartureDate != nil && !request.EarliestDepartureDate.IsZero() {
 		predicates = append(predicates, offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate))
 	}
-	if !request.LatestReturnDate.IsZero() {
+	if &request.LatestReturnDate != nil && !request.LatestReturnDate.IsZero() {
 		predicates = append(predicates, offer.InboundarrivaldatetimeLTE(request.LatestReturnDate))
 	}
-	if request.CountAdults > 0 {
+	if &request.CountAdults != nil && request.CountAdults > 0 {
 		predicates = append(predicates, offer.CountadultsEQ(request.CountAdults))
+
+		if request.CountChildren >= 0 {
+			predicates = append(predicates, offer.CountchildrenEQ(request.CountChildren))
+		}
 	}
-	if request.CountChildren >= 0 {
-		predicates = append(predicates, offer.CountchildrenEQ(request.CountChildren))
-	}
-	if request.Duration > 0 {
+	if &request.Duration != nil && request.Duration > 0 {
 		predicates = append(predicates, offer.DurationInNightsEQ(request.Duration))
 	}
 	if len(predicates) == 0 {
@@ -246,7 +251,7 @@ func getOfferAmountOfOneHotel(h *ent.Hotel, hotelsOfferQuerry *ent.OfferQuery, c
 	log.Debug().Msgf("Found %d offers for hotel with ID: %d", amount, h.ID)
 	if amount == 0 {
 		log.Warn().Msgf("No offers found for hotel with ID: %d", h.ID)
-		return 0, errors.New("no offers found for hotel")
+		return 0, data.ErrNoOffersFound
 	}
 	return amount, nil
 }
