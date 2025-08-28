@@ -24,7 +24,7 @@ import (
 //	@Param			latestReturnDate		query		string							true	"Latest return date in format RFC3339"
 //	@Param			countAdults				query		int								true	"Number of adults"
 //	@Param			countChildren			query		int								false	"Number of children"
-//	@Param			duration				query		int								true	"Duration of the trip in days"
+//	@Param			duration				query		int								true	"Duration of the trip in nights"
 //	@Param			site					query		int								false	"Site, e.g. 1 or 2"
 //	@Success		200						{object}	data.BestOfferPerHotelResponse	"List of offers matching the request"
 //	@Failure		400						"Bad Request"
@@ -185,7 +185,7 @@ func parseOfferResult(hotelResult *ent.Hotel, offerResult *ent.Offer, amountMap 
 		Outbounddepartureairport:  offerResult.Outbounddepartureairport,
 		Outboundarrivalairport:    offerResult.Outboundarrivalairport,
 		Outboundarrivaldatetime:   offerResult.Outboundarrivaldatetime,
-		Mealtye:                   offerResult.Mealtype,
+		Mealtype:                  offerResult.Mealtype,
 		Ocenview:                  offerResult.Oceanview,
 		Rommtype:                  offerResult.Roomtype,
 		OfferAmount:               amountMap[hotelResult.ID],

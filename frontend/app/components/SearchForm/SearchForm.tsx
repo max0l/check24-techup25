@@ -157,7 +157,7 @@ export default function SearchForm({ submitCallback }: Properties) {
                     <Counter label="Adults" value={countAdults} setValue={setCountAdults} />
                 </Stack>
                 <Stack direction="row" gap={2} sx={{ alignItems: "center" }}>
-                    <TextField sx={{ width: "100%" }} label="Duration (days)" value={durationInput} onChange={handleDurationChange}
+                    <TextField sx={{ width: "100%" }} label="Duration (nights)" value={durationInput} onChange={handleDurationChange}
                         type="number" variant="outlined" />
                     <Typography>between</Typography>
                     <DatePicker sx={{ width: "100%" }} value={earliestDepartureDate} onChange={(value) => setEarliestDepartureDate(value)} label="Earliest departure" />

@@ -208,7 +208,7 @@ paths:
         in: query
         name: countChildren
         type: integer
-      - description: Duration of the trip in days
+      - description: Duration of the trip in nights
         in: query
         name: duration
         required: true

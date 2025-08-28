@@ -57,7 +57,7 @@ export default function HotelOffer({offer}: {offer: Offer}) {
                     </Stack>
                     <Stack justifyContent="end" gap={2}>
                         <Stack m={0} direction="row" divider={<Divider orientation="vertical" flexItem/>} spacing={1}>
-                            <Typography variant="body1">{offer.durationindays} Days</Typography>
+                            <Typography variant="body1">{offer.durationindays} Nights</Typography>
                             <Typography variant="body1">{offer.countadults} Adults</Typography>
                             <Typography variant="body1">{offer.countchildren} Children</Typography>
                         </Stack>

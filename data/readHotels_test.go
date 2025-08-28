@@ -37,7 +37,7 @@ func TestProcessHotelBatch_EmitsHotels_AndRecoversOnPanic(t *testing.T) {
 		},
 	}
 	// Bad record: too short -> index out of range inside goroutine -> recovered
-	recBad := dataRecord{id: 1111, data: []string{"oops"}}
+	recBad := dataRecord{id: 1112, data: []string{"BAD"}}
 
 	ch := make(chan *Hotel, 2)
 

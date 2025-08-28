@@ -48,7 +48,7 @@ type BestOfferPerHotel struct {
 	Outbounddepartureairport  string    `json:"outbounddepartureairport" example:"PMI"`
 	Outboundarrivalairport    string    `json:"outboundarrivalairport" example:"BER"`
 	Outboundarrivaldatetime   time.Time `json:"outboundarrivaldatetime" example:"2025-01-01T00:00:00+02:00"`
-	Mealtye                   string    `json:"mealtye" example:"allinclusive"`
+	Mealtype                  string    `json:"mealtye" example:"allinclusive"`
 	Ocenview                  bool      `json:"ocenview" example:"true"`
 	Rommtype                  string    `json:"rommtype" example:"double"`
 	OfferAmount               int       `json:"offeramount" example:"1"`
