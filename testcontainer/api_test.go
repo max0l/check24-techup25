@@ -189,6 +189,26 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 				status: http.StatusNotFound,
 			},
 		},
+		{
+			name: "multiple but same airports",
+			tweak: func(p *data.RequestQuerryParams) {
+				{
+					p.DepartureAirports = []string{"HAJ", "HAJ", "HAJ"}
+					p.EarliestDepartureDate = time.Date(2025, 9, 17, 22, 0, 0, 0, time.UTC)
+					p.LatestReturnDate = time.Date(2025, 9, 24, 21, 55, 0, 0, time.UTC)
+					p.CountAdults = 2
+					p.CountChildren = 2
+					p.Duration = 6
+				}
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: ptr.To(1),
+				countOffers:        ptr.To(1),
+				expectSortedAsc:    true,
+				expectCheapest:     ptr.To[float32](2459.0),
+			},
+		},
 	}
 
 	for _, tt := range tests {
