@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/google/go-querystring/query"
-	"k8s.io/utils/ptr"
 )
 
 func TestApiPing(t *testing.T) {
@@ -69,11 +68,11 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 
 	type expectations struct {
 		status             int
-		countOverallOffers *int
-		countOffers        *int
+		countOverallOffers int
+		countOffers        int
 		expectSortedAsc    bool
-		expectCheapest     *float32
-		expectFirstHotel   *string
+		expectCheapest     float32
+		expectFirstHotel   string
 	}
 
 	type testCases struct {
@@ -82,19 +81,15 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 		expect expectations
 	}
 
-	wantOverallOffers := 67
-	wantCountSite1 := 50
-	wantCountSite2 := 17
-	cheapestOnSite2 := float32(2292.0)
-
 	tests := []testCases{
 		{
 			name:  "site=1 baseline returns 67 and sorted by price asc",
 			tweak: func(p *data.RequestQuerryParams) {}, // use base
 			expect: expectations{
 				status:             http.StatusOK,
-				countOverallOffers: &wantOverallOffers,
-				countOffers:        &wantCountSite1,
+				countOverallOffers: 67,
+				countOffers:        50,
+				expectCheapest:     851.0,
 				expectSortedAsc:    true,
 			},
 		},
@@ -105,10 +100,10 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 			},
 			expect: expectations{
 				status:             http.StatusOK,
-				countOverallOffers: &wantOverallOffers,
-				countOffers:        &wantCountSite2,
+				countOverallOffers: 67,
+				countOffers:        17,
 				expectSortedAsc:    true,
-				expectCheapest:     &cheapestOnSite2,
+				expectCheapest:     2218.0,
 			},
 		},
 		{
@@ -165,10 +160,10 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 			},
 			expect: expectations{
 				status:             http.StatusOK,
-				countOverallOffers: ptr.To(1),
-				countOffers:        ptr.To(1),
+				countOverallOffers: 1,
+				countOffers:        1,
 				expectSortedAsc:    true,
-				expectCheapest:     ptr.To[float32](2459.0),
+				expectCheapest:     2459.0,
 			},
 		},
 		{
@@ -203,10 +198,10 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 			},
 			expect: expectations{
 				status:             http.StatusOK,
-				countOverallOffers: ptr.To(1),
-				countOffers:        ptr.To(1),
+				countOverallOffers: 1,
+				countOffers:        1,
 				expectSortedAsc:    true,
-				expectCheapest:     ptr.To[float32](2459.0),
+				expectCheapest:     2459.0,
 			},
 		},
 	}
@@ -251,18 +246,14 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 				t.Fatalf("failed to unmarshal response: %v\nBody: %s", err, string(body))
 			}
 
-			if tt.expect.countOverallOffers != nil {
-				if result.CountOffers != *tt.expect.countOverallOffers {
-					t.Fatalf("unexpected Overall CountOffers: got %d, "+
-						"want %d", result.CountOffers, *tt.expect.countOverallOffers)
-				}
+			if result.CountOffers != tt.expect.countOverallOffers {
+				t.Fatalf("unexpected Overall CountOffers: got %d, "+
+					"want %d", result.CountOffers, tt.expect.countOverallOffers)
 			}
 
-			if tt.expect.countOffers != nil {
-				if len(result.Offers) != *tt.expect.countOffers {
-					t.Fatalf("offers length mismatch: len=%d "+
-						"CountOffers=%d", len(result.Offers), result.CountOffers)
-				}
+			if len(result.Offers) != tt.expect.countOffers {
+				t.Fatalf("offers length mismatch: len=%d "+
+					"CountOffers=%d", len(result.Offers), result.CountOffers)
 			}
 
 			if tt.expect.expectSortedAsc {
@@ -271,17 +262,464 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 				}
 			}
 
-			if tt.expect.expectCheapest != nil {
+			if tt.expect.countOffers > 0 {
 				if len(result.Offers) == 0 {
 					t.Fatalf("expected offers but got none")
 				}
 				got := result.Offers[0].Price
-				if got != *tt.expect.expectCheapest {
-					t.Fatalf("unexpected cheapest price: got %.2f, want %.2f", got, *tt.expect.expectCheapest)
+				if got != tt.expect.expectCheapest {
+					t.Fatalf("unexpected cheapest price: got %.2f, want %.2f", got, tt.expect.expectCheapest)
+				}
+			}
+
+		})
+	}
+}
+
+func TestApiHotelOffers(t *testing.T) {
+	host, err := apiService.Host(ctx)
+	if err != nil {
+		t.Fatalf("failed to get host: %v", err)
+	}
+	mapped, err := apiService.MappedPort(ctx, "8080/tcp")
+	if err != nil {
+		t.Fatalf("failed to get mapped port: %v", err)
+	}
+
+	type hotelRequest struct {
+		hotelid       int
+		requestParams data.RequestQuerryParams
+	}
+
+	baseParams := hotelRequest{
+		hotelid:       7953,
+		requestParams: data.RequestQuerryParams{},
+	}
+
+	type expectations struct {
+		status             int
+		countOverallOffers int
+		countOffers        int
+		expectSortedAsc    bool
+		expectCheapest     float32
+		expectFirstHotel   string
+	}
+
+	type testCases struct {
+		name   string
+		tweak  func(p *hotelRequest)
+		expect expectations
+	}
+
+	tests := []testCases{
+		{
+			name: "site=1 baseline with all params, multi airports, returns 19 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams = data.RequestQuerryParams{
+					Site:                  1,
+					DepartureAirports:     []string{"BER", "DUS", "FRA", "MUC"},
+					Duration:              7,
+					EarliestDepartureDate: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
+					LatestReturnDate:      time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC),
+					CountAdults:           2,
+					CountChildren:         0,
+				}
+				//p.requestParams.Site = 1
+				//p.requestParams.DepartureAirports = []string{"BER", "DUS", "FRA", "MUC"}
+				//p.requestParams.Duration = 7
+				//p.requestParams.EarliestDepartureDate = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+				//p.requestParams.LatestReturnDate = time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+				//p.requestParams.CountAdults = 2
+				//p.requestParams.CountChildren = 0
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 19,
+				countOffers:        19,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(851.0),
+			},
+		},
+		{
+			name: "site=1 baseline with all params, only one airport, returns 17 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.Site = 1
+				p.requestParams.DepartureAirports = []string{"DUS"}
+				p.requestParams.Duration = 7
+				p.requestParams.EarliestDepartureDate = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+				p.requestParams.LatestReturnDate = time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+				p.requestParams.CountAdults = 2
+				p.requestParams.CountChildren = 0
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 17,
+				countOffers:        17,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(851.0),
+			},
+		},
+		{
+			name: "site=1 baseline with no airport, returns 24 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.Site = 1
+				p.requestParams.Duration = 7
+				p.requestParams.EarliestDepartureDate = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+				p.requestParams.LatestReturnDate = time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+				p.requestParams.CountAdults = 2
+				p.requestParams.CountChildren = 0
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 24,
+				countOffers:        24,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(851.0),
+			},
+		},
+		{
+			name: "site=1 baseline with no airport, noEarliestDepartureDate, returns 24 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.Site = 1
+				p.requestParams.Duration = 7
+				p.requestParams.LatestReturnDate = time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+				p.requestParams.CountAdults = 2
+				p.requestParams.CountChildren = 0
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 24,
+				countOffers:        24,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(851.0),
+			},
+		},
+		{
+			name: "site=1 baseline with no airport, noEarliestDepartureDate, no LatestReturnDate, returns 24 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.Site = 1
+				p.requestParams.Duration = 7
+				p.requestParams.CountAdults = 2
+				p.requestParams.CountChildren = 0
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 24,
+				countOffers:        24,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(851.0),
+			},
+		},
+		{
+			name: "site=1 baseline with no airport, noEarliestDepartureDate, no LatestReturnDate, no duration, returns 50 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.Site = 1
+				p.requestParams.CountAdults = 2
+				p.requestParams.CountChildren = 0
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 50,
+				countOffers:        50,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(494.0),
+			},
+		},
+		{
+			name: "site=2 baseline with no airport, noEarliestDepartureDate, no LatestReturnDate, no duration, returns 50 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.Site = 2
+				p.requestParams.CountAdults = 2
+				p.requestParams.CountChildren = 0
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 50,
+				countOffers:        0,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(494.0),
+			},
+		},
+		{
+			name: "baseline with no site, no airport, noEarliestDepartureDate, no LatestReturnDate, no duration, returns 50 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.CountAdults = 2
+				p.requestParams.CountChildren = 0
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 50,
+				countOffers:        50,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(494.0),
+			},
+		},
+		{
+			name: "baseline with no site, no airport, noEarliestDepartureDate, " +
+				"no LatestReturnDate, no duration, no CountAdults returns 50 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.CountChildren = 0
+			},
+			expect: expectations{
+				status: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "baseline with no site, no airport, noEarliestDepartureDate, " +
+				"no LatestReturnDate, no duration, CountAdults = 0 returns 50 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.CountAdults = 0
+				p.requestParams.CountChildren = 0
+			},
+			expect: expectations{
+				status: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "baseline with CountAdults and CountChildren = 2 returns 50 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.CountAdults = 2
+				p.requestParams.CountChildren = 2
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 34,
+				countOffers:        34,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(1178.0),
+			},
+		},
+		{
+			name: "baseline with CountChildren = 2 returns 50 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.CountChildren = 2
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 34,
+				countOffers:        34,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(1178.0),
+			},
+		},
+		{
+			name: "site=1 baseline with no constraints returns 50 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.Site = 1
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 122,
+				countOffers:        50,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(494.0),
+			},
+		},
+		{
+			name: "site=2 baseline with no constraints returns 50 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.Site = 2
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 122,
+				countOffers:        50,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(1666.0),
+			},
+		},
+		{
+			name: "site=3 baseline with no constraints returns 50 and sorted by price asc",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.Site = 3
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 122,
+				countOffers:        22,
+				expectSortedAsc:    true,
+				expectCheapest:     float32(3588.0),
+			},
+		},
+		{
+			name: "400 when a required param is zero (CountAdults=0)",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.CountAdults = 0
+			},
+			expect: expectations{
+				status: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "400 when Duration=0",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.Duration = 0
+			},
+			expect: expectations{
+				status: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "404 when no offer exists (unknown airport)",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.DepartureAirports = []string{"XXX"}
+			},
+			expect: expectations{
+				status: http.StatusNotFound,
+			},
+		},
+		{
+			name: "404 when date window impossible (LatestReturnDate before EarliestDepartureDate)",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.LatestReturnDate = time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+				p.requestParams.EarliestDepartureDate = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+				p.requestParams.Duration = 100
+				p.requestParams.CountChildren = 100
+				p.requestParams.CountAdults = 100
+			},
+			expect: expectations{
+				status: http.StatusNotFound,
+			},
+		},
+		{
+			name: "boundry dates are included",
+			tweak: func(p *hotelRequest) {
+				{
+					p.requestParams.DepartureAirports = []string{"HAJ"}
+					p.requestParams.EarliestDepartureDate = time.Date(2025, 9, 17, 22, 0, 0, 0, time.UTC)
+					p.requestParams.LatestReturnDate = time.Date(2025, 9, 24, 21, 55, 0, 0, time.UTC)
+					p.requestParams.CountAdults = 2
+					p.requestParams.CountChildren = 2
+					p.requestParams.Duration = 6
+				}
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 1,
+				countOffers:        1,
+				expectSortedAsc:    true,
+				expectCheapest:     2459.0,
+			},
+		},
+		{
+			name: "400 empty airports list",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.DepartureAirports = []string{}
+			},
+			expect: expectations{
+				status: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "404 extreme site request",
+			tweak: func(p *hotelRequest) {
+				p.requestParams.Site = 99999
+			},
+			expect: expectations{
+				status: http.StatusNotFound,
+			},
+		},
+		{
+			name: "multiple but same airports",
+			tweak: func(p *hotelRequest) {
+				{
+					p.requestParams.DepartureAirports = []string{"HAJ", "HAJ", "HAJ"}
+					p.requestParams.EarliestDepartureDate = time.Date(2025, 9, 17, 22, 0, 0, 0, time.UTC)
+					p.requestParams.LatestReturnDate = time.Date(2025, 9, 24, 21, 55, 0, 0, time.UTC)
+					p.requestParams.CountAdults = 2
+					p.requestParams.CountChildren = 2
+					p.requestParams.Duration = 6
+				}
+			},
+			expect: expectations{
+				status:             http.StatusOK,
+				countOverallOffers: 1,
+				countOffers:        1,
+				expectSortedAsc:    true,
+				expectCheapest:     2459.0,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			params := baseParams
+			tt.tweak(&params)
+
+			values, err := query.Values(params.requestParams)
+			if err != nil {
+				t.Fatalf("failed to build query parameters: %v", err)
+			}
+
+			url := fmt.Sprintf("http://%s:%s/api/hotel/%d?%v", host, mapped.Port(), params.hotelid, values.Encode())
+			t.Logf("Request url for test %v is: %v", tt.name, url)
+
+			resp, err := http.Get(url)
+			if err != nil {
+				t.Fatalf("http get failed: %v", err)
+			}
+			defer resp.Body.Close()
+
+			body, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatalf("reading body failed: %v", err)
+			}
+
+			if resp.StatusCode != tt.expect.status {
+				t.Fatalf("unexpected status: got %d, want %d. "+
+					"Body: %s", resp.StatusCode, tt.expect.status, string(body))
+			}
+
+			// If not 200, nothing else to assert on this case.
+			if resp.StatusCode != http.StatusOK {
+				return
+			}
+
+			var result data.HotelOffersResponse
+			if err := json.Unmarshal(body, &result); err != nil {
+				t.Fatalf("failed to unmarshal response: %v\nBody: %s", err, string(body))
+			}
+
+			if result.CountAvailableOffers != tt.expect.countOverallOffers {
+				t.Fatalf("unexpected Overall CountOffers: got %d, "+
+					"want %d", result.CountAvailableOffers, tt.expect.countOverallOffers)
+			}
+
+			if len(result.Offers) != tt.expect.countOffers {
+				t.Fatalf("offers length mismatch: len=%d "+
+					"CountOffers=%d", len(result.Offers), result.CountAvailableOffers)
+			}
+
+			if tt.expect.expectSortedAsc {
+				if !isHotelOfferPriceSortedAsc(result.Offers) {
+					t.Fatalf("offers are not sorted ascending by price")
+				}
+			}
+			if tt.expect.countOffers > 0 {
+				if len(result.Offers) == 0 {
+					t.Fatalf("expected offers but got none")
+				}
+				got := result.Offers[0].Price
+				if got != tt.expect.expectCheapest {
+					t.Fatalf("unexpected cheapest price: got %.2f, want %.2f", got, tt.expect.expectCheapest)
 				}
 			}
 		})
 	}
+}
+
+func isHotelOfferPriceSortedAsc(offers []data.Offer) bool {
+	if len(offers) < 2 {
+		return true
+	}
+	for i := 1; i < len(offers); i++ {
+		if offers[i-1].Price > offers[i].Price {
+			return false
+		}
+	}
+	return true
 }
 
 func isPriceSortedAsc(offers []data.BestOfferPerHotel) bool {

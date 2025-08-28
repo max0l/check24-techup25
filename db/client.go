@@ -178,7 +178,7 @@ func makeHotelOfferPredicates(request data.RequestQuerryParams) ([]predicate.Off
 	if request.CountAdults > 0 {
 		predicates = append(predicates, offer.CountadultsEQ(request.CountAdults))
 	}
-	if request.CountChildren > 0 {
+	if request.CountChildren >= 0 {
 		predicates = append(predicates, offer.CountchildrenEQ(request.CountChildren))
 	}
 	if request.Duration > 0 {

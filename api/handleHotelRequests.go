@@ -115,7 +115,7 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 	if request.CountAdults > 0 {
 		params.CountAdults = request.CountAdults
 	}
-	if request.CountChildren > 0 {
+	if request.CountChildren >= 0 {
 		params.CountChildren = request.CountChildren
 	}
 	if request.Duration > 0 {
@@ -139,7 +139,8 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 }
 
 func hotelQueryParamsAreValid(request data.RequestQuerryParams) bool {
-	if request.CountAdults < 0 || request.CountChildren < 0 || request.Duration < 0 || request.Site < 1 {
+	if request.CountAdults < 0 || request.CountChildren < 0 || request.Duration < 0 ||
+		(request.CountAdults <= 0 && request.CountChildren > 0) {
 		log.Error().Msg("received invalid query range")
 		return false
 	}
