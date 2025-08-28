@@ -26,7 +26,7 @@ import (
 //	@Param			departureAirports		query		[]string					false	"List of departure airports, e.g. FRA, MUC"
 //	@Param			earliestDepartureDate	query		string						false	"Earliest departure date in format RFC3339"
 //	@Param			latestReturnDate		query		string						false	"Latest return date in format RFC3339"
-//	@Param			countAdults				query		int							false	"Number of adults"
+//	@Param			countAdults				query		int							true	"Number of adults"
 //	@Param			countChildren			query		int							false	"Number of children"
 //	@Param			duration				query		int							false	"Duration of the trip in nights"
 //	@Success		200						{object}	data.HotelOffersResponse	"Hotel information"
@@ -139,7 +139,7 @@ func bindOptionalHotelParams(c *gin.Context, params *data.RequestQuerryParams) e
 }
 
 func hotelQueryParamsAreValid(request data.RequestQuerryParams) bool {
-	if request.CountAdults < 0 || request.CountChildren < 0 || request.Duration < 0 ||
+	if request.CountAdults <= 0 || request.CountChildren < 0 || request.Duration < 0 ||
 		(request.CountAdults <= 0 && request.CountChildren > 0) {
 		log.Error().Msg("received invalid query range")
 		return false

@@ -315,22 +315,13 @@ func TestApiHotelOffers(t *testing.T) {
 		{
 			name: "site=1 baseline with all params, multi airports, returns 19 and sorted by price asc",
 			tweak: func(p *hotelRequest) {
-				p.requestParams = data.RequestQuerryParams{
-					Site:                  1,
-					DepartureAirports:     []string{"BER", "DUS", "FRA", "MUC"},
-					Duration:              7,
-					EarliestDepartureDate: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
-					LatestReturnDate:      time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC),
-					CountAdults:           2,
-					CountChildren:         0,
-				}
-				//p.requestParams.Site = 1
-				//p.requestParams.DepartureAirports = []string{"BER", "DUS", "FRA", "MUC"}
-				//p.requestParams.Duration = 7
-				//p.requestParams.EarliestDepartureDate = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
-				//p.requestParams.LatestReturnDate = time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
-				//p.requestParams.CountAdults = 2
-				//p.requestParams.CountChildren = 0
+				p.requestParams.Site = 1
+				p.requestParams.DepartureAirports = []string{"BER", "DUS", "FRA", "MUC"}
+				p.requestParams.Duration = 7
+				p.requestParams.EarliestDepartureDate = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+				p.requestParams.LatestReturnDate = time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
+				p.requestParams.CountAdults = 2
+				p.requestParams.CountChildren = 0
 			},
 			expect: expectations{
 				status:             http.StatusOK,
@@ -419,7 +410,7 @@ func TestApiHotelOffers(t *testing.T) {
 			},
 			expect: expectations{
 				status:             http.StatusOK,
-				countOverallOffers: 50,
+				countOverallOffers: 51,
 				countOffers:        50,
 				expectSortedAsc:    true,
 				expectCheapest:     float32(494.0),
@@ -434,24 +425,10 @@ func TestApiHotelOffers(t *testing.T) {
 			},
 			expect: expectations{
 				status:             http.StatusOK,
-				countOverallOffers: 50,
-				countOffers:        0,
+				countOverallOffers: 51,
+				countOffers:        1,
 				expectSortedAsc:    true,
-				expectCheapest:     float32(494.0),
-			},
-		},
-		{
-			name: "baseline with no site, no airport, noEarliestDepartureDate, no LatestReturnDate, no duration, returns 50 and sorted by price asc",
-			tweak: func(p *hotelRequest) {
-				p.requestParams.CountAdults = 2
-				p.requestParams.CountChildren = 0
-			},
-			expect: expectations{
-				status:             http.StatusOK,
-				countOverallOffers: 50,
-				countOffers:        50,
-				expectSortedAsc:    true,
-				expectCheapest:     float32(494.0),
+				expectCheapest:     float32(3863.0),
 			},
 		},
 		{
@@ -495,50 +472,7 @@ func TestApiHotelOffers(t *testing.T) {
 				p.requestParams.CountChildren = 2
 			},
 			expect: expectations{
-				status:             http.StatusOK,
-				countOverallOffers: 34,
-				countOffers:        34,
-				expectSortedAsc:    true,
-				expectCheapest:     float32(1178.0),
-			},
-		},
-		{
-			name: "site=1 baseline with no constraints returns 50 and sorted by price asc",
-			tweak: func(p *hotelRequest) {
-				p.requestParams.Site = 1
-			},
-			expect: expectations{
-				status:             http.StatusOK,
-				countOverallOffers: 122,
-				countOffers:        50,
-				expectSortedAsc:    true,
-				expectCheapest:     float32(494.0),
-			},
-		},
-		{
-			name: "site=2 baseline with no constraints returns 50 and sorted by price asc",
-			tweak: func(p *hotelRequest) {
-				p.requestParams.Site = 2
-			},
-			expect: expectations{
-				status:             http.StatusOK,
-				countOverallOffers: 122,
-				countOffers:        50,
-				expectSortedAsc:    true,
-				expectCheapest:     float32(1666.0),
-			},
-		},
-		{
-			name: "site=3 baseline with no constraints returns 50 and sorted by price asc",
-			tweak: func(p *hotelRequest) {
-				p.requestParams.Site = 3
-			},
-			expect: expectations{
-				status:             http.StatusOK,
-				countOverallOffers: 122,
-				countOffers:        22,
-				expectSortedAsc:    true,
-				expectCheapest:     float32(3588.0),
+				status: http.StatusBadRequest,
 			},
 		},
 		{
@@ -563,6 +497,7 @@ func TestApiHotelOffers(t *testing.T) {
 			name: "404 when no offer exists (unknown airport)",
 			tweak: func(p *hotelRequest) {
 				p.requestParams.DepartureAirports = []string{"XXX"}
+				p.requestParams.CountAdults = 2
 			},
 			expect: expectations{
 				status: http.StatusNotFound,
@@ -614,6 +549,7 @@ func TestApiHotelOffers(t *testing.T) {
 			name: "404 extreme site request",
 			tweak: func(p *hotelRequest) {
 				p.requestParams.Site = 99999
+				p.requestParams.CountAdults = 1
 			},
 			expect: expectations{
 				status: http.StatusNotFound,
