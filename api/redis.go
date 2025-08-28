@@ -37,7 +37,7 @@ func GetRedisClient(ctx context.Context) (*redis.Client, error) {
 // GetRedisEnvs returns Redis configuration from environment variables.
 func GetRedisEnvs() (string, string, int) {
 	redisUrl := "localhost:6379"
-	redisPassword := ""
+	redisPassword := "password"
 	redisDB := 0
 
 	if url := os.Getenv("REDIS_URL"); url != "" {

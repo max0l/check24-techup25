@@ -1,6 +1,7 @@
 package testcontainer
 
 import (
+	"check24-techup25/api"
 	"check24-techup25/logging"
 	"context"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/compose"
@@ -15,11 +17,11 @@ import (
 )
 
 var (
-	dc           *compose.DockerCompose
-	ctx          context.Context
-	apiService   *testcontainers.DockerContainer
-	dbService    *testcontainers.DockerContainer
-	redisService *testcontainers.DockerContainer
+	dc          *compose.DockerCompose
+	ctx         context.Context
+	apiService  *testcontainers.DockerContainer
+	dbService   *testcontainers.DockerContainer
+	redisClient *redis.Client
 )
 
 func TestMain(m *testing.M) {
@@ -53,6 +55,9 @@ func TestMain(m *testing.M) {
 		WaitForService("seed_data", wait.ForExit().WithExitTimeout(10*time.Second)).
 		WithEnv(map[string]string{
 			"OFFERS_CSV_PATH": filepath.Join(projectRoot, "testCSVs/small/offer.csv"),
+			"REDIS_URL":       "redis:6379",
+			"REDIS_PASSWORD":  "password",
+			"REDIS_DB":        "0",
 		}).
 		Up(ctx, compose.Wait(true)); err != nil {
 		CleanUpCompose(dc, ctx, tempComposeFileLocation)
@@ -73,17 +78,24 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	redisService, err = dc.ServiceContainer(ctx, "redis")
+	_, err = dc.ServiceContainer(ctx, "redis")
 	if err != nil {
 		log.Error().Err(err).Msgf("Could not find redis container")
 		CleanUpCompose(dc, ctx, tempComposeFileLocation)
 		os.Exit(1)
 	}
 
+	redisClient, err = api.GetRedisClient(ctx)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Could not connect to Redis")
+		CleanUpCompose(dc, ctx, tempComposeFileLocation)
+		os.Exit(1)
+	}
 	code := m.Run()
+
+	api.CloseRedisClient(redisClient)
 
 	CleanUpCompose(dc, ctx, tempComposeFileLocation)
 
 	os.Exit(code)
-
 }

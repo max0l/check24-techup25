@@ -43,10 +43,7 @@ func main() {
 		log.Fatal().Err(err).Msg("Could not connect to Redis")
 	}
 	defer func() {
-		log.Trace().Msg("Closing connection to Redis")
-		if err := redisClient.Close(); err != nil {
-			log.Warn().Err(err).Msg("Could not close Connection to Redis client")
-		}
+		api.CloseRedisClient(redisClient)
 	}()
 
 	if err := client.Ping(ctx); err != nil {
