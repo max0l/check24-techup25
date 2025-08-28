@@ -2,6 +2,8 @@ package testcontainer
 
 import (
 	"check24-techup25/api"
+	"check24-techup25/db"
+	"check24-techup25/db/ent"
 	"check24-techup25/logging"
 	"context"
 	"os"
@@ -20,7 +22,7 @@ var (
 	dc          *compose.DockerCompose
 	ctx         context.Context
 	apiService  *testcontainers.DockerContainer
-	dbService   *testcontainers.DockerContainer
+	dbClient    *ent.Client
 	redisClient *redis.Client
 )
 
@@ -71,7 +73,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	dbService, err = dc.ServiceContainer(ctx, "db")
+	_, err = dc.ServiceContainer(ctx, "db")
 	if err != nil {
 		log.Error().Err(err).Msgf("Could not find db container")
 		CleanUpCompose(dc, ctx, tempComposeFileLocation)
@@ -91,6 +93,16 @@ func TestMain(m *testing.M) {
 		CleanUpCompose(dc, ctx, tempComposeFileLocation)
 		os.Exit(1)
 	}
+
+	dbDSN := "host=localhost port=5432 user=user dbname=check24 password=password sslmode=disable"
+
+	dbClient, err = db.NewClient(dbDSN)
+	if err != nil {
+		log.Fatal().Err(err).Msg("DSN is not valid")
+		CleanUpCompose(dc, ctx, tempComposeFileLocation)
+		os.Exit(1)
+	}
+
 	code := m.Run()
 
 	api.CloseRedisClient(redisClient)
