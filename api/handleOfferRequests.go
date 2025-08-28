@@ -173,7 +173,7 @@ func parseOfferResult(hotelResult *ent.Hotel, offerResult *ent.Offer, amountMap 
 		HotelName:                 hotelResult.Hotelname,
 		HotelStars:                hotelResult.Hotelstars,
 		HotelId:                   hotelResult.ID,
-		DurationInDays:            offerResult.DurationInDays,
+		DurationInDays:            offerResult.DurationInNights,
 		Outbounddeparturedatetime: offerResult.Outbounddeparturedatetime,
 		Inbounddeparturedatetime:  offerResult.Inbounddeparturedatetime,
 		Countadults:               offerResult.Countadults,

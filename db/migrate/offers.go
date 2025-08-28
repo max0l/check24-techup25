@@ -119,7 +119,7 @@ func createEntOffer(client *ent.Client, offer *data.Offer, hotel *ent.Hotel) *en
 		SetMealtype(offer.Mealtype).
 		SetOceanview(offer.Oceanview).
 		SetRoomtype(offer.Roomtype).
-		SetDurationInDays(offer.DurationInDays)
+		SetDurationInNights(offer.DurationInDays)
 	return offerDb
 }
 

@@ -28,7 +28,7 @@ import (
 //	@Param			latestReturnDate		query		string						false	"Latest return date in format RFC3339"
 //	@Param			countAdults				query		int							false	"Number of adults"
 //	@Param			countChildren			query		int							false	"Number of children"
-//	@Param			duration				query		int							false	"Duration of the trip in days"
+//	@Param			duration				query		int							false	"Duration of the trip in nights"
 //	@Success		200						{object}	data.HotelOffersResponse	"Hotel information"
 //	@Failure		400						"Bad Request"
 //	@Failure		404						"Hotel Not Found"

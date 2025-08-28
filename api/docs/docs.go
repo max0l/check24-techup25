@@ -70,7 +70,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "Duration of the trip in days",
+                        "description": "Duration of the trip in nights",
                         "name": "duration",
                         "in": "query"
                     }

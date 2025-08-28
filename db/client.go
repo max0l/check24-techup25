@@ -113,7 +113,7 @@ func queryOffersFromDb(request data.RequestQuerryParams, airports []string, clie
 			offer.InboundarrivaldatetimeLTE(request.LatestReturnDate),
 			offer.CountadultsEQ(request.CountAdults),
 			offer.CountchildrenEQ(request.CountChildren),
-			offer.DurationInDaysEQ(request.Duration)).
+			offer.DurationInNightsEQ(request.Duration)).
 		Order(offer.ByPrice()).WithHotel().
 		All(ctx)
 
@@ -182,7 +182,7 @@ func makeHotelOfferPredicates(request data.RequestQuerryParams) ([]predicate.Off
 		predicates = append(predicates, offer.CountchildrenEQ(request.CountChildren))
 	}
 	if request.Duration > 0 {
-		predicates = append(predicates, offer.DurationInDaysEQ(request.Duration))
+		predicates = append(predicates, offer.DurationInNightsEQ(request.Duration))
 	}
 	if len(predicates) == 0 {
 		return nil, errors.New("no predicates provided for hotel offer query")
@@ -217,7 +217,7 @@ func createOfferFromDb(h *ent.Hotel, singleOffer *ent.Offer) data.Offer {
 	o := data.Offer{
 		Offerid:                   singleOffer.ID,
 		Hotelid:                   h.ID,
-		DurationInDays:            singleOffer.DurationInDays,
+		DurationInDays:            singleOffer.DurationInNights,
 		Outbounddeparturedatetime: singleOffer.Outbounddeparturedatetime,
 		Inbounddeparturedatetime:  singleOffer.Inbounddeparturedatetime,
 		Countadults:               singleOffer.Countadults,

@@ -29,7 +29,7 @@ func (Offer) Fields() []ent.Field {
 		field.String("mealtype"),
 		field.Bool("oceanview"),
 		field.String("roomtype"),
-		field.Int("durationInDays"),
+		field.Int("durationInNights"),
 		field.Int("hotelid"),
 	}
 }
@@ -48,7 +48,7 @@ func (Offer) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields(
 			"outbounddepartureairport",
-			"durationInDays",
+			"durationInNights",
 			"countadults",
 			"countchildren",
 			"price",
