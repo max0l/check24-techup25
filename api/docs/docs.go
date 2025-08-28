@@ -60,7 +60,8 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Number of adults",
                         "name": "countAdults",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "integer",

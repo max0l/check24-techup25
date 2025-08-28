@@ -158,6 +158,7 @@ paths:
       - description: Number of adults
         in: query
         name: countAdults
+        required: true
         type: integer
       - description: Number of children
         in: query
