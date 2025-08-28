@@ -180,6 +180,15 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 				status: http.StatusBadRequest,
 			},
 		},
+		{
+			name: "404 extreme site request",
+			tweak: func(p *data.RequestQuerryParams) {
+				p.Site = 99999
+			},
+			expect: expectations{
+				status: http.StatusNotFound,
+			},
+		},
 	}
 
 	for _, tt := range tests {
