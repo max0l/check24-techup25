@@ -171,6 +171,15 @@ func TestApiBestOfferPerHotel(t *testing.T) {
 				expectCheapest:     ptr.To[float32](2459.0),
 			},
 		},
+		{
+			name: "400 empty airports list",
+			tweak: func(p *data.RequestQuerryParams) {
+				p.DepartureAirports = []string{}
+			},
+			expect: expectations{
+				status: http.StatusBadRequest,
+			},
+		},
 	}
 
 	for _, tt := range tests {

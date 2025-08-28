@@ -50,8 +50,6 @@ func changeComposeFileForTesting(newComposePath string, projectRoot string) {
 		data = bytes.ReplaceAll(data, []byte(old), []byte(newContents))
 	}
 
-	fmt.Printf("New Contents: %v", string(data))
-
 	if err := os.WriteFile(newComposePath, data, 0o644); err != nil {
 		panic(err)
 	}
