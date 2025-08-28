@@ -8,6 +8,7 @@ import (
 	"check24-techup25/db/ent/predicate"
 	"context"
 	"errors"
+	"math"
 	"sync"
 
 	_ "github.com/lib/pq"
@@ -150,6 +151,10 @@ func QueryOffersOfAHotel(h *ent.Hotel, request data.RequestQuerryParams,
 	if err != nil {
 		log.Error().Err(err).Msg("There was an error querring the DB for offers")
 		return hotelResponse, err
+	}
+
+	if math.Ceil(float64(amount)/50.0) < float64(request.Site) {
+		return hotelResponse, data.ErrSiteIsOutOfRange
 	}
 
 	hotelResponse.CountAvailableOffers = amount
