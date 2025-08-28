@@ -520,20 +520,20 @@ func TestApiHotelOffers(t *testing.T) {
 			name: "boundry dates are included",
 			tweak: func(p *hotelRequest) {
 				{
-					p.requestParams.DepartureAirports = []string{"HAJ"}
-					p.requestParams.EarliestDepartureDate = time.Date(2025, 9, 17, 22, 0, 0, 0, time.UTC)
-					p.requestParams.LatestReturnDate = time.Date(2025, 9, 24, 21, 55, 0, 0, time.UTC)
+					p.requestParams.DepartureAirports = []string{"HAM"}
+					p.requestParams.EarliestDepartureDate = time.Date(2025, 2, 9, 23, 0, 0, 0, time.UTC)
+					p.requestParams.LatestReturnDate = time.Date(2025, 2, 12, 11, 45, 0, 0, time.UTC)
 					p.requestParams.CountAdults = 2
-					p.requestParams.CountChildren = 2
-					p.requestParams.Duration = 6
+					p.requestParams.CountChildren = 0
+					p.requestParams.Duration = 2
 				}
 			},
 			expect: expectations{
 				status:             http.StatusOK,
 				countOverallOffers: 1,
 				countOffers:        1,
-				expectSortedAsc:    true,
-				expectCheapest:     2459.0,
+				expectSortedAsc:    false,
+				expectCheapest:     494.0,
 			},
 		},
 		{
@@ -559,20 +559,20 @@ func TestApiHotelOffers(t *testing.T) {
 			name: "multiple but same airports",
 			tweak: func(p *hotelRequest) {
 				{
-					p.requestParams.DepartureAirports = []string{"HAJ", "HAJ", "HAJ"}
-					p.requestParams.EarliestDepartureDate = time.Date(2025, 9, 17, 22, 0, 0, 0, time.UTC)
-					p.requestParams.LatestReturnDate = time.Date(2025, 9, 24, 21, 55, 0, 0, time.UTC)
+					p.requestParams.DepartureAirports = []string{"HAM", "HAM", "HAM"}
+					p.requestParams.EarliestDepartureDate = time.Date(2025, 2, 9, 23, 0, 0, 0, time.UTC)
+					p.requestParams.LatestReturnDate = time.Date(2025, 2, 12, 11, 45, 0, 0, time.UTC)
 					p.requestParams.CountAdults = 2
-					p.requestParams.CountChildren = 2
-					p.requestParams.Duration = 6
+					p.requestParams.CountChildren = 0
+					p.requestParams.Duration = 2
 				}
 			},
 			expect: expectations{
 				status:             http.StatusOK,
 				countOverallOffers: 1,
 				countOffers:        1,
-				expectSortedAsc:    true,
-				expectCheapest:     2459.0,
+				expectSortedAsc:    false,
+				expectCheapest:     494.0,
 			},
 		},
 	}

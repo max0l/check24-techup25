@@ -178,20 +178,20 @@ func makeHotelOfferPredicates(request data.RequestQuerryParams) ([]predicate.Off
 		predicates = append(predicates, offer.OutbounddepartureairportIn(request.DepartureAirports...))
 	}
 
-	if &request.EarliestDepartureDate != nil && !request.EarliestDepartureDate.IsZero() {
+	if !request.EarliestDepartureDate.IsZero() {
 		predicates = append(predicates, offer.OutbounddeparturedatetimeGTE(request.EarliestDepartureDate))
 	}
-	if &request.LatestReturnDate != nil && !request.LatestReturnDate.IsZero() {
+	if !request.LatestReturnDate.IsZero() {
 		predicates = append(predicates, offer.InboundarrivaldatetimeLTE(request.LatestReturnDate))
 	}
-	if &request.CountAdults != nil && request.CountAdults > 0 {
+	if request.CountAdults > 0 {
 		predicates = append(predicates, offer.CountadultsEQ(request.CountAdults))
 
 		if request.CountChildren >= 0 {
 			predicates = append(predicates, offer.CountchildrenEQ(request.CountChildren))
 		}
 	}
-	if &request.Duration != nil && request.Duration > 0 {
+	if request.Duration > 0 {
 		predicates = append(predicates, offer.DurationInNightsEQ(request.Duration))
 	}
 	if len(predicates) == 0 {

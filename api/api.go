@@ -6,7 +6,6 @@ import (
 	"check24-techup25/db"
 	"check24-techup25/db/ent"
 	"context"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -99,13 +98,13 @@ func cancelIfParamsAreWrong(ginc *gin.Context, request data.RequestQuerryParams)
 func parseAirportsToArray(airports []string) ([]string, error) {
 	if len(airports) == 0 || airports[0] == "" {
 		log.Warn().Msg("No airports provided, returning empty array")
-		return []string{}, fmt.Errorf("no Airport(s) provided")
+		return []string{}, data.ErrNoAirportProvided
 	}
 
 	chunks := strings.Split(airports[0], ",")
 	if len(chunks) == 0 {
 		log.Warn().Msg("Could not split airports into chunks, returning empty array")
-		return []string{}, fmt.Errorf("invalid Airport(s)")
+		return []string{}, data.ErrInvalidAirport
 	}
 	var apList []string
 	for i, chunk := range chunks {
