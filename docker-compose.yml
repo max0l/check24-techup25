@@ -30,7 +30,7 @@ services:
     command: ["-hotel", "/hotels.csv", "-offer", "/offers.csv"]
     restart: "no"
     volumes:
-      - ${OFFERS_CSV_PATH:-../offers/offer.csv}:/offers.csv
+      - ${OFFERS_CSV_PATH:?offers.csv is required}:/offers.csv
       - ./data/hotels.csv:/hotels.csv
   api:
     build:
