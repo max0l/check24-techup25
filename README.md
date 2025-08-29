@@ -4,27 +4,28 @@ A life instance can be found here [check24.max0l.dev](https://check24.max0l.dev)
 
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
-- [Development](#development)
-    * [Backend](#backend)
-        + [ENV](#env)
-        + [Seeding the data](#seeding-the-data)
-        + [API defintion](#api-defintion)
-        + [Swag code gen](#swag-code-gen)
-        + [GOENT (ORM) Generation](#goent-orm-generation)
-    * [Frontend](#frontend)
-        + [(Re)Generate the Openapi Specs for the frontend](#regenerate-the-openapi-specs-for-the-frontend)
-- [Decisions I've Made](#decisions-ive-made)
-    * [Postgresql](#postgresql)
-    * [CSV to DB Migration](#csv-to-db-migration)
-        + [Seeding the data only the first time](#seeding-the-data-only-the-first-time)
-        + [Using the Service with the whole offers csv](#using-the-service-with-the-whole-offers-csv)
-    * [Possible Improvements](#possible-improvements)
-        + [Checking each Param individually](#checking-each-param-individually)
-        + [Using a key-value store only](#using-a-key-value-store-only)
-        + [Query Queue](#query-queue)
-        + [Use something else then swaggo](#use-something-else-then-swaggo)
-        + [Seeding the data](#seeding-the-data-1)
-- [Deployment](#deployment)
+- [Check24 Techup25](#check24-techup25)
+  - [Development](#development)
+    - [Backend](#backend)
+      - [ENV](#env)
+      - [Seeding the data](#seeding-the-data)
+      - [API defintion](#api-defintion)
+      - [Swag code gen](#swag-code-gen)
+      - [GOENT (ORM) Generation](#goent-orm-generation)
+    - [Frontend](#frontend)
+      - [(Re)Generate the Openapi Specs for the frontend](#regenerate-the-openapi-specs-for-the-frontend)
+  - [Decisions I've Made](#decisions-ive-made)
+    - [Postgresql](#postgresql)
+    - [CSV to DB Migration](#csv-to-db-migration)
+      - [Seeding the data only the first time](#seeding-the-data-only-the-first-time)
+      - [Using the Service with the whole offers csv](#using-the-service-with-the-whole-offers-csv)
+    - [Possible Improvements](#possible-improvements)
+      - [Checking each Param individually](#checking-each-param-individually)
+      - [Using a key-value store only](#using-a-key-value-store-only)
+      - [Query Queue](#query-queue)
+      - [Use something else then swaggo](#use-something-else-then-swaggo)
+      - [Seeding the data](#seeding-the-data-1)
+  - [Deployment](#deployment)
 
 <!-- TOC end -->
 
@@ -42,7 +43,7 @@ Everything will be generated if you just run `docker compose up --build`.
 <!-- TOC --><a name="env"></a>
 #### ENV
 
-There are several env's that can be set. All of them have a fallback required so it docker compose up can just get fired up.
+There are several ENV's that can be set. Most of them have a fallback required so `docker compose up` can just get fired up.
 
 Here is the list of all ENV (you can copy the `.env.sample` file to `.env`):
 
@@ -251,7 +252,7 @@ With the Query Queue, I use the cached object right away without querying the DB
 #### Use something else then swaggo
 
 With the provided API definition from the frontend, I could have generated some code for my API backend.
-Also swaggo only generates swagger 2.0 definitions.
+Also, swaggo only generates swagger 2.0 definitions.
 
 In another project [max0l/nobody-is-perfect-go](https://github.com/max0l/nobody-is-perfect-go), I have used oapi-codegen. This introduced some other issues tho.
 
@@ -265,7 +266,7 @@ Seeding the data takes really long. But I don't really know how to improve that.
 
 I have deployed my service to my VPS. It's an ARM64, 6 Cores, 8GB Ram.
 
-I have migrated only the offers that reference an hotel from the `hotels.csv`.
+I have migrated only the offers that reference a hotel from the `hotels.csv`.
 
 To do that I have modified the docker compose slightly:
 
