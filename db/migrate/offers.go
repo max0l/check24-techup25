@@ -24,7 +24,9 @@ func MigrateOffers(ctx context.Context, client *ent.Client, knownHotels *KnownHo
 		// This will make the insertion a little bit faster
 		hotel, err := handleOfferHotel(ctx, client, offer, knownHotels)
 		if err != nil {
-			log.Error().Err(err).Msgf("Could not handle hotel for offer %v", offer.Offerid)
+			if !errors.Is(err, data.ErrHotelIsNotInCSV) {
+				log.Error().Err(err).Msgf("Could not handle hotel for offer %v", offer.Offerid)
+			}
 			continue
 		}
 
@@ -51,7 +53,7 @@ func handleOfferHotel(ctx context.Context, client *ent.Client, offer *data.Offer
 	knownHotels *KnownHotels) (*ent.Hotel, error) {
 	if doSkipInvalidHotels() && offer.Hotelid > 998 {
 		log.Trace().Msgf("Skipping hotel with ID %d for offer %d", offer.Hotelid, offer.Offerid)
-		return nil, errors.New("hotel ID is not in CSV")
+		return nil, data.ErrHotelIsNotInCSV
 	}
 
 	if offer.Hotelid > 998 && !seenHotel(offer.Hotelid, knownHotels) {
