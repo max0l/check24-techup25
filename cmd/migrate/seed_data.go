@@ -8,6 +8,7 @@ import (
 	"check24-techup25/logging"
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"sync"
 
@@ -17,6 +18,7 @@ import (
 // main function initializes the database connection and starts the migration process.
 // It reads the CSV file and upsert the database with the hotel and offer data.
 func main() {
+	fmt.Println("Start seeding data...")
 
 	logging.SetLogger()
 
@@ -60,7 +62,7 @@ func main() {
 
 	wg.Wait()
 
-	log.Info().Msg("Done")
+	fmt.Println("Done")
 }
 
 func parseDbDSN(dbDSN string) *ent.Client {
