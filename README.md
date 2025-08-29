@@ -2,10 +2,36 @@
 
 A life instance can be found here [check24.max0l.dev](https://check24.max0l.dev) for the frontend. And [check24-swagger.max0l.dev](https://check24-swager.max0l.dev) for the swagger doc. More infos are further down.
 
-[TOC]
+<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
+- [Development](#development)
+    * [Backend](#backend)
+        + [ENV](#env)
+        + [Seeding the data](#seeding-the-data)
+        + [API defintion](#api-defintion)
+        + [Swag code gen](#swag-code-gen)
+        + [GOENT (ORM) Generation](#goent-orm-generation)
+    * [Frontend](#frontend)
+        + [(Re)Generate the Openapi Specs for the frontend](#regenerate-the-openapi-specs-for-the-frontend)
+- [Decisions I've Made](#decisions-ive-made)
+    * [Postgresql](#postgresql)
+    * [CSV to DB Migration](#csv-to-db-migration)
+        + [Seeding the data only the first time](#seeding-the-data-only-the-first-time)
+        + [Using the Service with the whole offers csv](#using-the-service-with-the-whole-offers-csv)
+    * [Possible Improvements](#possible-improvements)
+        + [Checking each Param individually](#checking-each-param-individually)
+        + [Using a key-value store only](#using-a-key-value-store-only)
+        + [Query Queue](#query-queue)
+        + [Use something else then swaggo](#use-something-else-then-swaggo)
+        + [Seeding the data](#seeding-the-data-1)
+- [Deployment](#deployment)
+
+<!-- TOC end -->
+
+<!-- TOC --><a name="development"></a>
 ## Development
 
+<!-- TOC --><a name="backend"></a>
 ### Backend
 
 Everything will be generated if you just run `docker compose up --build`.
@@ -13,6 +39,7 @@ Everything will be generated if you just run `docker compose up --build`.
 > [!IMPORTANT]
 > **Set the path of the offers.csv volume in the docker-compose.yml using the ENV OFFERS_CSV_PATH to your offers.csv or to the provided test CSV's in the testCSVs folder**
 
+<!-- TOC --><a name="env"></a>
 #### ENV
 
 There are several env's that can be set. All of them have a fallback required so it docker compose up can just get fired up.
@@ -31,6 +58,7 @@ Here is the list of all ENV (you can copy the `.env.sample` file to `.env`):
 - `POSTGRES_DB` sets the postgres DB
 - `POSTGRES_PASSWORD` sets the postgres password
 
+<!-- TOC --><a name="seeding-the-data"></a>
 #### Seeding the data
 
 The CSV's are read into a buffer and than processed in batches. These batches will then be sent to the DB.
@@ -39,11 +67,13 @@ This process can take up to **14 Hours** to fully migrate the data.
 The data will be upserted into the DB.
 
 
+<!-- TOC --><a name="api-defintion"></a>
 #### API defintion
 
 There is a generated API definition with a swagger UI site to test the API.
 The swagger UI is reachable under `/swagger/index.html` (http://localhost:8080/swagger/index.html)
 
+<!-- TOC --><a name="swag-code-gen"></a>
 #### Swag code gen
 
 If there are changes to the swaggo comments, please regenerate the generation of the swagger docs.
@@ -66,6 +96,7 @@ And run this command to reformat the comments:
 swag fmt -g api/api.go
 ```
 
+<!-- TOC --><a name="goent-orm-generation"></a>
 #### GOENT (ORM) Generation
 
 If you are doing local development without the docker compose, you'll need to run the following to generate the database definitions etc.
@@ -78,6 +109,7 @@ go install entgo.io/ent/cmd/ent@v0.14.5
 go run -mod=mod entgo.io/ent/cmd/ent --target=./db/ent --feature sql/upsert generate ./db/schema
 ```
 
+<!-- TOC --><a name="frontend"></a>
 ### Frontend
 
 The frontend is configured in the docker-compose.yml to listen on port :8090 by default.
@@ -97,6 +129,7 @@ To run the frontend just run:
 npm run dev
 ```
 
+<!-- TOC --><a name="regenerate-the-openapi-specs-for-the-frontend"></a>
 #### (Re)Generate the Openapi Specs for the frontend
 
 to regenerate the `openapi.d.ts`
@@ -105,8 +138,10 @@ to regenerate the `openapi.d.ts`
 npx  openapi-client-axios-typegen ../api/docs/swagger.json > app/types/openapi.d.ts
 ```
 
+<!-- TOC --><a name="decisions-ive-made"></a>
 ## Decisions I've Made
 
+<!-- TOC --><a name="postgresql"></a>
 ### Postgresql
 
 I'm using postgresql because it is very scalable and i'm used to it.
@@ -153,6 +188,7 @@ For example:
 This approach would have some issues tho, because at some point you have to search linear (but this would also be the
 case in the DB implementation) depending on the request. Also sorting is a bit more tricky, but doable.
 
+<!-- TOC --><a name="csv-to-db-migration"></a>
 ### CSV to DB Migration
 
 I want to search for offers more robust than searching the CSV file linear on an HDD or trying to get it into my computer memory.
@@ -169,6 +205,7 @@ This will also migrate EVERY offer, even if the corresponding Hotel(id) is not p
 To tweak this I introduced the `SKIP_INVALID_HOTELS` env. If set to `true`, it will skip offers, that reverence a hotel
 that is not in the hotels.csv. This will also reduce the offer amount by ~80%.
 
+<!-- TOC --><a name="seeding-the-data-only-the-first-time"></a>
 #### Seeding the data only the first time
 
 I have implemented another env that can control whether you want to seed all the data when firing up the docker compose
@@ -176,6 +213,7 @@ or not.
 
 By setting the env `SEED_DATA` to `true` or `false`, it will either read the CSV's and migrate/upsert the data or not.
 
+<!-- TOC --><a name="using-the-service-with-the-whole-offers-csv"></a>
 #### Using the Service with the whole offers csv
 
 If you set the ENV to `SKIP_INVALID_HOTELS=true`, all entries of the offers.csv will be in the DB.
@@ -185,8 +223,10 @@ Also, all the hotels, that are not in the CSV, will be inserted with a placehold
 This is affecting the query time intensively If there are 92 Million, a larger timeframe request could take up to 14 seconds.
 If there are only 18 Million, it will be around 1.1 seconds and after caching (same for the 92 Million) ~15 ms.
 
+<!-- TOC --><a name="possible-improvements"></a>
 ### Possible Improvements
 
+<!-- TOC --><a name="checking-each-param-individually"></a>
 #### Checking each Param individually
 
 For the Hotel Offers request, where I made the decision that some of the params are optional, I should check them individually.
@@ -196,15 +236,18 @@ After that I saw how the Minimal requirements Number 2 is meant (I thought these
 But another problem arrising here is that the frontend will send the param with `0` if the param is not set (e.g. countchildren) so I can't distinguish between not set or 0.
 This is not really a problem but you can't query the API for requests if you want offers where coundchildren could be anything (which might also be intended).
 
+<!-- TOC --><a name="using-a-key-value-store-only"></a>
 #### Using a key-value store only
 
 Just like discriped prior, I was thinking about using bbolt as the DB.
 
+<!-- TOC --><a name="query-queue"></a>
 #### Query Queue
 
 The implementation of the Query Queue feature could lead to more wait time under heavy load. But I did not check for this and I like the feature.
 With the Query Queue, I use the cached object right away without querying the DB twice.
 
+<!-- TOC --><a name="use-something-else-then-swaggo"></a>
 #### Use something else then swaggo
 
 With the provided API definition from the frontend, I could have generated some code for my API backend.
@@ -212,10 +255,12 @@ Also swaggo only generates swagger 2.0 definitions.
 
 In another project [max0l/nobody-is-perfect-go](https://github.com/max0l/nobody-is-perfect-go), I have used oapi-codegen. This introduced some other issues tho.
 
+<!-- TOC --><a name="seeding-the-data-1"></a>
 #### Seeding the data
 
-Seeding the data takes really long. But I don't really know how to improve that. 
+Seeding the data takes really long. But I don't really know how to improve that.
 
+<!-- TOC --><a name="deployment"></a>
 ## Deployment
 
 I have deployed my service to my VPS. It's an ARM64, 6 Cores, 8GB Ram.
