@@ -264,7 +264,7 @@ Seeding the data takes really long. But I don't really know how to improve that.
 <!-- TOC --><a name="deployment"></a>
 ## Deployment
 
-I have deployed my service to my VPS. It's an ARM64, 6 Cores, 8GB Ram.
+I have deployed my service to my VPS. It's an ARM64, 6 Cores, 8GB Ram. But it was effective 4GB of RAM and at first I could not seed the data because I did run out of memory. After setting the batchSize to 10000 and the maxConcurrency to 2, it worked.
 
 I have migrated only the offers that reference a hotel from the `hotels.csv`.
 
