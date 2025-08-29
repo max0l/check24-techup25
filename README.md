@@ -34,6 +34,12 @@ This process can take up to **14 Hours** to fully migrate the data.
 
 The data will be upserted into the DB.
 
+
+#### API defintion
+
+There is a generated API definition with a swagger UI site to test the API.
+The swagger UI is reachable under `/swagger/index.html` (http://localhost:8080/swagger/index.html)
+
 #### Swag code gen
 
 If there are changes to the swaggo comments, please regenerate the generation of the swagger docs.
@@ -69,6 +75,8 @@ go run -mod=mod entgo.io/ent/cmd/ent --target=./db/ent --feature sql/upsert gene
 ```
 
 ### Frontend
+
+The frontend is configured in the docker-compose.yml to listen on port :8090 by default.
 
 > [!IMPORTANT]
 > **Navigate into the frontend folder and run the following commands...**
@@ -172,3 +180,31 @@ Also, all the hotels, that are not in the CSV, will be inserted with a placehold
 
 This is affecting the query time intensively If there are 92 Million, a larger timeframe request could take up to 14 seconds.
 If there are only 18 Million, it will be around 1.1 seconds and after caching (same for the 92 Million) ~15 ms.
+
+### Possible Improvements
+
+#### Checking each Param individually
+
+For the Hotel Offers request, where I made the decision that some of the params are optional, I should check them individually.
+Currently I'm not doing this. I've made this decision because I looked at the frontend example after writing the backend.
+After that I saw how the Minimal requirements Number 2 is meant (I thought these were individually requests).
+
+#### Using a key-value store only
+
+Just like discriped prior, I was thinking about using bbolt as the DB.
+
+#### Query Queue
+
+The implementation of the Query Queue feature could lead to more wait time under heavy load. But I did not check for this and I like the feature.
+With the Query Queue, I use the cached object right away without querying the DB twice.
+
+#### Use something else then swaggo
+
+With the provided API definition from the frontend, I could have generated some code for my API backend.
+Also swaggo only generates swagger 2.0 definitions.
+
+In another project [max0l/nobody-is-perfect-go](https://github.com/max0l/nobody-is-perfect-go), I have used oapi-codegen. This introduced some other issues tho.
+
+#### Seeding the data
+
+Seeding the data takes really long. But I don't really know how to improve that. 
