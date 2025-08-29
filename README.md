@@ -15,7 +15,7 @@ There are several env's that can be set. All of them have a fallback required so
 
 Here is the list of all ENV (you can copy the `.env.sample` file to `.env`):
 
-- `LOG_LEVEL` sets to log level of the API (default is warn). Values it can be, are: trace, debug, info, warn, error, fatal, panic
+- `LOG_LEVEL` sets to log level of the API (default is warn). Values it can be, are: trace, debug, info, warn, error, fatal, panic. **Logs could leak credentials if set to debug or lower**
 - `REDIS_URL` sets the redis host:port url like "redis:6379"
 - `REDIS_PASSWORD` sets the redis password
 - `REDIS_DB` sets the default redis DB (default is 0)
