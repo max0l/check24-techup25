@@ -189,6 +189,9 @@ For the Hotel Offers request, where I made the decision that some of the params 
 Currently I'm not doing this. I've made this decision because I looked at the frontend example after writing the backend.
 After that I saw how the Minimal requirements Number 2 is meant (I thought these were individually requests).
 
+But another problem arrising here is that the frontend will send the param with `0` if the param is not set (e.g. countchildren) so I can't distinguish between not set or 0.
+This is not really a problem but you can't query the API for requests if you want offers where coundchildren could be anything (which might also be intended).
+
 #### Using a key-value store only
 
 Just like discriped prior, I was thinking about using bbolt as the DB.
