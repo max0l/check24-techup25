@@ -4,7 +4,6 @@ go 1.24
 
 require (
 	entgo.io/ent v0.14.5
-	github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
 	github.com/google/go-querystring v1.1.0

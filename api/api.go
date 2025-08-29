@@ -6,11 +6,17 @@ import (
 	"check24-techup25/db"
 	"check24-techup25/db/ent"
 	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
+	"time"
 
-	"github.com/fvbock/endless"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -43,11 +49,29 @@ func Start(port int, client *ent.Client, redisClient *redis.Client, ctx context.
 	})
 
 	log.Info().Msgf("Starting Server on port %v", port)
-	err := endless.ListenAndServe(":"+strconv.Itoa(port), router)
-	if err != nil {
-		log.Error().Msgf("Server stopped on port %v", port)
-		return
+
+	srv := &http.Server{
+		Addr:    ":" + strconv.Itoa(port),
+		Handler: router.Handler(),
 	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal().Msgf("listen: %s\n", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	fmt.Println("Shutdown Server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		fmt.Println("Server Shutdown:", err)
+	}
+	fmt.Println("Server exiting")
 }
 
 // cancelIfParamsAreWrong validates incoming query parameters for a request. If any of the parameters are invalid,
