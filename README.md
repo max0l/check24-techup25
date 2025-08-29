@@ -1,6 +1,6 @@
 # Check24 Techup25
 
-A life instance can be found here [check24.max0l.dev](https://check24.max0l.dev) for the frontend. And [check24-swagger.max0l.dev](https://check24-swager.max0l.dev) for the swagger doc. More infos are further down.
+A life instance can be found here [check24.max0l.dev](https://check24.max0l.dev) for the frontend. And [check24-swagger.max0l.dev/swagger/index.html](https://check24-swagger.max0l.dev/swagger/index.html) for the swagger doc. More infos are further down.
 
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
