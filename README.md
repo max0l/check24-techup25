@@ -27,6 +27,13 @@ Here is the list of all ENV (you can copy the `.env.sample` file to `.env`):
 - `POSTGRES_DB` sets the postgres DB
 - `POSTGRES_PASSWORD` sets the postgres password
 
+#### Seeding the data
+
+The CSV's are read into a buffer and than processed in batches. These batches will then be sent to the DB.
+This process can take up to **14 Hours** to fully migrate the data.
+
+The data will be upserted into the DB.
+
 #### Swag code gen
 
 If there are changes to the swaggo comments, please regenerate the generation of the swagger docs.
