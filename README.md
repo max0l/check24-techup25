@@ -7,7 +7,7 @@
 Everything will be generated if you just run `docker compose up --build`.
 
 > [!IMPORTANT]
-> **Set the path of the offers.csv volume in the docker-compose.yml to your offers.csv or to the provided test CSV's in the testCSVs folder**
+> **Set the path of the offers.csv volume in the docker-compose.yml using the ENV OFFERS_CSV_PATH to your offers.csv or to the provided test CSV's in the testCSVs folder**
 
 #### ENV
 
