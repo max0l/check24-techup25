@@ -1,5 +1,9 @@
 # Check24 Techup25
 
+A life instance can be found here [check24.max0l.dev](https://check24.max0l.dev) for the frontend. And [check24-swagger.max0l.dev](https://check24-swager.max0l.dev) for the swagger doc. More infos are further down.
+
+[TOC]
+
 ## Development
 
 ### Backend
@@ -211,3 +215,136 @@ In another project [max0l/nobody-is-perfect-go](https://github.com/max0l/nobody-
 #### Seeding the data
 
 Seeding the data takes really long. But I don't really know how to improve that. 
+
+## Deployment
+
+I have deployed my service to my VPS. It's an ARM64, 6 Cores, 8GB Ram.
+
+I have migrated only the offers that reference an hotel from the `hotels.csv`.
+
+To do that I have modified the docker compose slightly:
+
+```yaml
+services:
+  db:
+    image: postgres:17-alpine3.22
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-check24}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-user}", "-d", "${POSTGRES_DB:-check24}"]
+      interval: 5s
+      timeout: 4s
+      retries: 5
+    networks:
+      - backend
+
+  seed_data:
+    build:
+      context: .
+      dockerfile: ./cmd/migrate/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_DSN: host=${POSTGRES_HOST:-db} port=5432 user=${POSTGRES_USER:-user} dbname=${POSTGRES_DB:-check24} password=${POSTGRES_PASSWORD:-password} sslmode=disable
+      LOG_LEVEL: ${LOG_LEVEL:-warn}
+      SEED_DATA: ${SEED_DATA:-true}
+      SKIP_INVALID_HOTELS: ${SKIP_INVALID_HOTELS:-true}
+    command: ["-hotel", "/hotels.csv", "-offer", "/offers.csv"]
+    restart: "no"
+    volumes:
+      - ${OFFERS_CSV_PATH:?offers.csv is required}:/offers.csv
+      - ./data/hotels.csv:/hotels.csv
+    networks:
+      - backend
+
+  api:
+    build:
+      context: .
+      dockerfile: ./cmd/api/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      seed_data:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_DSN: host=${POSTGRES_HOST:-db} port=5432 user=${POSTGRES_USER:-user} dbname=${POSTGRES_DB:-check24} password=${POSTGRES_PASSWORD:-password} sslmode=disable
+      LOG_LEVEL: ${LOG_LEVEL:-warn}
+      REDIS_URL: ${REDIS_URL:-redis:6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-password}
+      REDIS_DB: ${REDIS_DB:-0}
+    expose:
+      - "8080:8080"
+    restart: always
+    healthcheck:
+      test: curl -f http://localhost:8080/ping
+      interval: 60s
+      timeout: 5s
+      retries: 5
+      start_period: 3s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.checkswag.tls.certresolver=netcup"
+      - "traefik.http.routers.checkswag.rule=Host(`check24-swagger.max0l.dev`)"
+      - "traefik.http.routers.checkswag.entrypoints=https"
+      - "traefik.http.routers.checkswag.tls=true"
+      - "traefik.http.services.checkswag.loadbalancer.server.port=8080"
+    networks:
+      - proxy
+      - backend
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "6379:6379"
+    restart: always
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD:-password}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 4s
+      retries: 5
+    networks:
+      - backend
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+    restart: always
+    depends_on:
+      api:
+        condition: service_started
+    healthcheck:
+      test: wget --spider -q http://127.0.0.1:3000 || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.check.tls.certresolver=netcup"
+      - "traefik.http.routers.check.rule=Host(`check24.max0l.dev`)"
+      - "traefik.http.routers.check.entrypoints=https"
+      - "traefik.http.routers.check.tls=true"
+      - "traefik.http.services.check.loadbalancer.server.port=3000"
+    networks:
+      - proxy
+      - backend
+
+volumes:
+  db_data:
+
+networks:
+  proxy:
+    external: true
+  backend:
+    external: true
+```
