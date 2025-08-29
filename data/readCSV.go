@@ -19,7 +19,7 @@ type dataRecord struct {
 }
 
 const (
-	maxConcurrency = 10
+	maxConcurrency = 4
 	BatchSize      = 1000000
 )
 
