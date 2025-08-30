@@ -25,6 +25,7 @@ A life instance can be found here [check24.max0l.dev](https://check24.max0l.dev)
       - [Query Queue](#query-queue)
       - [Use something else then swaggo](#use-something-else-then-swaggo)
       - [Seeding the data](#seeding-the-data-1)
+      - [Distinct on](#distinct-on)
   - [Deployment](#deployment)
 
 <!-- TOC end -->
@@ -260,6 +261,15 @@ In another project [max0l/nobody-is-perfect-go](https://github.com/max0l/nobody-
 #### Seeding the data
 
 Seeding the data takes really long. But I don't really know how to improve that.
+
+<!-- TOC --><a name="distinct-on"></a>
+#### Distinct on
+
+In my best offer logic, I'm currently getting alle the offfers that match the request. No offset and no Limit.
+This could make the DB queries rather low. I tried to fix this by trying to implement "DISTINCT ON (offers.hotelid)" in the ENT ORM.
+But this is not working as expected. You can see the code in the distinctOn branch. Go Ent does not nativly support this feature, and I had to use the Modify request feature, which made it not less complicated.
+
+In the end, it was even slower then my normal implementation.
 
 <!-- TOC --><a name="deployment"></a>
 ## Deployment
