@@ -179,11 +179,37 @@ func cacheKeyAlreadyExists(client *redis.Client, key string, ctx context.Context
 	return true
 }
 
-// storeOfferRequestInRedis stores the response of getting the best offer per hotel in redis.
-// It creates a unique key for each request and stores the response in Redis with an expiration time of 20 minutes.
-// If the key already exists, it sets an expiration time of 20 minutes and continues to the next iteration.
-// A queue is not necessary because all the offers are retrieved at once.
-func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQuerryParams, uniqueOffers []*ent.Offer,
+// storeOfferRequestInRedis calls two functions that store the offer response in Redis. Including the currently requested.
+// It also stores the additional offers in Redis.
+func storeOfferRequestInRedis(redisClient *redis.Client, offerResponse data.BestOfferPerHotelResponse, request data.RequestQuerryParams, uniqueOffers []*ent.Offer,
+	amountMap map[int]int, ctx context.Context) {
+
+	storeInitialBestOfferResponseSite(redisClient, request, ctx, offerResponse)
+
+	storeAdditionalBestOfferResponseSite(redisClient, request, uniqueOffers, amountMap, ctx)
+}
+
+// storeInitialBestOfferResponseSite checks if the cache key already exists and if it does not exist, it calls a function that stores the initial best offer response.
+func storeInitialBestOfferResponseSite(redisClient *redis.Client, request data.RequestQuerryParams, ctx context.Context, offerResponse data.BestOfferPerHotelResponse) {
+	cacheKey := CreateRedisCacheKeyOffers(request, request.Site)
+
+	if cacheKeyAlreadyExists(redisClient, cacheKey, ctx) {
+		log.Debug().Msgf("Offerresponse for site %d already exists in Redis with key: %s", request.Site, cacheKey)
+		return
+	}
+
+	if err := saveBestOfferResponseToRedis(redisClient, cacheKey, offerResponse, ctx); err != nil {
+		log.Warn().Err(err).Msg("redis store hotel error (initial site)")
+		return
+	}
+
+	log.Debug().Msgf("Stored OfferResponse for site %d successfully in Redis with key: %s", request.Site, cacheKey)
+}
+
+// storeAdditionalBestOfferResponseSite checks if the cache key already for all the other possible responses exists and
+// if it does not exist, it calls a function that stores the offer responses in the cache.
+// It will store the next 10 possible sites in the cache.
+func storeAdditionalBestOfferResponseSite(redisClient *redis.Client, request data.RequestQuerryParams, uniqueOffers []*ent.Offer,
 	amountMap map[int]int, ctx context.Context) {
 
 	for site := request.Site + 1; site < request.Site+10; site++ {
@@ -203,19 +229,29 @@ func storeOfferRequestInRedis(redisClient *redis.Client, request data.RequestQue
 			return
 		}
 
-		jsonOffer, err := json.Marshal(responseStore)
-		if err != nil {
-			log.Error().Err(err).Msg("Could not marshal offers to JSON")
+		if err := saveBestOfferResponseToRedis(redisClient, redisKey, responseStore, ctx); err != nil {
 			continue
 		}
-		err = redisClient.Set(ctx, redisKey, jsonOffer, time.Minute*20).Err()
-		if err != nil {
-			log.Warn().Err(err).Msg("redis store offer error")
-			continue
-		}
+
 		log.Debug().Msgf("cache: store offer %s successfully", redisKey)
 	}
+}
 
+// saveBestOfferResponseToRedis stores the response in Redis with an expiration time of 20 minutes.
+// If the key already exists, it sets an expiration time of 20 minutes and continues to the next iteration.
+// A queue is not necessary because all the offers are retrieved at once.
+func saveBestOfferResponseToRedis(redisClient *redis.Client, redisKey string, response data.BestOfferPerHotelResponse, ctx context.Context) error {
+	jsonOffer, err := json.Marshal(response)
+	if err != nil {
+		log.Error().Err(err).Msg("Could not marshal offers to JSON")
+		return err
+	}
+	err = redisClient.Set(ctx, redisKey, jsonOffer, time.Minute*20).Err()
+	if err != nil {
+		log.Warn().Err(err).Msg("redis store offer error")
+		return err
+	}
+	return nil
 }
 
 // CreateRedisCacheKeyOffers creates a Redis cache key for offers based on the request parameters and site.

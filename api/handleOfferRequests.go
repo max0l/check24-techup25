@@ -78,7 +78,7 @@ func handleOfferRequest(ginc *gin.Context, client *ent.Client, redisClient *redi
 	log.Debug().Msgf("Response: %v", offerResponse)
 	log.Info().Msg("Request handled successfully")
 	queryQueue.Dequeue(cacheKey)
-	go storeOfferRequestInRedis(redisClient, request, dbResponse, amountMap, ctx)
+	go storeOfferRequestInRedis(redisClient, offerResponse, request, dbResponse, amountMap, ctx)
 	return
 }
 
