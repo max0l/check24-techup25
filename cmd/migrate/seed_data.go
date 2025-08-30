@@ -28,7 +28,7 @@ func main() {
 
 	shouldSeed := os.Getenv("SEED_DATA")
 	if shouldSeed == "false" {
-		log.Info().Msg("SEED_DATA is set to false, skipping data migration")
+		fmt.Println("SEED_DATA is set to false, skipping data migration")
 		return
 	}
 
