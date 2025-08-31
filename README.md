@@ -36,7 +36,7 @@ A life instance can be found here [check24.max0l.dev](https://check24.max0l.dev)
 <!-- TOC --><a name="backend"></a>
 ### Backend
 
-Everything will be generated if you just run `docker compose up --build`.
+Everything will be set up and run if you just run `docker compose up --build`.
 
 > [!IMPORTANT]
 > **Set the path of the offers.csv volume in the docker-compose.yml using the ENV OFFERS_CSV_PATH to your offers.csv or to the provided test CSV's in the testCSVs folder**
@@ -223,7 +223,7 @@ That means there will be over 92 Million offers. If set to false it will be "onl
 Also, all the hotels, that are not in the CSV, will be inserted with a placeholder name.
 
 This is affecting the query time intensively If there are 92 Million, a larger timeframe request could take up to 14 seconds.
-If there are only 18 Million, it will be around 1.1 seconds and after caching (same for the 92 Million) ~15 ms.
+If there are only 18 Million, it will be around 1.1 seconds and after caching (same for the 92 Million) ~15 ms (on my main PC, not on the live server).
 
 <!-- TOC --><a name="possible-improvements"></a>
 ### Possible Improvements
@@ -276,9 +276,11 @@ In the end, it was even slower then my normal implementation.
 
 I have deployed my service to my VPS. It's an ARM64, 6 Cores, 8GB Ram. But it was effective 4GB of RAM and at first I could not seed the data because I did run out of memory. After setting the batchSize to 10000 and the maxConcurrency to 2, it worked.
 
+The server is rather slow, so either way, expect query times arround 15s.
+
 I have migrated only the offers that reference a hotel from the `hotels.csv`.
 
-To do that I have modified the docker compose slightly:
+To deploy this, I had to modify the docker compose slightly:
 
 ```yaml
 services:
